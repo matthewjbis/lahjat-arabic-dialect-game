@@ -1,0 +1,199 @@
+{
+  "schema_version": "0.1",
+  "description": "Seed clip library for Lahjat Classic mode (Weekend 1 prototype). Each clip references a YouTube video + start timestamp and an 'answer' tying back to dialect-cities.json (city, cluster, macro_group, coordinates). Clips with broad/ambiguous source labels are flagged with verification_status and alternate_acceptable_clusters so scoring can credit a near-miss at the macro_group level even if the exact cluster guess differs.",
+  "clips": [
+    {
+      "id": "clip01",
+      "source": "youtube",
+      "youtube_id": "vFMy7AGYSc8",
+      "start_seconds": 10,
+      "label_provided": "Egyptian Arabic",
+      "answer": {
+        "city": "Cairo",
+        "country": "EG",
+        "cluster": "cairene",
+        "macro_group": "egyptian",
+        "lat": 30.0444,
+        "lon": 31.2357
+      },
+      "alternate_acceptable_clusters": ["saidi"],
+      "verification_status": "needs_review",
+      "notes": "Generic 'Egyptian Arabic' defaults to Cairene/Delta (the prestige/media norm). If the speaker has Saidi features (e.g. characteristic intonation, lexical items from Upper Egypt), reassign cluster to 'saidi'.",
+      "reveal_draft": ""
+    },
+    {
+      "id": "clip02",
+      "source": "youtube",
+      "youtube_id": "VKs_aBPoDoo",
+      "start_seconds": 0,
+      "label_provided": "Iraqi Arabic",
+      "answer": {
+        "city": "Baghdad",
+        "country": "IQ",
+        "cluster": "baghdadi",
+        "macro_group": "mesopotamian",
+        "lat": 33.3152,
+        "lon": 44.3661
+      },
+      "alternate_acceptable_clusters": ["moslawi", "southernIraqi", "anbari"],
+      "verification_status": "needs_review",
+      "notes": "Generic 'Iraqi Arabic' is the broadest label in this set — Iraqi dialects split sharply along the gilit/qeltu line (Baghdadi vs Moslawi) plus Southern Iraqi and Anbari Bedouin varieties. Defaulting to Baghdadi (gilit) as the unmarked case, but this needs a listen: qaf as /g/ + gilit verb forms = Baghdadi; qeltu forms + closer to Aleppine = Moslawi.",
+      "reveal_draft": ""
+    },
+    {
+      "id": "clip03",
+      "source": "youtube",
+      "youtube_id": "PERgC15devY",
+      "start_seconds": 0,
+      "label_provided": "Moroccan Darija",
+      "answer": {
+        "city": "Casablanca",
+        "country": "MA",
+        "cluster": "moroccan",
+        "macro_group": "maghrebi",
+        "lat": 33.5731,
+        "lon": -7.5898,
+        "city_confidence": "cluster-level only"
+      },
+      "alternate_acceptable_clusters": [],
+      "verification_status": "needs_review",
+      "notes": "Cluster assignment (moroccan) is solid given the label, but the specific city (Casablanca) is a placeholder representative for the cluster, not a verified geolocation of the speaker. Fine for cluster-level scoring; downgrade city-level scoring confidence or omit a 'correct city' bonus for this clip unless the speaker's actual hometown is known.",
+      "reveal_draft": ""
+    },
+    {
+      "id": "clip04",
+      "source": "youtube",
+      "youtube_id": "5uMLs1iM40o",
+      "start_seconds": 0,
+      "label_provided": "Libyan Arabic",
+      "answer": {
+        "city": "Tripoli",
+        "country": "LY",
+        "cluster": "libyan",
+        "macro_group": "maghrebi",
+        "lat": 32.8877,
+        "lon": 13.1872,
+        "city_confidence": "cluster-level only"
+      },
+      "alternate_acceptable_clusters": [],
+      "verification_status": "needs_review",
+      "notes": "Same caveat as clip03 — 'Libyan Arabic' confidently maps to the libyan cluster, but Tripoli (western) vs Benghazi (eastern, closer to Egyptian features) vs Fezzan are quite different at the city level. Verify before using as a city-level answer.",
+      "reveal_draft": ""
+    },
+    {
+      "id": "clip05",
+      "source": "youtube",
+      "youtube_id": "PE9IBlwcU9I",
+      "start_seconds": 0,
+      "label_provided": "Urban Hijazi Arabic",
+      "answer": {
+        "city": "Jeddah",
+        "country": "SA",
+        "cluster": "hejazi",
+        "macro_group": "peninsular",
+        "lat": 21.5292,
+        "lon": 39.1611
+      },
+      "alternate_acceptable_clusters": [],
+      "verification_status": "likely_ok",
+      "notes": "'Urban Hijazi' is specific enough to map confidently to the hejazi cluster, Jeddah being the canonical urban Hijazi center. Good candidate for the contrast pairing with clip06 (Najdi) for an 'expert mode' Hejazi vs Najdi minimal-pair round.",
+      "reveal_draft": ""
+    },
+    {
+      "id": "clip06",
+      "source": "youtube",
+      "youtube_id": "r4osoJDHGE4",
+      "start_seconds": 608,
+      "label_provided": "Najdi Arabic",
+      "answer": {
+        "city": "Riyadh",
+        "country": "SA",
+        "cluster": "najdi",
+        "macro_group": "peninsular",
+        "lat": 24.7136,
+        "lon": 46.6753
+      },
+      "alternate_acceptable_clusters": [],
+      "verification_status": "likely_ok",
+      "notes": "Najdi label maps cleanly to the najdi cluster. Long source video (timestamp 608s) — double-check the clip start lands cleanly on speech, not mid-word or over background music/intro.",
+      "reveal_draft": ""
+    },
+    {
+      "id": "clip07",
+      "source": "youtube",
+      "youtube_id": "iAqplIgWZFk",
+      "start_seconds": 20,
+      "label_provided": "Algerian Darija",
+      "answer": {
+        "city": "Algiers",
+        "country": "DZ",
+        "cluster": "algerian",
+        "macro_group": "maghrebi",
+        "lat": 36.7538,
+        "lon": 3.0588,
+        "city_confidence": "cluster-level only"
+      },
+      "alternate_acceptable_clusters": ["saharanAlgerian"],
+      "verification_status": "needs_review",
+      "notes": "Defaults to the algerian cluster (Algiers as representative city). If the speaker has Saharan/M'zab or Tuareg-influenced features (cf. Ghardaia/Tamanrasset notes in dialect-cities.json), reassign to 'saharanAlgerian' instead — same macro_group either way, so a near-miss still scores reasonably under two-tier scoring.",
+      "reveal_draft": ""
+    },
+    {
+      "id": "clip08",
+      "source": "youtube",
+      "youtube_id": "GRLmXabAia8",
+      "start_seconds": 345,
+      "label_provided": "Yemeni Arabic",
+      "answer": {
+        "city": "Sanaa",
+        "country": "YE",
+        "cluster": "sanaani",
+        "macro_group": "yemeni",
+        "lat": 15.3545,
+        "lon": 44.2064
+      },
+      "alternate_acceptable_clusters": ["taizziAdeni", "hadrami"],
+      "verification_status": "needs_review",
+      "notes": "'Yemeni Arabic' is broad — Sanaani (north), Taizzi-Adeni (south/southwest), and Hadrami (east) are quite distinct. Defaulting to Sanaani as the most prestige/media-associated variety, but this needs a listen for region-specific lexical items and the characteristic Sanaani phonology before locking in the cluster.",
+      "reveal_draft": ""
+    },
+    {
+      "id": "clip09",
+      "source": "youtube",
+      "youtube_id": "72L2JsuGcH0",
+      "start_seconds": 15,
+      "label_provided": "Lebanese Arabic",
+      "answer": {
+        "city": "Beirut",
+        "country": "LB",
+        "cluster": "lebanese",
+        "macro_group": "levantine",
+        "lat": 33.8938,
+        "lon": 35.5018
+      },
+      "alternate_acceptable_clusters": [],
+      "verification_status": "likely_ok",
+      "notes": "Lebanese label maps cleanly to the lebanese cluster. Beirut as default city is reasonable unless the speaker shows clear Beqaa/rural features (cf. Zahle note in dialect-cities.json), in which case the cluster is still correct but city should shift.",
+      "reveal_draft": ""
+    },
+    {
+      "id": "clip10",
+      "source": "youtube",
+      "youtube_id": "vjcIJuZmRUQ",
+      "start_seconds": 134,
+      "label_provided": "Jordanian/Palestinian Arabic",
+      "answer": {
+        "city": "Amman",
+        "country": "JO",
+        "cluster": "jordanianU",
+        "macro_group": "levantine",
+        "lat": 31.9544,
+        "lon": 35.9106
+      },
+      "alternate_acceptable_clusters": ["palestinianU", "jordanianB"],
+      "verification_status": "needs_review",
+      "notes": "Dual label suggests the speaker may genuinely sit on the Jordanian urban / Palestinian urban continuum — these are mutually intelligible and share many features, so this could be a deliberate 'hard mode' edge case rather than a data error. Recommend keeping both jordanianU and palestinianU as acceptable answers (full macro_group credit either way) rather than forcing a single ground truth, and noting the ambiguity explicitly in the reveal text as a teaching moment.",
+      "reveal_draft": ""
+    }
+  ]
+}
