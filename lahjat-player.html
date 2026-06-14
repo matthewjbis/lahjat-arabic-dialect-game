@@ -380,8 +380,8 @@
 
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/topojson@3.0.2/dist/topojson.min.js"></script>
+<script src="https://unpkg.com/d3@7.8.5/dist/d3.min.js"></script>
+<script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
 <script>
 const dialectData = JSON.parse(document.getElementById('dialect-data').textContent);
 const clipsData = JSON.parse(document.getElementById('clips-data').textContent).clips;
@@ -417,7 +417,22 @@ const borderColor = getComputedStyle(document.documentElement).getPropertyValue(
 const markerLayer = svg.append('g');
 let mapReady = false;
 
-d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(world => {
+// Plain background so the map area isn't blank if the world-atlas data fails to load
+svg.insert('rect', ':first-child')
+  .attr('x', 0).attr('y', 0).attr('width', W).attr('height', H)
+  .attr('fill', landOtherColor);
+
+function attachClickHandler() {
+  svg.on('click', function(event) {
+    if (state.locked) return;
+    const [x, y] = d3.pointer(event);
+    const [lon, lat] = projection.invert([x, y]);
+    setGuess(lat, lon);
+  });
+  mapReady = true;
+}
+
+d3.json('https://unpkg.com/world-atlas@2/countries-110m.json').then(world => {
   const countries = topojson.feature(world, world.objects.countries).features;
 
   svg.insert('g', ':first-child')
@@ -429,14 +444,12 @@ d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(w
     .attr('stroke', borderColor)
     .attr('stroke-width', 0.5);
 
-  svg.on('click', function(event) {
-    if (state.locked) return;
-    const [x, y] = d3.pointer(event);
-    const [lon, lat] = projection.invert([x, y]);
-    setGuess(lat, lon);
-  });
-
-  mapReady = true;
+  attachClickHandler();
+}).catch(err => {
+  // World map outlines failed to load (e.g. CDN hiccup) — game is still playable
+  // on the plain background, since lat/lon math doesn't depend on the country shapes.
+  console.warn('Could not load world map outlines, falling back to plain background:', err);
+  attachClickHandler();
 });
 
 // --- Game state ---------------------------------------------------------
