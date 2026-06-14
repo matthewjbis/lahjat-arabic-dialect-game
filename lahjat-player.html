@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lahjat — Classic Mode (Prototype)</title>
+<style>
+  :root {
+    --bg: #faf9f5;
+    --surface: #f1efe8;
+    --surface-2: #e8e6df;
+    --land: #f1efe8;
+    --land-other: #e8e6df;
+    --border: rgba(0,0,0,0.15);
+    --text: #1a1a18;
+    --text-muted: #5f5e5a;
+    --text-faint: #888780;
+    --accent: #1D9E75;
+    --accent-2: #D85A30;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f0f0e;
+      --surface: #1f1f1d;
+      --surface-2: #2a2a28;
+      --land: #2a2a28;
+      --land-other: #1a1a18;
+      --border: rgba(255,255,255,0.12);
+      --text: #f5f4ef;
+      --text-muted: #b4b2a9;
+      --text-faint: #888780;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 28px 20px 48px; }
+  h1 { font-size: 26px; font-weight: 500; margin: 0; letter-spacing: -0.01em; }
+  .top-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .clip-counter { font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .subtitle { color: var(--text-muted); font-size: 14px; margin: 0 0 18px; }
+
+  .video-wrap {
+    position: relative; width: 100%; aspect-ratio: 16 / 9;
+    background: var(--surface); border-radius: 12px; overflow: hidden; margin-bottom: 14px;
+  }
+  .video-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+  .instructions {
+    font-size: 13px; color: var(--text-muted); margin-bottom: 10px;
+  }
+
+  #map {
+    width: 100%; background: var(--surface); border-radius: 12px; overflow: hidden;
+    cursor: crosshair; margin-bottom: 14px;
+  }
+  #map svg { display: block; width: 100%; }
+
+  .controls { display: flex; gap: 10px; margin-bottom: 14px; }
+  button {
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    padding: 10px 18px; border-radius: 8px; border: none;
+    cursor: pointer; transition: opacity 0.15s ease, transform 0.05s ease;
+  }
+  button:active { transform: scale(0.98); }
+  #submitBtn { background: var(--accent); color: #ffffff; }
+  #submitBtn:disabled { background: var(--surface-2); color: var(--text-faint); cursor: not-allowed; }
+  #nextBtn { background: var(--surface-2); color: var(--text); }
+  #nextBtn:hover { opacity: 0.85; }
+
+  #result {
+    background: var(--surface); border-radius: 12px; padding: 18px 20px; font-size: 14px;
+  }
+  #result.hidden { display: none; }
+  .score-headline {
+    font-size: 20px; font-weight: 600; margin-bottom: 4px;
+  }
+  .score-sub { color: var(--text-muted); font-size: 13px; margin-bottom: 14px; }
+  .score-breakdown {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px 16px; margin-bottom: 14px; font-size: 12px;
+  }
+  .score-breakdown .item { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; }
+  .score-breakdown .item .label { color: var(--text-faint); display: block; margin-bottom: 2px; }
+  .score-breakdown .item .value { font-weight: 600; font-size: 15px; }
+  .reveal {
+    border-top: 0.5px solid var(--border); padding-top: 12px; font-size: 13.5px; color: var(--text);
+  }
+  .reveal .answer-line {
+    font-weight: 500; margin-bottom: 6px;
+  }
+  .relationship-badge {
+    display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px;
+    border-radius: 999px; margin-left: 8px; vertical-align: middle;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .rel-exact { background: #1D9E75; color: #fff; }
+  .rel-adjacent { background: #97C459; color: #1a1a18; }
+  .rel-macro { background: #CECBF6; color: #1a1a18; }
+  .rel-none { background: var(--surface-2); color: var(--text-muted); }
+
+  footer {
+    margin-top: 28px; padding-top: 14px; border-top: 0.5px solid var(--border);
+    font-size: 12px; color: var(--text-faint);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="top-row">
+    <h1>Lahjat — Classic Mode</h1>
+    <div class="clip-counter">Clip <span id="clipIndex">1</span> of <span id="clipTotal"></span></div>
+  </div>
+  <p class="subtitle">Prototype — listen to the clip, then click the map where you think the speaker is from.</p>
+
+  <div class="video-wrap">
+    <iframe id="ytFrame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+
+  <p class="instructions" id="instructions">Click anywhere on the map to drop your guess pin, then submit.</p>
+
+  <div id="map"></div>
+
+  <div class="controls">
+    <button id="submitBtn" disabled>Submit guess</button>
+    <button id="nextBtn" style="display:none;">Next clip →</button>
+  </div>
+
+  <div id="result" class="hidden"></div>
+
+  <footer>
+    Lahjat prototype — scoring rewards dialect-family proximity over pure geographic distance. Cluster/answer assignments are first-pass and pending native-speaker review (see clips.json).
+  </footer>
+</div>
+
+<script id="dialect-data" type="application/json">{"clusters": [{"id": "moroccan", "name": "Moroccan (Darija)", "macro_group": "maghrebi", "color": "#D85A30"}, {"id": "hassaniya", "name": "Hassaniya", "macro_group": "maghrebi", "color": "#F0997B"}, {"id": "algerian", "name": "Algerian", "macro_group": "maghrebi", "color": "#BA7517"}, {"id": "saharanAlgerian", "name": "Saharan Algerian", "macro_group": "maghrebi", "color": "#EF9F27"}, {"id": "tunisian", "name": "Tunisian", "macro_group": "maghrebi", "color": "#97C459"}, {"id": "libyan", "name": "Libyan", "macro_group": "maghrebi", "color": "#639922"}, {"id": "cairene", "name": "Cairene / Delta", "macro_group": "egyptian", "color": "#7F77DD"}, {"id": "saidi", "name": "Saidi (Upper Egyptian)", "macro_group": "egyptian", "color": "#534AB7"}, {"id": "sudanese", "name": "Sudanese", "macro_group": "sudanese", "color": "#D4537E"}, {"id": "darfuri", "name": "Western Sudanese / Darfuri", "macro_group": "sudanese", "color": "#ED93B1"}, {"id": "jubaArabic", "name": "Juba Arabic (creole)", "macro_group": "creole", "color": "#888780"}, {"id": "northLevantine", "name": "North Levantine / Syrian", "macro_group": "levantine", "color": "#1D9E75"}, {"id": "aleppine", "name": "Aleppine (qeltu)", "macro_group": "levantine", "color": "#0F6E56"}, {"id": "coastalSyrian", "name": "Coastal Syrian", "macro_group": "levantine", "color": "#5DCAA5"}, {"id": "easternSyrian", "name": "Eastern Syrian / Jazira", "macro_group": "levantine", "color": "#085041"}, {"id": "lebanese", "name": "Lebanese", "macro_group": "levantine", "color": "#378ADD"}, {"id": "palestinianU", "name": "Palestinian urban", "macro_group": "levantine", "color": "#185FA5"}, {"id": "palestinianR", "name": "Palestinian rural / fellahi", "macro_group": "levantine", "color": "#85B7EB"}, {"id": "gazan", "name": "Gazan", "macro_group": "levantine", "color": "#0C447C"}, {"id": "jordanianU", "name": "Jordanian urban", "macro_group": "levantine", "color": "#B5D4F4"}, {"id": "jordanianB", "name": "Jordanian Bedouin", "macro_group": "levantine", "color": "#042C53"}, {"id": "baghdadi", "name": "Baghdadi (gilit)", "macro_group": "mesopotamian", "color": "#A32D2D"}, {"id": "moslawi", "name": "Moslawi (qeltu)", "macro_group": "mesopotamian", "color": "#F09595"}, {"id": "southernIraqi", "name": "Southern Iraqi", "macro_group": "mesopotamian", "color": "#E24B4A"}, {"id": "anbari", "name": "Anbari / Western Iraqi", "macro_group": "mesopotamian", "color": "#501313"}, {"id": "najdi", "name": "Najdi", "macro_group": "peninsular", "color": "#26215C"}, {"id": "hejazi", "name": "Hejazi", "macro_group": "peninsular", "color": "#AFA9EC"}, {"id": "gulf", "name": "Gulf (Khaleeji)", "macro_group": "peninsular", "color": "#3C3489"}, {"id": "asiri", "name": "Southern Saudi / Asiri", "macro_group": "peninsular", "color": "#CECBF6"}, {"id": "omani", "name": "Omani", "macro_group": "peninsular", "color": "#27500A"}, {"id": "dhofari", "name": "Dhofari", "macro_group": "peninsular", "color": "#C0DD97"}, {"id": "sanaani", "name": "Sanaani (Northern Yemeni)", "macro_group": "yemeni", "color": "#993556"}, {"id": "taizziAdeni", "name": "Taizzi-Adeni", "macro_group": "yemeni", "color": "#72243E"}, {"id": "hadrami", "name": "Hadrami", "macro_group": "yemeni", "color": "#F4C0D1"}, {"id": "djibouti", "name": "Djibouti Arabic", "macro_group": "peripheral", "color": "#444441"}, {"id": "somali", "name": "Somali Arabic (L2)", "macro_group": "peripheral", "color": "#5F5E5A"}, {"id": "comorian", "name": "Comorian Arabic (L2)", "macro_group": "peripheral", "color": "#2C2C2A"}], "cities": [{"name": "Casablanca", "country": "MA", "lat": 33.5731, "lon": -7.5898, "cluster": "moroccan"}, {"name": "Rabat", "country": "MA", "lat": 34.0084, "lon": -6.8539, "cluster": "moroccan"}, {"name": "Fes", "country": "MA", "lat": 34.0181, "lon": -5.0078, "cluster": "moroccan"}, {"name": "Marrakech", "country": "MA", "lat": 31.6225, "lon": -7.9898, "cluster": "moroccan"}, {"name": "Tangier", "country": "MA", "lat": 35.7595, "lon": -5.834, "cluster": "moroccan"}, {"name": "Tetouan", "country": "MA", "lat": 35.5717, "lon": -5.3597, "cluster": "moroccan"}, {"name": "Agadir", "country": "MA", "lat": 30.428, "lon": -9.5925, "cluster": "moroccan", "note": "Tashelhit Berber substrate"}, {"name": "Oujda", "country": "MA", "lat": 34.682, "lon": -1.9002, "cluster": "moroccan", "note": "Eastern Morocco; transitional to Algerian"}, {"name": "Nouakchott", "country": "MR", "lat": 18.0735, "lon": -15.9582, "cluster": "hassaniya"}, {"name": "Nouadhibou", "country": "MR", "lat": 20.9425, "lon": -17.0362, "cluster": "hassaniya"}, {"name": "Atar", "country": "MR", "lat": 20.5073, "lon": -13.053, "cluster": "hassaniya"}, {"name": "Algiers", "country": "DZ", "lat": 36.7538, "lon": 3.0588, "cluster": "algerian"}, {"name": "Oran", "country": "DZ", "lat": 35.6987, "lon": -0.6349, "cluster": "algerian"}, {"name": "Constantine", "country": "DZ", "lat": 36.3569, "lon": 6.6389, "cluster": "algerian"}, {"name": "Annaba", "country": "DZ", "lat": 36.8974, "lon": 7.75, "cluster": "algerian"}, {"name": "Tlemcen", "country": "DZ", "lat": 34.8829, "lon": -1.3167, "cluster": "algerian", "note": "Transitional — features overlap with Moroccan"}, {"name": "Ghardaia", "country": "DZ", "lat": 32.4944, "lon": 3.6445, "cluster": "saharanAlgerian", "note": "M'zab — Berber substrate"}, {"name": "Tamanrasset", "country": "DZ", "lat": 22.7942, "lon": 5.5361, "cluster": "saharanAlgerian", "note": "Tuareg-influenced; deep Sahara"}, {"name": "Tunis", "country": "TN", "lat": 36.8065, "lon": 10.1815, "cluster": "tunisian"}, {"name": "Sfax", "country": "TN", "lat": 34.7398, "lon": 10.76, "cluster": "tunisian"}, {"name": "Sousse", "country": "TN", "lat": 35.8245, "lon": 10.6346, "cluster": "tunisian"}, {"name": "Kairouan", "country": "TN", "lat": 35.6712, "lon": 10.1005, "cluster": "tunisian"}, {"name": "Djerba", "country": "TN", "lat": 33.8076, "lon": 10.8451, "cluster": "tunisian", "note": "Berber substrate"}, {"name": "Gabes", "country": "TN", "lat": 33.8881, "lon": 10.0975, "cluster": "tunisian"}, {"name": "Tripoli", "country": "LY", "lat": 32.8877, "lon": 13.1872, "cluster": "libyan"}, {"name": "Misrata", "country": "LY", "lat": 32.3256, "lon": 15.0993, "cluster": "libyan"}, {"name": "Benghazi", "country": "LY", "lat": 32.1194, "lon": 20.0868, "cluster": "libyan", "note": "Eastern Libyan; some features closer to Egyptian than Tripoli"}, {"name": "Sabha", "country": "LY", "lat": 27.0365, "lon": 14.429, "cluster": "libyan", "note": "Fezzan — more Saharan"}, {"name": "Cairo", "country": "EG", "lat": 30.0444, "lon": 31.2357, "cluster": "cairene"}, {"name": "Alexandria", "country": "EG", "lat": 31.2001, "lon": 29.9187, "cluster": "cairene"}, {"name": "Port Said", "country": "EG", "lat": 31.2653, "lon": 32.3019, "cluster": "cairene"}, {"name": "Mansoura", "country": "EG", "lat": 31.0409, "lon": 31.3785, "cluster": "cairene"}, {"name": "Tanta", "country": "EG", "lat": 30.7865, "lon": 31.0004, "cluster": "cairene"}, {"name": "Asyut", "country": "EG", "lat": 27.1783, "lon": 31.1859, "cluster": "saidi"}, {"name": "Sohag", "country": "EG", "lat": 26.5591, "lon": 31.6957, "cluster": "saidi"}, {"name": "Luxor", "country": "EG", "lat": 25.6872, "lon": 32.6396, "cluster": "saidi"}, {"name": "Aswan", "country": "EG", "lat": 24.0889, "lon": 32.8998, "cluster": "saidi", "note": "Nubian substrate"}, {"name": "Khartoum", "country": "SD", "lat": 15.5974, "lon": 32.5356, "cluster": "sudanese"}, {"name": "Omdurman", "country": "SD", "lat": 15.6404, "lon": 32.483, "cluster": "sudanese"}, {"name": "Port Sudan", "country": "SD", "lat": 19.602, "lon": 37.2076, "cluster": "sudanese"}, {"name": "Kassala", "country": "SD", "lat": 15.4567, "lon": 36.4044, "cluster": "sudanese"}, {"name": "El Obeid", "country": "SD", "lat": 13.1789, "lon": 30.2201, "cluster": "sudanese"}, {"name": "Nyala", "country": "SD", "lat": 12.0518, "lon": 24.8805, "cluster": "darfuri", "note": "Chadian Arabic influence"}, {"name": "Juba", "country": "SS", "lat": 4.8539, "lon": 31.5825, "cluster": "jubaArabic", "note": "Creole — own category for scoring"}, {"name": "Damascus", "country": "SY", "lat": 33.5132, "lon": 36.2768, "cluster": "northLevantine"}, {"name": "Homs", "country": "SY", "lat": 34.7325, "lon": 36.7135, "cluster": "northLevantine"}, {"name": "Hama", "country": "SY", "lat": 35.1408, "lon": 36.7553, "cluster": "northLevantine"}, {"name": "Aleppo", "country": "SY", "lat": 36.2021, "lon": 37.1343, "cluster": "aleppine", "note": "qeltu dialect — closer to Moslawi than to Damascus on some features"}, {"name": "Latakia", "country": "SY", "lat": 35.5418, "lon": 35.7988, "cluster": "coastalSyrian"}, {"name": "Tartus", "country": "SY", "lat": 34.8959, "lon": 35.8867, "cluster": "coastalSyrian"}, {"name": "Deir ez-Zor", "country": "SY", "lat": 35.3319, "lon": 40.1243, "cluster": "easternSyrian", "note": "Bedouin-influenced; closer to Iraqi"}, {"name": "Raqqa", "country": "SY", "lat": 35.9562, "lon": 39.0121, "cluster": "easternSyrian"}, {"name": "Hasakah", "country": "SY", "lat": 36.51, "lon": 40.7413, "cluster": "easternSyrian"}, {"name": "Beirut", "country": "LB", "lat": 33.8938, "lon": 35.5018, "cluster": "lebanese"}, {"name": "Tripoli", "country": "LB", "lat": 34.4348, "lon": 35.836, "cluster": "lebanese"}, {"name": "Saida", "country": "LB", "lat": 33.5572, "lon": 35.3733, "cluster": "lebanese"}, {"name": "Tyre", "country": "LB", "lat": 33.2705, "lon": 35.2038, "cluster": "lebanese"}, {"name": "Zahle", "country": "LB", "lat": 33.8485, "lon": 35.8981, "cluster": "lebanese", "note": "Beqaa Valley — rural features"}, {"name": "Jerusalem", "country": "PS", "lat": 31.7769, "lon": 35.2224, "cluster": "palestinianU"}, {"name": "Ramallah", "country": "PS", "lat": 31.9038, "lon": 35.2034, "cluster": "palestinianU"}, {"name": "Nablus", "country": "PS", "lat": 32.2227, "lon": 35.2621, "cluster": "palestinianU"}, {"name": "Nazareth", "country": "PS", "lat": 32.6996, "lon": 35.3035, "cluster": "palestinianU"}, {"name": "Haifa", "country": "PS", "lat": 32.794, "lon": 34.9896, "cluster": "palestinianU"}, {"name": "Hebron", "country": "PS", "lat": 31.5326, "lon": 35.0998, "cluster": "palestinianR", "note": "Fellahi — kaf -> tsh affrication"}, {"name": "Gaza City", "country": "PS", "lat": 31.5017, "lon": 34.4668, "cluster": "gazan", "note": "Bedouin/Egyptian-influenced; distinct from West Bank"}, {"name": "Amman", "country": "JO", "lat": 31.9544, "lon": 35.9106, "cluster": "jordanianU"}, {"name": "Zarqa", "country": "JO", "lat": 32.0608, "lon": 36.0942, "cluster": "jordanianU"}, {"name": "Irbid", "country": "JO", "lat": 32.5568, "lon": 35.8469, "cluster": "jordanianU"}, {"name": "Karak", "country": "JO", "lat": 31.1853, "lon": 35.7048, "cluster": "jordanianB"}, {"name": "Aqaba", "country": "JO", "lat": 29.5321, "lon": 35.0063, "cluster": "jordanianB"}, {"name": "Baghdad", "country": "IQ", "lat": 33.3152, "lon": 44.3661, "cluster": "baghdadi"}, {"name": "Najaf", "country": "IQ", "lat": 32.0316, "lon": 44.3219, "cluster": "baghdadi"}, {"name": "Karbala", "country": "IQ", "lat": 32.6027, "lon": 44.0197, "cluster": "baghdadi"}, {"name": "Mosul", "country": "IQ", "lat": 36.3489, "lon": 43.1577, "cluster": "moslawi", "note": "qeltu — closer to Aleppine than Baghdadi"}, {"name": "Basra", "country": "IQ", "lat": 30.526, "lon": 47.7738, "cluster": "southernIraqi", "note": "Gulf-influenced"}, {"name": "Ramadi", "country": "IQ", "lat": 33.4366, "lon": 43.2683, "cluster": "anbari", "note": "Bedouin-influenced"}, {"name": "Tikrit", "country": "IQ", "lat": 34.5981, "lon": 43.6755, "cluster": "anbari"}, {"name": "Riyadh", "country": "SA", "lat": 24.7136, "lon": 46.6753, "cluster": "najdi"}, {"name": "Hail", "country": "SA", "lat": 27.5114, "lon": 41.7208, "cluster": "najdi"}, {"name": "Buraidah", "country": "SA", "lat": 26.3592, "lon": 43.9818, "cluster": "najdi"}, {"name": "Jeddah", "country": "SA", "lat": 21.5292, "lon": 39.1611, "cluster": "hejazi"}, {"name": "Mecca", "country": "SA", "lat": 21.4241, "lon": 39.8173, "cluster": "hejazi"}, {"name": "Medina", "country": "SA", "lat": 24.4672, "lon": 39.6024, "cluster": "hejazi"}, {"name": "Tabuk", "country": "SA", "lat": 28.3835, "lon": 36.5662, "cluster": "hejazi", "note": "Northwest Saudi — Bedouin-influenced edge of Hejazi zone"}, {"name": "Dammam", "country": "SA", "lat": 26.4207, "lon": 50.0888, "cluster": "gulf"}, {"name": "Kuwait City", "country": "KW", "lat": 29.378, "lon": 47.9751, "cluster": "gulf"}, {"name": "Jahra", "country": "KW", "lat": 29.3368, "lon": 47.6752, "cluster": "gulf"}, {"name": "Manama", "country": "BH", "lat": 26.2235, "lon": 50.5876, "cluster": "gulf", "note": "Sunni/Shia (Baharna) split — tag at speaker level"}, {"name": "Muharraq", "country": "BH", "lat": 26.2535, "lon": 50.6083, "cluster": "gulf"}, {"name": "Doha", "country": "QA", "lat": 25.2854, "lon": 51.531, "cluster": "gulf"}, {"name": "Abu Dhabi", "country": "AE", "lat": 24.4539, "lon": 54.3773, "cluster": "gulf"}, {"name": "Dubai", "country": "AE", "lat": 25.2048, "lon": 55.2708, "cluster": "gulf"}, {"name": "Sharjah", "country": "AE", "lat": 25.3562, "lon": 55.4272, "cluster": "gulf"}, {"name": "Ras Al Khaimah", "country": "AE", "lat": 25.8007, "lon": 55.9762, "cluster": "gulf"}, {"name": "Al Ain", "country": "AE", "lat": 24.2232, "lon": 55.7229, "cluster": "gulf"}, {"name": "Abha", "country": "SA", "lat": 18.2465, "lon": 42.5117, "cluster": "asiri", "note": "Transitional to Yemeni"}, {"name": "Najran", "country": "SA", "lat": 17.5656, "lon": 44.2289, "cluster": "asiri"}, {"name": "Muscat", "country": "OM", "lat": 23.588, "lon": 58.3829, "cluster": "omani"}, {"name": "Nizwa", "country": "OM", "lat": 22.9171, "lon": 57.5363, "cluster": "omani"}, {"name": "Sur", "country": "OM", "lat": 22.5653, "lon": 59.5066, "cluster": "omani"}, {"name": "Salalah", "country": "OM", "lat": 17.0194, "lon": 54.1108, "cluster": "dhofari", "note": "Closer to Yemeni than to Omani Arabic"}, {"name": "Sanaa", "country": "YE", "lat": 15.3545, "lon": 44.2064, "cluster": "sanaani"}, {"name": "Saada", "country": "YE", "lat": 16.9509, "lon": 43.7478, "cluster": "sanaani"}, {"name": "Taiz", "country": "YE", "lat": 13.5776, "lon": 44.0178, "cluster": "taizziAdeni"}, {"name": "Aden", "country": "YE", "lat": 12.7906, "lon": 45.0176, "cluster": "taizziAdeni"}, {"name": "Hodeidah", "country": "YE", "lat": 14.7884, "lon": 42.97, "cluster": "taizziAdeni"}, {"name": "Mukalla", "country": "YE", "lat": 14.55, "lon": 49.1227, "cluster": "hadrami", "note": "Hadrami diaspora connections to Indonesia & East Africa"}, {"name": "Djibouti", "country": "DJ", "lat": 11.5886, "lon": 43.1454, "cluster": "djibouti"}, {"name": "Mogadishu", "country": "SO", "lat": 2.0372, "lon": 45.3379, "cluster": "somali", "note": "Arabic as L2; curveball clip category"}, {"name": "Moroni", "country": "KM", "lat": -11.7061, "lon": 43.2517, "cluster": "comorian", "note": "Arabic as liturgical/L2"}]}</script>
+<script id="clips-data" type="application/json">{"schema_version": "0.1", "description": "Seed clip library for Lahjat Classic mode (Weekend 1 prototype). Each clip references a YouTube video + start timestamp and an 'answer' tying back to dialect-cities.json (city, cluster, macro_group, coordinates). Clips with broad/ambiguous source labels are flagged with verification_status and alternate_acceptable_clusters so scoring can credit a near-miss at the macro_group level even if the exact cluster guess differs.", "clips": [{"id": "clip01", "source": "youtube", "youtube_id": "vFMy7AGYSc8", "start_seconds": 10, "label_provided": "Egyptian Arabic", "answer": {"city": "Cairo", "country": "EG", "cluster": "cairene", "macro_group": "egyptian", "lat": 30.0444, "lon": 31.2357}, "alternate_acceptable_clusters": ["saidi"], "verification_status": "needs_review", "notes": "Generic 'Egyptian Arabic' defaults to Cairene/Delta (the prestige/media norm). If the speaker has Saidi features (e.g. characteristic intonation, lexical items from Upper Egypt), reassign cluster to 'saidi'.", "reveal_draft": "This is Cairene Egyptian Arabic, the dialect most non-Arabs picture first thanks to Egypt's film and broadcast industry. Listen for /q/ realized as a glottal stop (qalb \"heart\" becomes more like \"alb\"), jim pronounced as a hard /g/ rather than /j/, and the wraparound negation ma-...-sh. Everyday markers like dilwa'ti (\"now\") and izzayyak (\"how are you\") are classic Cairene tells."}, {"id": "clip02", "source": "youtube", "youtube_id": "VKs_aBPoDoo", "start_seconds": 0, "label_provided": "Iraqi Arabic", "answer": {"city": "Baghdad", "country": "IQ", "cluster": "baghdadi", "macro_group": "mesopotamian", "lat": 33.3152, "lon": 44.3661}, "alternate_acceptable_clusters": ["moslawi", "southernIraqi", "anbari"], "verification_status": "needs_review", "notes": "Generic 'Iraqi Arabic' is the broadest label in this set — Iraqi dialects split sharply along the gilit/qeltu line (Baghdadi vs Moslawi) plus Southern Iraqi and Anbari Bedouin varieties. Defaulting to Baghdadi (gilit) as the unmarked case, but this needs a listen: qaf as /g/ + gilit verb forms = Baghdadi; qeltu forms + closer to Aleppine = Moslawi.", "reveal_draft": "Tagged here as Baghdadi (gilit) Iraqi Arabic, though Iraq's dialect map is unusually split and this is one to double-check by ear. Gilit dialects (Baghdad and much of the south) shift /q/ to /g/ (qalb -> galb) and take their name from the gilit verb pattern itself. If you instead hear qeltu-style forms with /q/ retained as a uvular stop, this clip is linguistically closer to Mosul than to Baghdad, a genuinely different dialect group despite both being labeled \"Iraqi.\""}, {"id": "clip03", "source": "youtube", "youtube_id": "PERgC15devY", "start_seconds": 0, "label_provided": "Moroccan Darija", "answer": {"city": "Casablanca", "country": "MA", "cluster": "moroccan", "macro_group": "maghrebi", "lat": 33.5731, "lon": -7.5898, "city_confidence": "cluster-level only"}, "alternate_acceptable_clusters": [], "verification_status": "needs_review", "notes": "Cluster assignment (moroccan) is solid given the label, but the specific city (Casablanca) is a placeholder representative for the cluster, not a verified geolocation of the speaker. Fine for cluster-level scoring; downgrade city-level scoring confidence or omit a 'correct city' bonus for this clip unless the speaker's actual hometown is known.", "reveal_draft": "Moroccan Darija stands out for heavy vowel reduction that can compress whole words down to consonant clusters, such as ktbt for \"I wrote.\" Other markers include the question particle wash, the intensifier bezzaf (\"a lot\"), and a noticeably faster rhythm than Levantine or Gulf speech. Darija also carries a heavier layer of French and Amazigh (Berber) vocabulary than dialects further east."}, {"id": "clip04", "source": "youtube", "youtube_id": "5uMLs1iM40o", "start_seconds": 0, "label_provided": "Libyan Arabic", "answer": {"city": "Tripoli", "country": "LY", "cluster": "libyan", "macro_group": "maghrebi", "lat": 32.8877, "lon": 13.1872, "city_confidence": "cluster-level only"}, "alternate_acceptable_clusters": [], "verification_status": "needs_review", "notes": "Same caveat as clip03 — 'Libyan Arabic' confidently maps to the libyan cluster, but Tripoli (western) vs Benghazi (eastern, closer to Egyptian features) vs Fezzan are quite different at the city level. Verify before using as a city-level answer.", "reveal_draft": "Libyan Arabic sits at the eastern edge of the Maghrebi zone, sharing some of Darija's rapid rhythm and consonant-cluster habits but with its own vocabulary, halba (\"very/a lot\") being a classic Libyan marker. Italian-derived loanwords, a legacy of colonial-era contact, show up where Moroccan or Algerian speech would reach for French instead. Eastern Libyan speech around Benghazi leans noticeably closer to Egyptian Arabic than western Libyan speech around Tripoli does."}, {"id": "clip05", "source": "youtube", "youtube_id": "PE9IBlwcU9I", "start_seconds": 0, "label_provided": "Urban Hijazi Arabic", "answer": {"city": "Jeddah", "country": "SA", "cluster": "hejazi", "macro_group": "peninsular", "lat": 21.5292, "lon": 39.1611}, "alternate_acceptable_clusters": [], "verification_status": "likely_ok", "notes": "'Urban Hijazi' is specific enough to map confidently to the hejazi cluster, Jeddah being the canonical urban Hijazi center. Good candidate for the contrast pairing with clip06 (Najdi) for an 'expert mode' Hejazi vs Najdi minimal-pair round.", "reveal_draft": "Urban Hijazi Arabic, the speech of Jeddah, Mecca, and Medina, sounds quite different from the Najdi Arabic of Riyadh despite both being \"Saudi.\" Hejazi tends to keep /q/ as a uvular stop in many words rather than shifting it to /g/, and centuries as a pilgrimage and trade hub have given it a more cosmopolitan lexical mix than the more conservative, Bedouin-rooted dialects of the interior."}, {"id": "clip06", "source": "youtube", "youtube_id": "r4osoJDHGE4", "start_seconds": 608, "label_provided": "Najdi Arabic", "answer": {"city": "Riyadh", "country": "SA", "cluster": "najdi", "macro_group": "peninsular", "lat": 24.7136, "lon": 46.6753}, "alternate_acceptable_clusters": [], "verification_status": "likely_ok", "notes": "Najdi label maps cleanly to the najdi cluster. Long source video (timestamp 608s) — double-check the clip start lands cleanly on speech, not mid-word or over background music/intro.", "reveal_draft": "Najdi Arabic, centered on Riyadh and the central plateau, is one of the more conservative dialects on the peninsula, retaining the interdental consonants th and dh that many other dialects have merged into /s//z/ or /d//t/. The classic giveaway is /q/ realized as /g/ (gahwa for \"coffee\"), paired with vocabulary like wayed (\"a lot\") that marks it as distinctly Bedouin-rooted rather than urban Hejazi."}, {"id": "clip07", "source": "youtube", "youtube_id": "iAqplIgWZFk", "start_seconds": 20, "label_provided": "Algerian Darija", "answer": {"city": "Algiers", "country": "DZ", "cluster": "algerian", "macro_group": "maghrebi", "lat": 36.7538, "lon": 3.0588, "city_confidence": "cluster-level only"}, "alternate_acceptable_clusters": ["saharanAlgerian"], "verification_status": "needs_review", "notes": "Defaults to the algerian cluster (Algiers as representative city). If the speaker has Saharan/M'zab or Tuareg-influenced features (cf. Ghardaia/Tamanrasset notes in dialect-cities.json), reassign to 'saharanAlgerian' instead — same macro_group either way, so a near-miss still scores reasonably under two-tier scoring.", "reveal_draft": "Algerian Darija shares the Maghrebi family's consonant-cluster tendencies and ma-...-sh negation with Moroccan Darija, but carries its own intonation and a lexical layer shaped by Algeria's particular history of French contact. If the speaker instead shows more Tuareg- or Saharan-influenced features, common further south toward Ghardaia or Tamanrasset, this would shift toward the Saharan Algerian end of the spectrum rather than the Algiers-coast variety tagged here."}, {"id": "clip08", "source": "youtube", "youtube_id": "GRLmXabAia8", "start_seconds": 345, "label_provided": "Yemeni Arabic", "answer": {"city": "Sanaa", "country": "YE", "cluster": "sanaani", "macro_group": "yemeni", "lat": 15.3545, "lon": 44.2064}, "alternate_acceptable_clusters": ["taizziAdeni", "hadrami"], "verification_status": "needs_review", "notes": "'Yemeni Arabic' is broad — Sanaani (north), Taizzi-Adeni (south/southwest), and Hadrami (east) are quite distinct. Defaulting to Sanaani as the most prestige/media-associated variety, but this needs a listen for region-specific lexical items and the characteristic Sanaani phonology before locking in the cluster.", "reveal_draft": "Tagged here as Sanaani (Northern Yemeni) Arabic, one of three fairly distinct Yemeni dialect zones alongside Taizzi-Adeni in the south and Hadrami in the east. Sanaani is often described as unusually conservative, preserving features closer to Classical Arabic than most modern dialects, including retention of /q/ as a uvular stop. If the vocabulary or vowel patterns sound more \"southern,\" this clip may actually belong to the Taizzi-Adeni or Hadrami clusters instead."}, {"id": "clip09", "source": "youtube", "youtube_id": "72L2JsuGcH0", "start_seconds": 15, "label_provided": "Lebanese Arabic", "answer": {"city": "Beirut", "country": "LB", "cluster": "lebanese", "macro_group": "levantine", "lat": 33.8938, "lon": 35.5018}, "alternate_acceptable_clusters": [], "verification_status": "likely_ok", "notes": "Lebanese label maps cleanly to the lebanese cluster. Beirut as default city is reasonable unless the speaker shows clear Beqaa/rural features (cf. Zahle note in dialect-cities.json), in which case the cluster is still correct but city should shift.", "reveal_draft": "Lebanese Arabic, centered on Beirut, belongs to the broader Levantine family but has a sound of its own, most notably the imala effect, where a final -a in words like madrasa shifts toward an -e sound (madrase). Frequent code-switching with French and English is another strong marker, along with shu as the all-purpose \"what.\" Rural Beqaa Valley speech around Zahle tends to carry somewhat more conservative features than Beirut city speech."}, {"id": "clip10", "source": "youtube", "youtube_id": "vjcIJuZmRUQ", "start_seconds": 134, "label_provided": "Jordanian/Palestinian Arabic", "answer": {"city": "Amman", "country": "JO", "cluster": "jordanianU", "macro_group": "levantine", "lat": 31.9544, "lon": 35.9106}, "alternate_acceptable_clusters": ["palestinianU", "jordanianB"], "verification_status": "needs_review", "notes": "Dual label suggests the speaker may genuinely sit on the Jordanian urban / Palestinian urban continuum — these are mutually intelligible and share many features, so this could be a deliberate 'hard mode' edge case rather than a data error. Recommend keeping both jordanianU and palestinianU as acceptable answers (full macro_group credit either way) rather than forcing a single ground truth, and noting the ambiguity explicitly in the reveal text as a teaching moment.", "reveal_draft": "This clip sits on the Jordanian-Palestinian dialect continuum, where urban varieties from Amman and from cities like Ramallah or Nablus are mutually intelligible and share most core features, including shu for \"what\" and kifak/kifik greetings. Because the two are so closely related, either is treated as correct for scoring here; a sharper cue would be specific vocabulary or place references that pin down which side of the Jordan River the speaker is from. If the speech instead shows kaf-to-tsh affrication, that points specifically to rural Palestinian fellahi speech, as in the Hebron area."}]}</script>
+
+<script>
+/**
+ * Lahjat scoring engine — v0.1
+ *
+ * Core principle (see lahjat-product-writeup.md and README):
+ * a guess in the right DIALECT FAMILY should score better than a guess that is
+ * merely geographically closer but linguistically unrelated. A player who guesses
+ * Mosul for an Aleppo clip should beat a player who guesses Baghdad, even though
+ * Baghdad is the closer pin on the map.
+ *
+ * Score = distance points (geographic accuracy, decays with distance)
+ *       + dialect points (how closely the guessed cluster relates to the answer's cluster)
+ *       + exact-city bonus (small flat bonus for nailing the city)
+ *
+ * This is a first-pass implementation. CLUSTER_ADJACENCY below encodes the
+ * cross-border continua flagged in dialect-cities.json (e.g. the Aleppo–Mosul
+ * qeltu corridor, the Salalah–Mukalla gradient, Asiri as transitional to Yemeni).
+ * It's a starting heuristic, not a verified linguistic ground truth — review and
+ * adjust as the dataset's edge-case notes are refined.
+ */
+
+(function (global) {
+
+  const EARTH_RADIUS_KM = 6371;
+
+  // --- Tunable constants -----------------------------------------------
+
+  const MAX_SCORE = 5000;            // total possible points for one guess
+  const MAX_DISTANCE_POINTS = 3000;  // share of the score from raw geographic accuracy
+  const MAX_DIALECT_POINTS = 2000;   // share of the score from dialect-family proximity
+  const EXACT_CITY_BONUS = 200;      // small flat bonus, on top of the 5000 cap below
+
+  // Controls how quickly distance points fall off. At this many km from the
+  // true location, distance points have decayed to ~37% (1/e) of MAX_DISTANCE_POINTS.
+  const DISTANCE_DECAY_KM = 1000;
+
+  // Dialect-point multipliers by relationship between guessed cluster and answer cluster.
+  const DIALECT_MULTIPLIERS = {
+    exact: 1.0,      // same cluster, or an alternate_acceptable_cluster for this clip
+    adjacent: 0.6,   // flagged cross-border continuum (e.g. aleppine <-> moslawi)
+    macro: 0.25,     // same macro_group, unrelated cluster
+    none: 0
+  };
+
+  // --- Cluster adjacency map --------------------------------------------
+  //
+  // Symmetric map of cross-border / transitional relationships drawn from the
+  // "note" fields in dialect-cities.json. Each entry lists clusters that are
+  // linguistically closer to this one than the macro_group alone would suggest.
+  // Treat this as a living document — extend it as edge cases get verified.
+
+  const CLUSTER_ADJACENCY = {
+    // Maghrebi corridor
+    moroccan:        ['algerian'],
+    algerian:        ['moroccan', 'saharanAlgerian'],
+    saharanAlgerian: ['algerian', 'hassaniya', 'libyan'],
+    hassaniya:       ['saharanAlgerian'],
+    libyan:          ['saharanAlgerian', 'cairene'],
+
+    // Libyan <-> Egyptian (Benghazi note: "closer to Egyptian than Tripoli")
+    cairene:         ['libyan', 'saidi', 'gazan'],
+    saidi:           ['cairene'],
+
+    // Levantine <-> Egyptian (Gaza note: "Bedouin/Egyptian-influenced")
+    gazan:           ['cairene', 'palestinianU', 'palestinianR'],
+    palestinianU:    ['gazan', 'palestinianR', 'jordanianU', 'lebanese'],
+    palestinianR:    ['palestinianU', 'gazan'],
+    jordanianU:      ['palestinianU', 'jordanianB'],
+    jordanianB:      ['jordanianU', 'anbari', 'hejazi'],
+
+    // Hejazi <-> Najdi <-> Bedouin/Iraqi Bedouin corridor
+    hejazi:          ['jordanianB', 'asiri'],
+    najdi:           ['anbari', 'hejazi'],
+
+    // Mesopotamian
+    anbari:          ['baghdadi', 'jordanianB', 'easternSyrian', 'najdi'],
+    baghdadi:        ['anbari', 'southernIraqi'],
+    southernIraqi:   ['baghdadi', 'gulf'],
+
+    // The Aleppo-Mosul qeltu corridor — the canonical example from the README
+    aleppine:        ['moslawi', 'easternSyrian', 'northLevantine'],
+    moslawi:         ['aleppine'],
+    easternSyrian:   ['aleppine', 'anbari', 'northLevantine'],
+
+    // North Levantine cluster
+    northLevantine:  ['aleppine', 'easternSyrian', 'coastalSyrian', 'lebanese'],
+    coastalSyrian:   ['northLevantine', 'lebanese'],
+    lebanese:        ['northLevantine', 'coastalSyrian', 'palestinianU'],
+
+    // Peninsular <-> Yemeni gradient (Asiri "transitional to Yemen")
+    asiri:           ['hejazi', 'sanaani', 'taizziAdeni'],
+    sanaani:         ['asiri', 'taizziAdeni'],
+    taizziAdeni:     ['sanaani', 'asiri', 'hadrami'],
+    hadrami:         ['taizziAdeni', 'dhofari'],
+
+    // Salalah-Mukalla gradient (Dhofari "closer to Yemeni than Omani")
+    dhofari:         ['hadrami', 'omani'],
+    omani:           ['dhofari', 'gulf'],
+    gulf:            ['omani', 'southernIraqi'],
+
+    // Sudanic belt
+    sudanese:        ['darfuri', 'jubaArabic'],
+    darfuri:         ['sudanese', 'jubaArabic'],
+    jubaArabic:      ['sudanese', 'darfuri'],
+
+    // Peripheral / L2 varieties — loosely tied to nearest Arabic-speaking neighbors
+    djibouti:        ['sudanese', 'somali', 'sanaani'],
+    somali:          ['djibouti'],
+    comorian:        ['somali']
+  };
+
+  // --- Geometry -----------------------------------------------------------
+
+  function toRadians(deg) {
+    return (deg * Math.PI) / 180;
+  }
+
+  /** Great-circle distance between two lat/lon points, in kilometers. */
+  function haversineDistanceKm(lat1, lon1, lat2, lon2) {
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return EARTH_RADIUS_KM * c;
+  }
+
+  /** Find the city in `cities` nearest to (lat, lon). Returns the city object or null. */
+  function nearestCity(lat, lon, cities) {
+    let best = null;
+    let bestDist = Infinity;
+    for (const city of cities) {
+      const d = haversineDistanceKm(lat, lon, city.lat, city.lon);
+      if (d < bestDist) {
+        bestDist = d;
+        best = city;
+      }
+    }
+    return best;
+  }
+
+  // --- Dialect relationship -----------------------------------------------
+
+  /**
+   * Classify how a guessed cluster relates to the clip's answer cluster.
+   * Returns one of: 'exact' | 'adjacent' | 'macro' | 'none'.
+   */
+  function getClusterRelationship(guessedCluster, answer, clusterMacroGroup) {
+    if (!guessedCluster) return 'none';
+
+    const acceptable = [answer.cluster, ...(answer.alternate_acceptable_clusters || [])];
+    if (acceptable.includes(guessedCluster)) return 'exact';
+
+    const adjacent = CLUSTER_ADJACENCY[answer.cluster] || [];
+    if (adjacent.includes(guessedCluster)) return 'adjacent';
+
+    if (clusterMacroGroup[guessedCluster] && clusterMacroGroup[guessedCluster] === answer.macro_group) {
+      return 'macro';
+    }
+
+    return 'none';
+  }
+
+  // --- Main scoring function ----------------------------------------------
+
+  /**
+   * Score a single guess.
+   *
+   * @param {number} guessLat - latitude of the player's pin
+   * @param {number} guessLon - longitude of the player's pin
+   * @param {object} clip - a clip entry from clips.json (must have `answer`)
+   * @param {object} dialectData - the parsed dialect-cities.json object
+   *   (must have `cities` and `clusters` arrays)
+   * @returns {object} score breakdown
+   */
+  function scoreGuess(guessLat, guessLon, clip, dialectData) {
+    const { cities, clusters } = dialectData;
+    const answer = clip.answer;
+
+    const clusterMacroGroup = Object.fromEntries(clusters.map(c => [c.id, c.macro_group]));
+
+    // Geographic component
+    const distanceKm = haversineDistanceKm(guessLat, guessLon, answer.lat, answer.lon);
+    const distancePoints = Math.round(MAX_DISTANCE_POINTS * Math.exp(-distanceKm / DISTANCE_DECAY_KM));
+
+    // Dialect component — derive the "guessed cluster" from the nearest known city
+    // to the player's pin.
+    const guessedCity = nearestCity(guessLat, guessLon, cities);
+    const guessedCluster = guessedCity ? guessedCity.cluster : null;
+    const relationship = getClusterRelationship(guessedCluster, answer, clusterMacroGroup);
+    const dialectPoints = Math.round(MAX_DIALECT_POINTS * DIALECT_MULTIPLIERS[relationship]);
+
+    // Exact-city bonus (only meaningful for clips where city_confidence isn't
+    // downgraded to "cluster-level only" — see clips.json notes)
+    const exactCity = !!(guessedCity &&
+      guessedCity.name === answer.city &&
+      guessedCity.country === answer.country);
+    const exactCityBonus = exactCity ? EXACT_CITY_BONUS : 0;
+
+    const total = Math.min(MAX_SCORE, distancePoints + dialectPoints + exactCityBonus);
+
+    return {
+      total,
+      distanceKm: Math.round(distanceKm),
+      distancePoints,
+      dialectPoints,
+      relationship,        // 'exact' | 'adjacent' | 'macro' | 'none'
+      guessedCluster,
+      guessedCity: guessedCity ? guessedCity.name : null,
+      exactCityBonus
+    };
+  }
+
+  // --- Exports --------------------------------------------------------------
+
+  const api = {
+    haversineDistanceKm,
+    nearestCity,
+    getClusterRelationship,
+    scoreGuess,
+    CLUSTER_ADJACENCY,
+    MAX_SCORE,
+    MAX_DISTANCE_POINTS,
+    MAX_DIALECT_POINTS,
+    DISTANCE_DECAY_KM,
+    DIALECT_MULTIPLIERS
+  };
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = api;
+  } else {
+    global.LahjatScoring = api;
+  }
+
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson@3.0.2/dist/topojson.min.js"></script>
+<script>
+const dialectData = JSON.parse(document.getElementById('dialect-data').textContent);
+const clipsData = JSON.parse(document.getElementById('clips-data').textContent).clips;
+const clusterMap = Object.fromEntries(dialectData.clusters.map(c => [c.id, c]));
+
+document.getElementById('clipTotal').textContent = clipsData.length;
+
+const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+const W = 1000, H = 680;
+
+const svg = d3.select('#map').append('svg')
+  .attr('viewBox', `0 0 ${W} ${H}`)
+  .attr('preserveAspectRatio', 'xMidYMid meet');
+
+const projection = d3.geoMercator()
+  .center([35, 22])
+  .scale(800)
+  .translate([W/2, H/2]);
+const path = d3.geoPath(projection);
+
+const arabCountryNames = new Set([
+  'Morocco','W. Sahara','Algeria','Tunisia','Libya','Egypt','Sudan','S. Sudan',
+  'Mauritania','Mali','Niger','Chad','Eritrea','Ethiopia','Djibouti','Somalia',
+  'Saudi Arabia','Yemen','Oman','United Arab Emirates','Qatar','Bahrain','Kuwait',
+  'Iraq','Iran','Syria','Lebanon','Jordan','Israel','Palestine','Turkey','Cyprus',
+  'Comoros'
+]);
+
+const landColor = getComputedStyle(document.documentElement).getPropertyValue('--land').trim();
+const landOtherColor = getComputedStyle(document.documentElement).getPropertyValue('--land-other').trim();
+const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+
+const markerLayer = svg.append('g');
+let mapReady = false;
+
+d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(world => {
+  const countries = topojson.feature(world, world.objects.countries).features;
+
+  svg.insert('g', ':first-child')
+    .selectAll('path')
+    .data(countries)
+    .join('path')
+    .attr('d', path)
+    .attr('fill', d => arabCountryNames.has(d.properties.name) ? landColor : landOtherColor)
+    .attr('stroke', borderColor)
+    .attr('stroke-width', 0.5);
+
+  svg.on('click', function(event) {
+    if (state.locked) return;
+    const [x, y] = d3.pointer(event);
+    const [lon, lat] = projection.invert([x, y]);
+    setGuess(lat, lon);
+  });
+
+  mapReady = true;
+});
+
+// --- Game state ---------------------------------------------------------
+
+const state = {
+  index: 0,
+  guess: null,   // { lat, lon }
+  locked: false  // true once a guess has been submitted for this clip
+};
+
+const submitBtn = document.getElementById('submitBtn');
+const nextBtn = document.getElementById('nextBtn');
+const resultEl = document.getElementById('result');
+const instructions = document.getElementById('instructions');
+const ytFrame = document.getElementById('ytFrame');
+const clipIndexEl = document.getElementById('clipIndex');
+
+function loadClip(i) {
+  state.index = i;
+  state.guess = null;
+  state.locked = false;
+
+  clipIndexEl.textContent = i + 1;
+  submitBtn.disabled = true;
+  nextBtn.style.display = 'none';
+  resultEl.classList.add('hidden');
+  resultEl.innerHTML = '';
+  instructions.textContent = 'Click anywhere on the map to drop your guess pin, then submit.';
+
+  markerLayer.selectAll('*').remove();
+
+  const clip = clipsData[i];
+  ytFrame.src = `https://www.youtube.com/embed/${clip.youtube_id}?start=${clip.start_seconds}&rel=0&modestbranding=1`;
+}
+
+function setGuess(lat, lon) {
+  state.guess = { lat, lon };
+  submitBtn.disabled = false;
+
+  markerLayer.selectAll('.guess-pin').remove();
+  const [x, y] = projection([lon, lat]);
+  markerLayer.append('circle')
+    .attr('class', 'guess-pin')
+    .attr('cx', x).attr('cy', y).attr('r', 6)
+    .attr('fill', '#D85A30')
+    .attr('stroke', isDark ? '#0a0a0a' : '#ffffff')
+    .attr('stroke-width', 1.5);
+}
+
+function submitGuess() {
+  if (!state.guess || state.locked) return;
+  state.locked = true;
+
+  const clip = clipsData[state.index];
+  const result = LahjatScoring.scoreGuess(state.guess.lat, state.guess.lon, clip, dialectData);
+
+  // Draw answer pin + connecting line
+  const [ax, ay] = projection([clip.answer.lon, clip.answer.lat]);
+  const [gx, gy] = projection([state.guess.lon, state.guess.lat]);
+
+  markerLayer.append('line')
+    .attr('x1', gx).attr('y1', gy).attr('x2', ax).attr('y2', ay)
+    .attr('stroke', '#888780')
+    .attr('stroke-width', 1.2)
+    .attr('stroke-dasharray', '4,3');
+
+  markerLayer.append('circle')
+    .attr('cx', ax).attr('cy', ay).attr('r', 6)
+    .attr('fill', '#1D9E75')
+    .attr('stroke', isDark ? '#0a0a0a' : '#ffffff')
+    .attr('stroke-width', 1.5);
+
+  renderResult(clip, result);
+
+  submitBtn.disabled = true;
+  instructions.textContent = 'Green pin = actual location. Dashed line shows how far off your guess was.';
+  nextBtn.style.display = (state.index < clipsData.length - 1) ? 'inline-block' : 'none';
+}
+
+const relLabels = {
+  exact: 'Right dialect',
+  adjacent: 'Closely related dialect',
+  macro: 'Same broad family',
+  none: 'Different dialect family'
+};
+
+function renderResult(clip, result) {
+  const answerCluster = clusterMap[clip.answer.cluster];
+  const guessedCluster = result.guessedCluster ? clusterMap[result.guessedCluster] : null;
+
+  resultEl.classList.remove('hidden');
+  resultEl.innerHTML = `
+    <div class="score-headline">${result.total.toLocaleString()} / ${LahjatScoring.MAX_SCORE.toLocaleString()} points</div>
+    <div class="score-sub">${result.distanceKm.toLocaleString()} km from ${clip.answer.city}, ${clip.answer.country}</div>
+    <div class="score-breakdown">
+      <div class="item"><span class="label">Distance points</span><span class="value">${result.distancePoints}</span></div>
+      <div class="item"><span class="label">Dialect points</span><span class="value">${result.dialectPoints}</span></div>
+      <div class="item"><span class="label">City bonus</span><span class="value">${result.exactCityBonus}</span></div>
+    </div>
+    <div class="reveal">
+      <div class="answer-line">
+        ${clip.answer.city}, ${clip.answer.country} — ${answerCluster ? answerCluster.name : clip.answer.cluster}
+        <span class="relationship-badge rel-${result.relationship}">${relLabels[result.relationship]}</span>
+      </div>
+      ${guessedCluster ? `<div class="score-sub" style="margin-bottom:8px;">Your guess landed nearest to ${result.guessedCity} (${guessedCluster.name}).</div>` : ''}
+      <div>${clip.reveal_draft || 'Reveal text coming soon.'}</div>
+    </div>
+  `;
+}
+
+submitBtn.addEventListener('click', submitGuess);
+nextBtn.addEventListener('click', () => {
+  if (state.index < clipsData.length - 1) loadClip(state.index + 1);
+});
+
+loadClip(0);
+</script>
+</body>
+</html>
