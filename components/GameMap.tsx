@@ -5,6 +5,7 @@ import * as d3 from "d3";
 import * as topojson from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import type { City } from "@/lib/scoring";
+import { useT } from "@/contexts/LanguageContext";
 
 const W = 1000;
 const H = 680;
@@ -34,6 +35,7 @@ interface GameMapProps {
 type TooltipSelection = d3.Selection<HTMLDivElement, unknown, null, undefined>;
 
 export function GameMap({ onGuess, locked, guess, answer, cities }: GameMapProps) {
+  const t = useT();
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<d3.Selection<SVGSVGElement, unknown, null, undefined> | null>(null);
   const projRef = useRef<d3.GeoProjection | null>(null);
@@ -285,7 +287,7 @@ export function GameMap({ onGuess, locked, guess, answer, cities }: GameMapProps
             cursor: "pointer",
           }}
         >
-          Reset zoom
+          {t.resetZoom}
         </button>
       )}
     </div>

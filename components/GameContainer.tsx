@@ -4,6 +4,8 @@ import { useState, useCallback } from "react";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { GameMap } from "@/components/GameMap";
 import { ScorePanel } from "@/components/ScorePanel";
+import { LangToggle } from "@/components/LangToggle";
+import { useT } from "@/contexts/LanguageContext";
 import { scoreGuess } from "@/lib/scoring";
 import type { Clip, Cluster, DialectData, ScoreResult } from "@/lib/scoring";
 
@@ -18,6 +20,8 @@ interface GuessState {
 }
 
 export function GameContainer({ dialectData, clips }: GameContainerProps) {
+  const t = useT();
+
   const [clipIndex, setClipIndex] = useState(0);
   const [guess, setGuess] = useState<GuessState | null>(null);
   const [locked, setLocked] = useState(false);
@@ -51,23 +55,27 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
 
   return (
     <div className="max-w-3xl mx-auto px-5 py-7 pb-12">
-      <div className="flex items-baseline justify-between mb-1">
+      <div className="flex items-center justify-between mb-1">
         <h1
           className="text-2xl font-medium tracking-tight"
           style={{ color: "var(--text)" }}
         >
-          Lahjat
+          Lahjat{" "}
+          <span style={{ fontFamily: "serif", fontWeight: 400 }}>لهجات</span>
         </h1>
-        <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-          Clip{" "}
-          <span style={{ fontVariantNumeric: "tabular-nums" }}>
-            {clipIndex + 1} of {clips.length}
+        <div className="flex items-center gap-3">
+          <LangToggle />
+          <span
+            className="text-xs"
+            style={{ color: "var(--text-muted)", fontVariantNumeric: "tabular-nums" }}
+          >
+            {t.clipOf(clipIndex + 1, clips.length)}
           </span>
-        </span>
+        </div>
       </div>
+
       <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
-        Classic Mode — listen to the clip, then drop a pin where you think the
-        speaker is from.
+        {t.subtitle}
       </p>
 
       <VideoPlayer
@@ -77,9 +85,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
       />
 
       <p className="text-xs mb-2.5" style={{ color: "var(--text-muted)" }}>
-        {locked
-          ? "Green pin = actual location. Dashed line shows how far off your guess was."
-          : "Click anywhere on the map to drop your guess pin, then submit."}
+        {locked ? t.instructionsAfter : t.instructionsBefore}
       </p>
 
       <GameMap
@@ -100,7 +106,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
             color: !guess || locked ? "var(--text-faint)" : "#fff",
           }}
         >
-          Submit guess
+          {t.submitGuess}
         </button>
 
         {guess && !locked && (
@@ -109,7 +115,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
             className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-85"
             style={{ background: "var(--accent-2)", color: "#fff" }}
           >
-            Reset pin
+            {t.resetPin}
           </button>
         )}
 
@@ -119,7 +125,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
             className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-85"
             style={{ background: "var(--surface-2)", color: "var(--text)" }}
           >
-            Next clip →
+            {t.nextClip}
           </button>
         )}
 
@@ -134,7 +140,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
             className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-85"
             style={{ background: "var(--surface-2)", color: "var(--text)" }}
           >
-            Play again
+            {t.playAgain}
           </button>
         )}
       </div>

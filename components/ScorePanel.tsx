@@ -1,12 +1,8 @@
+"use client";
+
 import type { Clip, Cluster, ScoreResult } from "@/lib/scoring";
 import { MAX_SCORE } from "@/lib/scoring";
-
-const REL_LABELS: Record<string, string> = {
-  exact: "Right dialect",
-  adjacent: "Closely related dialect",
-  macro: "Same broad family",
-  none: "Different dialect family",
-};
+import { useT } from "@/contexts/LanguageContext";
 
 const REL_COLORS: Record<string, string> = {
   exact: "#1D9E75",
@@ -29,10 +25,19 @@ interface ScorePanelProps {
 }
 
 export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
+  const t = useT();
+
   const answerCluster = clusterMap[clip.answer.cluster];
   const guessedCluster = result.guessedCluster
     ? clusterMap[result.guessedCluster]
     : null;
+
+  const relLabels: Record<string, string> = {
+    exact: t.relExact,
+    adjacent: t.relAdjacent,
+    macro: t.relMacro,
+    none: t.relNone,
+  };
 
   return (
     <div
@@ -40,34 +45,27 @@ export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
       style={{ background: "var(--surface)" }}
     >
       <div className="text-xl font-semibold mb-1" style={{ color: "var(--text)" }}>
-        {result.total.toLocaleString()} / {MAX_SCORE.toLocaleString()} points
+        {t.points(result.total, MAX_SCORE)}
       </div>
       <div className="text-xs mb-3.5" style={{ color: "var(--text-muted)" }}>
-        {result.distanceKm.toLocaleString()} km from {clip.answer.city},{" "}
-        {clip.answer.country}
+        {t.kmFrom(result.distanceKm, clip.answer.city, clip.answer.country)}
       </div>
 
       <div className="grid gap-2 mb-3.5" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
         {[
-          { label: "Distance", value: result.distancePoints },
-          { label: "Dialect", value: result.dialectPoints },
-          { label: "City bonus", value: result.exactCityBonus },
+          { label: t.distanceLabel, value: result.distancePoints },
+          { label: t.dialectLabel, value: result.dialectPoints },
+          { label: t.cityBonusLabel, value: result.exactCityBonus },
         ].map(({ label, value }) => (
           <div
             key={label}
             className="rounded-lg px-2.5 py-2"
             style={{ background: "var(--surface-2)" }}
           >
-            <span
-              className="block text-xs mb-0.5"
-              style={{ color: "var(--text-faint)" }}
-            >
+            <span className="block text-xs mb-0.5" style={{ color: "var(--text-faint)" }}>
               {label}
             </span>
-            <span
-              className="font-semibold text-base"
-              style={{ color: "var(--text)" }}
-            >
+            <span className="font-semibold text-base" style={{ color: "var(--text)" }}>
               {value}
             </span>
           </div>
@@ -88,19 +86,18 @@ export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
               color: REL_TEXT[result.relationship],
             }}
           >
-            {REL_LABELS[result.relationship]}
+            {relLabels[result.relationship]}
           </span>
         </div>
 
         {guessedCluster && (
           <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
-            Your guess landed nearest to {result.guessedCity} (
-            {guessedCluster.name}).
+            {t.guessedNearest(result.guessedCity ?? "", guessedCluster.name)}
           </p>
         )}
 
         <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>
-          {clip.reveal_draft ?? "Reveal text coming soon."}
+          {clip.reveal_draft ?? t.revealFallback}
         </p>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useT } from "@/contexts/LanguageContext";
 
 interface VideoPlayerProps {
   youtubeId: string;
@@ -10,6 +11,7 @@ interface VideoPlayerProps {
 const CLIP_SECONDS = 20;
 
 export function VideoPlayer({ youtubeId, startSeconds }: VideoPlayerProps) {
+  const t = useT();
   const [revealed, setRevealed] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -48,7 +50,7 @@ export function VideoPlayer({ youtubeId, startSeconds }: VideoPlayerProps) {
             </svg>
           </div>
           <span className="text-sm" style={{ color: "var(--text-muted)" }}>
-            Click to listen
+            {t.clickToListen}
           </span>
         </button>
       ) : (
