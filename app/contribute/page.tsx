@@ -201,13 +201,13 @@ export default function ContributePage() {
 
       {/* Recording guidelines */}
       <div
-        className="rounded-xl p-4 mb-2 text-sm"
+        className="rounded-xl p-3 mb-2 text-xs"
         style={{ background: "var(--surface)", border: "0.5px solid var(--border)" }}
       >
-        <p className="font-medium mb-2" style={{ color: "var(--text)" }}>
+        <p className="text-xs font-medium mb-1.5" style={{ color: "var(--text)" }}>
           Recording guidelines
         </p>
-        <ul className="flex flex-col gap-1.5" style={{ color: "var(--text-muted)" }}>
+        <ul className="flex flex-col gap-1" style={{ color: "var(--text-muted)" }}>
           <li className="flex gap-2">
             <span style={{ color: "var(--accent-2)" }}>✕</span>
             Don't mention your country, city, or region by name
