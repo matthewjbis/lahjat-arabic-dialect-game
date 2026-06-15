@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import * as topojson from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
@@ -34,12 +34,13 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
   const svgRef = useRef<d3.Selection<SVGSVGElement, unknown, null, undefined> | null>(null);
   const projRef = useRef<d3.GeoProjection | null>(null);
   const markerRef = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
+  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
 
-  // Stable ref for the locked flag so the click handler doesn't go stale
+  const [isZoomed, setIsZoomed] = useState(false);
+
   const lockedRef = useRef(locked);
   useEffect(() => { lockedRef.current = locked; }, [locked]);
 
-  // Stable ref for onGuess
   const onGuessRef = useRef(onGuess);
   useEffect(() => { onGuessRef.current = onGuess; }, [onGuess]);
 
@@ -70,20 +71,40 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
       .translate([W / 2, H / 2]);
     projRef.current = projection;
 
-    const path = d3.geoPath(projection);
-    const markerLayer = svg.append("g");
+    // Single group that receives the zoom transform — everything lives inside it
+    const zoomGroup = svg.append("g");
+    const markerLayer = zoomGroup.append("g");
     markerRef.current = markerLayer;
 
+    // Zoom behavior — disable double-click zoom so it doesn't interfere with pinning
+    const zoom = d3
+      .zoom<SVGSVGElement, unknown>()
+      .scaleExtent([1, 10])
+      .filter((event) => event.type !== "dblclick")
+      .on("zoom", (event) => {
+        zoomGroup.attr("transform", event.transform);
+        setIsZoomed(event.transform.k > 1.01);
+        tooltip.style("opacity", "0");
+      });
+
+    zoomRef.current = zoom;
+    svg.call(zoom);
+
+    // Click → place pin (invert through zoom transform first, then projection)
     svg.on("click", function (event) {
       if (lockedRef.current) return;
-      const [x, y] = d3.pointer(event);
-      const coords = projection.invert!([x, y]);
+      const svgNode = svg.node();
+      if (!svgNode) return;
+      const [x, y] = d3.pointer(event, svgNode);
+      const transform = d3.zoomTransform(svgNode);
+      const [mx, my] = transform.invert([x, y]);
+      const coords = projection.invert!([mx, my]);
       if (!coords) return;
       const [lon, lat] = coords;
       onGuessRef.current(lat, lon);
     });
 
-    // Tooltip div — positioned relative to the container
+    // Tooltip
     const container = containerRef.current;
     const tooltip = d3
       .select(container)
@@ -111,7 +132,9 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
           world.objects.countries as GeometryCollection
         ).features;
 
-        svg
+        const path = d3.geoPath(projection);
+
+        zoomGroup
           .insert("g", ":first-child")
           .selectAll("path")
           .data(countries)
@@ -140,8 +163,7 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
           });
       })
       .catch(() => {
-        // Fall back to plain background if atlas fails
-        svg
+        zoomGroup
           .insert("rect", ":first-child")
           .attr("x", 0).attr("y", 0)
           .attr("width", W).attr("height", H)
@@ -187,6 +209,13 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
     }
   }, [guess, answer]);
 
+  function resetZoom() {
+    const svg = svgRef.current;
+    const zoom = zoomRef.current;
+    if (!svg || !zoom) return;
+    svg.transition().duration(300).call(zoom.transform, d3.zoomIdentity);
+  }
+
   return (
     <div
       ref={containerRef}
@@ -196,6 +225,21 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
         background: "var(--surface)",
         cursor: locked ? "default" : "crosshair",
       }}
-    />
+    >
+      {isZoomed && (
+        <button
+          onClick={resetZoom}
+          className="absolute top-2 right-2 z-10 text-xs px-2 py-1 rounded-md"
+          style={{
+            background: "var(--surface-2)",
+            color: "var(--text-muted)",
+            border: "0.5px solid var(--border)",
+            cursor: "pointer",
+          }}
+        >
+          Reset zoom
+        </button>
+      )}
+    </div>
   );
 }
