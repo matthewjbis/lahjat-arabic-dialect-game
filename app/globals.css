@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #faf9f5;
+  --surface: #f1efe8;
+  --surface-2: #e8e6df;
+  --land: #f1efe8;
+  --land-other: #e8e6df;
+  --border: rgba(0, 0, 0, 0.15);
+  --text: #1a1a18;
+  --text-muted: #5f5e5a;
+  --text-faint: #888780;
+  --accent: #1d9e75;
+  --accent-2: #d85a30;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0f0e;
+    --surface: #1f1f1d;
+    --surface-2: #2a2a28;
+    --land: #2a2a28;
+    --land-other: #1a1a18;
+    --border: rgba(255, 255, 255, 0.12);
+    --text: #f5f4ef;
+    --text-muted: #b4b2a9;
+    --text-faint: #888780;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+}
