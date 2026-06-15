@@ -6,7 +6,6 @@ import { VideoPlayer } from "@/components/VideoPlayer";
 import { GameMap } from "@/components/GameMap";
 import { ScorePanel } from "@/components/ScorePanel";
 import { SummaryScreen } from "@/components/SummaryScreen";
-import { LangToggle } from "@/components/LangToggle";
 import { useT } from "@/contexts/LanguageContext";
 import { scoreGuess } from "@/lib/scoring";
 import type { Clip, Cluster, DialectData, ScoreResult } from "@/lib/scoring";
@@ -88,7 +87,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
           Lahjat{" "}
           <span style={{ fontFamily: "serif", fontWeight: 400 }}>لهجات</span>
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Link
             href="/contribute"
             className="text-xs px-2.5 py-1 rounded-md transition-opacity hover:opacity-80"
@@ -100,7 +99,6 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
           >
             {t.contribute}
           </Link>
-          <LangToggle />
           <span
             className="text-xs"
             style={{ color: "var(--text-muted)", fontVariantNumeric: "tabular-nums" }}

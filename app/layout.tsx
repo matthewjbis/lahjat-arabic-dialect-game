@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { LangToggle } from "@/components/LangToggle";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,7 +21,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="min-h-full flex flex-col">
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          <div className="fixed top-4 right-4 z-50">
+            <LangToggle />
+          </div>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

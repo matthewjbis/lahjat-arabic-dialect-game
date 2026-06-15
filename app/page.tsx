@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { LangToggle } from "@/components/LangToggle";
 import { useT } from "@/contexts/LanguageContext";
 
 export default function Home() {
@@ -9,7 +8,7 @@ export default function Home() {
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen px-5 text-center">
-      <div className="absolute top-4 right-4 flex items-center gap-2">
+      <div className="absolute top-4 left-4">
         <Link
           href="/contribute"
           className="text-xs px-2.5 py-1 rounded-md transition-opacity hover:opacity-80"
@@ -21,7 +20,6 @@ export default function Home() {
         >
           {t.contribute}
         </Link>
-        <LangToggle />
       </div>
 
       <h1
