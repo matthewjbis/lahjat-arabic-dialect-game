@@ -93,7 +93,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
         <button
           onClick={handleSubmit}
           disabled={!guess || locked}
-          className="px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity disabled:cursor-not-allowed"
+          className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:cursor-not-allowed"
           style={{
             background: !guess || locked ? "var(--surface-2)" : "var(--accent)",
             color: !guess || locked ? "var(--text-faint)" : "#fff",
@@ -101,6 +101,16 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
         >
           Submit guess
         </button>
+
+        {guess && !locked && (
+          <button
+            onClick={() => setGuess(null)}
+            className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-85"
+            style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
+          >
+            Reset pin
+          </button>
+        )}
 
         {locked && !isLastClip && (
           <button
