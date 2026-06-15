@@ -71,6 +71,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
       </p>
 
       <VideoPlayer
+        key={currentClip.youtube_id}
         youtubeId={currentClip.youtube_id}
         startSeconds={currentClip.start_seconds}
       />
