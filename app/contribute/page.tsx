@@ -121,6 +121,7 @@ export default function ContributePage() {
     form.append("file", file);
     form.append("country", country);
     form.append("city", city.trim());
+    form.append("source_type", source);
     if (name.trim()) form.append("name", name.trim());
 
     try {
@@ -196,7 +197,7 @@ export default function ContributePage() {
         Contribute a clip
       </h1>
       <p className="text-sm mb-7" style={{ color: "var(--text-muted)" }}>
-        Are you a native Arabic speaker? Record or upload a short clip of yourself speaking naturally (10–30 seconds). Your clip may be used in the game.
+        Are you a native Arabic speaker? Record a quick audio clip in your browser, or upload a video of yourself speaking. Your clip may be used in the game.
       </p>
 
       {/* Recording guidelines */}
@@ -249,7 +250,7 @@ export default function ContributePage() {
                 color: source === s ? "var(--text)" : "var(--text-faint)",
               }}
             >
-              {s === "record" ? "Record audio" : "Upload file"}
+              {s === "record" ? "Record audio" : "Upload video"}
             </button>
           ))}
         </div>
@@ -318,10 +319,13 @@ export default function ContributePage() {
         {/* Upload panel */}
         {source === "upload" && (
           <div>
+            <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
+              Upload a short video of yourself speaking — face on camera or just audio-over-video is fine.
+            </p>
             <input
               ref={fileInputRef}
               type="file"
-              accept="audio/*,video/*"
+              accept="video/*"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               className="w-full text-sm rounded-lg px-3 py-2.5"
               style={{
@@ -331,7 +335,7 @@ export default function ContributePage() {
               }}
             />
             <p className="text-xs mt-1.5" style={{ color: "var(--text-faint)" }}>
-              MP3, MP4, WAV, OGG, WebM, MOV — max 50 MB
+              MP4, WebM, MOV — max 50 MB
             </p>
             {file && (
               <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>

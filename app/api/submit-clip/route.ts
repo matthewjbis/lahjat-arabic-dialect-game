@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
   const city = (formData.get("city") as string | null)?.trim();
   const country = (formData.get("country") as string | null)?.trim();
   const name = (formData.get("name") as string | null)?.trim() || null;
+  const sourceType = (formData.get("source_type") as string | null) ?? "upload";
 
   if (!file || !city || !country) {
     return NextResponse.json(
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
     name,
     file_path: path,
     file_type: file.type,
+    source_type: sourceType,
     status: "pending",
   });
 
