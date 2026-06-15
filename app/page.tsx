@@ -33,6 +33,13 @@ export default function Home() {
       >
         {t.playClassic}
       </Link>
+      <Link
+        href="/contribute"
+        className="inline-block mt-3 text-sm transition-opacity hover:opacity-70"
+        style={{ color: "var(--text-muted)" }}
+      >
+        Native speaker? Contribute a clip →
+      </Link>
     </main>
   );
 }

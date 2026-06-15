@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.108.2",
     "@types/d3": "^7.4.3",
     "@types/topojson-client": "^3.1.5",
     "d3": "^7.9.0",
