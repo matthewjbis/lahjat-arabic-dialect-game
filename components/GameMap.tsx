@@ -83,6 +83,25 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
       onGuessRef.current(lat, lon);
     });
 
+    // Tooltip div — positioned relative to the container
+    const container = containerRef.current;
+    const tooltip = d3
+      .select(container)
+      .append("div")
+      .style("position", "absolute")
+      .style("pointer-events", "none")
+      .style("background", "var(--surface)")
+      .style("color", "var(--text)")
+      .style("border", "0.5px solid var(--border)")
+      .style("padding", "3px 8px")
+      .style("border-radius", "6px")
+      .style("font-size", "12px")
+      .style("line-height", "1.4")
+      .style("white-space", "nowrap")
+      .style("opacity", "0")
+      .style("transition", "opacity 0.1s")
+      .style("z-index", "10");
+
     // Load and render the world map
     fetch("/world-atlas.json")
       .then((r) => r.json())
@@ -103,7 +122,22 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
             return ARAB_COUNTRY_NAMES.has(name) ? landColor : landOtherColor;
           })
           .attr("stroke", borderColor)
-          .attr("stroke-width", 0.5);
+          .attr("stroke-width", 0.5)
+          .on("mouseover", (_event, d) => {
+            const name = (d.properties as { name?: string })?.name;
+            if (!name) return;
+            tooltip.text(name).style("opacity", "1");
+          })
+          .on("mousemove", (event: MouseEvent) => {
+            if (!container) return;
+            const rect = container.getBoundingClientRect();
+            const x = event.clientX - rect.left + 12;
+            const y = event.clientY - rect.top - 28;
+            tooltip.style("left", `${x}px`).style("top", `${y}px`);
+          })
+          .on("mouseout", () => {
+            tooltip.style("opacity", "0");
+          });
       })
       .catch(() => {
         // Fall back to plain background if atlas fails
@@ -158,6 +192,7 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
       ref={containerRef}
       className="w-full rounded-xl overflow-hidden mb-3.5"
       style={{
+        position: "relative",
         background: "var(--surface)",
         cursor: locked ? "default" : "crosshair",
       }}
