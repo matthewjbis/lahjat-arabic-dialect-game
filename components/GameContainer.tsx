@@ -96,7 +96,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
         cities={dialectData.cities}
       />
 
-      <div className="flex gap-2.5 mb-3.5">
+      <div className="flex flex-wrap gap-2.5 mb-3.5">
         <button
           onClick={handleSubmit}
           disabled={!guess || locked}
