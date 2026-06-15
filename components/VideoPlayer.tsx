@@ -7,7 +7,7 @@ interface VideoPlayerProps {
   startSeconds: number;
 }
 
-const CLIP_SECONDS = 15;
+const CLIP_SECONDS = 20;
 
 export function VideoPlayer({ youtubeId, startSeconds }: VideoPlayerProps) {
   const [revealed, setRevealed] = useState(false);
