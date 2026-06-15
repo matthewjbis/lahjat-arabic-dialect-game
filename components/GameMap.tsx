@@ -65,7 +65,7 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
 
     const projection = d3
       .geoMercator()
-      .center([35, 22])
+      .center([25, 22])
       .scale(800)
       .translate([W / 2, H / 2]);
     projRef.current = projection;
