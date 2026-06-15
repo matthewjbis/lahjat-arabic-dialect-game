@@ -4,6 +4,15 @@
 
 ---
 
+## 2026-06-15 (continued)
+
+### Added
+- End-of-game summary screen after the last clip: total score, tier label (Dialect Master → Just Starting), and a per-clip breakdown table with relationship badges and individual scores
+- "View results" button replaces "Play again" on the last clip
+- Summary screen fully translated in Arabic and English
+
+---
+
 ## 2026-06-15
 
 ### Fixed
