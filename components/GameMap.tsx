@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import * as topojson from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
+import type { City } from "@/lib/scoring";
 
 const W = 1000;
 const H = 680;
@@ -27,14 +28,19 @@ interface GameMapProps {
   locked: boolean;
   guess: GuessPin | null;
   answer: { lat: number; lon: number } | null;
+  cities: City[];
 }
 
-export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
+type TooltipSelection = d3.Selection<HTMLDivElement, unknown, null, undefined>;
+
+export function GameMap({ onGuess, locked, guess, answer, cities }: GameMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<d3.Selection<SVGSVGElement, unknown, null, undefined> | null>(null);
   const projRef = useRef<d3.GeoProjection | null>(null);
   const markerRef = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const tooltipRef = useRef<TooltipSelection | null>(null);
+  const citiesRef = useRef(cities);
 
   const [isZoomed, setIsZoomed] = useState(false);
 
@@ -48,14 +54,18 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
   useEffect(() => {
     if (!containerRef.current || svgRef.current) return;
 
+    const container = containerRef.current;
     const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const styles = getComputedStyle(document.documentElement);
-    const landColor = styles.getPropertyValue("--land").trim();
+    const landColor      = styles.getPropertyValue("--land").trim();
     const landOtherColor = styles.getPropertyValue("--land-other").trim();
-    const borderColor = styles.getPropertyValue("--border").trim();
+    const borderColor    = styles.getPropertyValue("--border").trim();
+    const bgColor        = styles.getPropertyValue("--bg").trim();
+    const textFaintColor = styles.getPropertyValue("--text-faint").trim();
+    const accentColor    = styles.getPropertyValue("--accent").trim();
 
     const svg = d3
-      .select(containerRef.current)
+      .select(container)
       .append("svg")
       .attr("viewBox", `0 0 ${W} ${H}`)
       .attr("preserveAspectRatio", "xMidYMid meet")
@@ -71,12 +81,16 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
       .translate([W / 2, H / 2]);
     projRef.current = projection;
 
-    // Single group that receives the zoom transform — everything lives inside it
-    const zoomGroup = svg.append("g");
-    const markerLayer = zoomGroup.append("g");
+    const path = d3.geoPath(projection);
+
+    // Layer order: countries (bottom) → city dots (middle) → pins (top)
+    const zoomGroup     = svg.append("g");
+    const countriesLayer = zoomGroup.append("g");
+    const citiesLayer    = zoomGroup.append("g");
+    const markerLayer    = zoomGroup.append("g");
     markerRef.current = markerLayer;
 
-    // Zoom behavior — disable double-click zoom so it doesn't interfere with pinning
+    // Zoom behavior
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([1, 10])
@@ -84,13 +98,13 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
       .on("zoom", (event) => {
         zoomGroup.attr("transform", event.transform);
         setIsZoomed(event.transform.k > 1.01);
-        tooltip.style("opacity", "0");
+        if (tooltipRef.current) tooltipRef.current.style("opacity", "0");
       });
 
     zoomRef.current = zoom;
     svg.call(zoom);
 
-    // Click → place pin (invert through zoom transform first, then projection)
+    // Click → place pin (invert through zoom transform, then projection)
     svg.on("click", function (event) {
       if (lockedRef.current) return;
       const svgNode = svg.node();
@@ -104,8 +118,7 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
       onGuessRef.current(lat, lon);
     });
 
-    // Tooltip
-    const container = containerRef.current;
+    // Tooltip div
     const tooltip = d3
       .select(container)
       .append("div")
@@ -121,7 +134,26 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
       .style("white-space", "nowrap")
       .style("opacity", "0")
       .style("transition", "opacity 0.1s")
-      .style("z-index", "10");
+      .style("z-index", "10") as TooltipSelection;
+
+    tooltipRef.current = tooltip;
+
+    const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+
+    function showTooltip(text: string) {
+      tooltip.text(text).style("opacity", "1");
+    }
+
+    function moveTooltip(event: MouseEvent) {
+      const rect = container.getBoundingClientRect();
+      tooltip
+        .style("left", `${event.clientX - rect.left + 12}px`)
+        .style("top",  `${event.clientY - rect.top  - 28}px`);
+    }
+
+    function hideTooltip() {
+      tooltip.style("opacity", "0");
+    }
 
     // Load and render the world map
     fetch("/world-atlas.json")
@@ -132,10 +164,8 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
           world.objects.countries as GeometryCollection
         ).features;
 
-        const path = d3.geoPath(projection);
-
-        zoomGroup
-          .insert("g", ":first-child")
+        // Country paths
+        countriesLayer
           .selectAll("path")
           .data(countries)
           .join("path")
@@ -148,18 +178,36 @@ export function GameMap({ onGuess, locked, guess, answer }: GameMapProps) {
           .attr("stroke-width", 0.5)
           .on("mouseover", (_event, d) => {
             const name = (d.properties as { name?: string })?.name;
-            if (!name) return;
-            tooltip.text(name).style("opacity", "1");
+            if (name) showTooltip(name);
           })
-          .on("mousemove", (event: MouseEvent) => {
-            if (!container) return;
-            const rect = container.getBoundingClientRect();
-            const x = event.clientX - rect.left + 12;
-            const y = event.clientY - rect.top - 28;
-            tooltip.style("left", `${x}px`).style("top", `${y}px`);
+          .on("mousemove", (event: MouseEvent) => moveTooltip(event))
+          .on("mouseout", () => hideTooltip());
+
+        // City dots
+        citiesLayer
+          .selectAll("circle")
+          .data(citiesRef.current)
+          .join("circle")
+          .attr("cx", (d) => projection([d.lon, d.lat])?.[0] ?? 0)
+          .attr("cy", (d) => projection([d.lon, d.lat])?.[1] ?? 0)
+          .attr("r", 3)
+          .attr("fill", textFaintColor)
+          .attr("stroke", bgColor)
+          .attr("stroke-width", 1.5)
+          .style("cursor", "pointer")
+          .on("mouseover", (event, d) => {
+            d3.select(event.currentTarget as SVGCircleElement)
+              .attr("fill", accentColor)
+              .attr("r", 4);
+            const countryName = regionNames.of(d.country) ?? d.country;
+            showTooltip(`${d.name}, ${countryName}`);
           })
-          .on("mouseout", () => {
-            tooltip.style("opacity", "0");
+          .on("mousemove", (event: MouseEvent) => moveTooltip(event))
+          .on("mouseout", (event) => {
+            d3.select(event.currentTarget as SVGCircleElement)
+              .attr("fill", textFaintColor)
+              .attr("r", 3);
+            hideTooltip();
           });
       })
       .catch(() => {

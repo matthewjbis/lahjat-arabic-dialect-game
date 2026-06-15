@@ -86,6 +86,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
         locked={locked}
         guess={guess}
         answer={locked ? { lat: currentClip.answer.lat, lon: currentClip.answer.lon } : null}
+        cities={dialectData.cities}
       />
 
       <div className="flex gap-2.5 mb-3.5">
