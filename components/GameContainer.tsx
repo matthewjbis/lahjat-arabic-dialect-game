@@ -106,7 +106,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
           <button
             onClick={() => setGuess(null)}
             className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-85"
-            style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
+            style={{ background: "var(--accent-2)", color: "#fff" }}
           >
             Reset pin
           </button>
