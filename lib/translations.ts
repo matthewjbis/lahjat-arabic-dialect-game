@@ -38,6 +38,18 @@ const en = {
     `Your guess landed nearest to ${city} (${cluster}).`,
   revealFallback: "Reveal text coming soon.",
 
+  // Summary screen
+  summaryTitle: "Round complete",
+  viewResults: "View results",
+  tierLabel: (pct: number): string => {
+    if (pct >= 0.9) return "Dialect Master";
+    if (pct >= 0.75) return "Regional Expert";
+    if (pct >= 0.6) return "Solid Guesser";
+    if (pct >= 0.4) return "Still Learning";
+    return "Just Starting";
+  },
+  clipLabel: (n: number) => `Clip ${n}`,
+
   // Home page
   homeSubtitle:
     "Listen to a short clip of Arabic speech and drop a pin where you think the speaker is from. Scoring rewards dialect knowledge, not just geography.",
@@ -75,6 +87,18 @@ const ar: typeof en = {
   guessedNearest: (city: string, cluster: string) =>
     `وقع تخمينك بالقرب من ${city} (${cluster}).`,
   revealFallback: "نص الكشف قادم قريباً.",
+
+  // Summary screen
+  summaryTitle: "انتهت الجولة",
+  viewResults: "عرض النتائج",
+  tierLabel: (pct: number): string => {
+    if (pct >= 0.9) return "عارف اللهجات";
+    if (pct >= 0.75) return "خبير إقليمي";
+    if (pct >= 0.6) return "مخمّن جيد";
+    if (pct >= 0.4) return "في طور التعلم";
+    return "بداية الطريق";
+  },
+  clipLabel: (n: number) => `مقطع ${n}`,
 
   homeSubtitle:
     "استمع إلى مقطع قصير من الكلام العربي وضع دبوساً على الخريطة حيث تعتقد أن المتحدث من هناك. يكافئ التسجيل معرفة اللهجة، وليس الجغرافيا وحدها.",

@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { GameMap } from "@/components/GameMap";
 import { ScorePanel } from "@/components/ScorePanel";
+import { SummaryScreen } from "@/components/SummaryScreen";
 import { LangToggle } from "@/components/LangToggle";
 import { useT } from "@/contexts/LanguageContext";
 import { scoreGuess } from "@/lib/scoring";
@@ -26,6 +27,8 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
   const [guess, setGuess] = useState<GuessState | null>(null);
   const [locked, setLocked] = useState(false);
   const [result, setResult] = useState<ScoreResult | null>(null);
+  const [results, setResults] = useState<ScoreResult[]>([]);
+  const [showSummary, setShowSummary] = useState(false);
 
   const clusterMap: Record<string, Cluster> = Object.fromEntries(
     dialectData.clusters.map((c) => [c.id, c])
@@ -43,6 +46,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     if (!guess || locked) return;
     const scored = scoreGuess(guess.lat, guess.lon, currentClip, dialectData);
     setResult(scored);
+    setResults((prev) => [...prev, scored]);
     setLocked(true);
   }
 
@@ -51,6 +55,26 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     setGuess(null);
     setLocked(false);
     setResult(null);
+  }
+
+  function handlePlayAgain() {
+    setClipIndex(0);
+    setGuess(null);
+    setLocked(false);
+    setResult(null);
+    setResults([]);
+    setShowSummary(false);
+  }
+
+  if (showSummary) {
+    return (
+      <SummaryScreen
+        results={results}
+        clips={clips}
+        clusterMap={clusterMap}
+        onPlayAgain={handlePlayAgain}
+      />
+    );
   }
 
   return (
@@ -131,16 +155,11 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
 
         {locked && isLastClip && (
           <button
-            onClick={() => {
-              setClipIndex(0);
-              setGuess(null);
-              setLocked(false);
-              setResult(null);
-            }}
+            onClick={() => setShowSummary(true)}
             className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-85"
-            style={{ background: "var(--surface-2)", color: "var(--text)" }}
+            style={{ background: "var(--accent)", color: "#fff" }}
           >
-            {t.playAgain}
+            {t.viewResults}
           </button>
         )}
       </div>
