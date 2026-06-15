@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { GameMap } from "@/components/GameMap";
 import { ScorePanel } from "@/components/ScorePanel";
@@ -87,7 +88,18 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
           Lahjat{" "}
           <span style={{ fontFamily: "serif", fontWeight: 400 }}>لهجات</span>
         </h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <Link
+            href="/contribute"
+            className="text-xs px-2.5 py-1 rounded-md transition-opacity hover:opacity-80"
+            style={{
+              background: "var(--surface-2)",
+              color: "var(--text-muted)",
+              border: "0.5px solid var(--border)",
+            }}
+          >
+            {t.contribute}
+          </Link>
           <LangToggle />
           <span
             className="text-xs"

@@ -21,6 +21,7 @@ const en = {
   nextClip: "Next clip →",
   playAgain: "Play again",
   resetZoom: "Reset zoom",
+  contribute: "Contribute",
 
   // Score panel
   points: (score: number, max: number) =>
@@ -72,6 +73,7 @@ const ar: typeof en = {
   nextClip: "← المقطع التالي",
   playAgain: "العب مجدداً",
   resetZoom: "إعادة ضبط التكبير",
+  contribute: "ساهم",
 
   points: (score: number, max: number) =>
     `${score.toLocaleString()} / ${max.toLocaleString()} نقطة`,

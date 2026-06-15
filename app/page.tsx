@@ -9,7 +9,18 @@ export default function Home() {
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen px-5 text-center">
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <Link
+          href="/contribute"
+          className="text-xs px-2.5 py-1 rounded-md transition-opacity hover:opacity-80"
+          style={{
+            background: "var(--surface-2)",
+            color: "var(--text-muted)",
+            border: "0.5px solid var(--border)",
+          }}
+        >
+          {t.contribute}
+        </Link>
         <LangToggle />
       </div>
 
@@ -32,13 +43,6 @@ export default function Home() {
         style={{ background: "var(--accent)" }}
       >
         {t.playClassic}
-      </Link>
-      <Link
-        href="/contribute"
-        className="inline-block mt-3 text-sm transition-opacity hover:opacity-70"
-        style={{ color: "var(--text-muted)" }}
-      >
-        Native speaker? Contribute a clip →
       </Link>
     </main>
   );
