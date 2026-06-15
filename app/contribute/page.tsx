@@ -199,6 +199,38 @@ export default function ContributePage() {
         Are you a native Arabic speaker? Record or upload a short clip of yourself speaking naturally (10–30 seconds). Your clip may be used in the game.
       </p>
 
+      {/* Recording guidelines */}
+      <div
+        className="rounded-xl p-4 mb-2 text-sm"
+        style={{ background: "var(--surface)", border: "0.5px solid var(--border)" }}
+      >
+        <p className="font-medium mb-2" style={{ color: "var(--text)" }}>
+          Recording guidelines
+        </p>
+        <ul className="flex flex-col gap-1.5" style={{ color: "var(--text-muted)" }}>
+          <li className="flex gap-2">
+            <span style={{ color: "var(--accent-2)" }}>✕</span>
+            Don't mention your country, city, or region by name
+          </li>
+          <li className="flex gap-2">
+            <span style={{ color: "var(--accent-2)" }}>✕</span>
+            Avoid referencing local landmarks or places that would give away your location
+          </li>
+          <li className="flex gap-2">
+            <span style={{ color: "var(--accent)" }}>✓</span>
+            Talk naturally about everyday topics — food, family, weather, daily life
+          </li>
+          <li className="flex gap-2">
+            <span style={{ color: "var(--accent)" }}>✓</span>
+            Cultural references, traditions, and expressions are welcome
+          </li>
+          <li className="flex gap-2">
+            <span style={{ color: "var(--accent)" }}>✓</span>
+            Aim for 10–30 seconds of natural, conversational speech
+          </li>
+        </ul>
+      </div>
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
         {/* Source toggle */}
