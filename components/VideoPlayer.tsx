@@ -1,16 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface VideoPlayerProps {
   youtubeId: string;
   startSeconds: number;
 }
 
+const CLIP_SECONDS = 10;
+
 export function VideoPlayer({ youtubeId, startSeconds }: VideoPlayerProps) {
   const [revealed, setRevealed] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const src = `https://www.youtube.com/embed/${youtubeId}?start=${startSeconds}&autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
+  // Auto-pause after CLIP_SECONDS once the player is revealed
+  useEffect(() => {
+    if (!revealed) return;
+    const timer = setTimeout(() => {
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
+        "*"
+      );
+    }, CLIP_SECONDS * 1000);
+    return () => clearTimeout(timer);
+  }, [revealed]);
+
+  // enablejsapi=1 is required for the postMessage pause command to work
+  const src = `https://www.youtube.com/embed/${youtubeId}?start=${startSeconds}&autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&enablejsapi=1`;
 
   return (
     <div
@@ -27,7 +43,6 @@ export function VideoPlayer({ youtubeId, startSeconds }: VideoPlayerProps) {
             className="w-16 h-16 rounded-full flex items-center justify-center"
             style={{ background: "var(--accent)" }}
           >
-            {/* Play icon — offset right slightly to look centred in the circle */}
             <svg width="26" height="26" viewBox="0 0 24 24" fill="white" style={{ marginLeft: 3 }}>
               <path d="M8 5v14l11-7z" />
             </svg>
@@ -38,18 +53,19 @@ export function VideoPlayer({ youtubeId, startSeconds }: VideoPlayerProps) {
         </button>
       ) : (
         <>
-          {/* Blocks the YouTube title overlay at the top of the player */}
+          {/* Hides the YouTube title overlay at the top of the player */}
           <div
             className="absolute top-0 left-0 right-0 z-10 pointer-events-none"
             style={{ height: "18%", background: "var(--surface)" }}
           />
-          {/* Blocks the video title shown in the control bar on hover.
-              pointer-events: none so clicks still reach the YouTube controls. */}
+          {/* Hides the control bar (progress bar, buttons, YouTube logo).
+              pointer-events:none so clicks still reach the player underneath. */}
           <div
             className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none"
-            style={{ height: "12%", background: "var(--surface)" }}
+            style={{ height: "22%", background: "var(--surface)" }}
           />
           <iframe
+            ref={iframeRef}
             src={src}
             className="w-full h-full border-0 block"
             allow="autoplay; encrypted-media"
