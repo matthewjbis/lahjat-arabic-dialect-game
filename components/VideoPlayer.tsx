@@ -1,119 +1,114 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useT } from "@/contexts/LanguageContext";
+import { useState } from "react";
 
 interface VideoPlayerProps {
-  youtubeId: string;
-  startSeconds: number;
-  audioUrl?: string;
-  mediaType?: string;
+  youtubeId?: string | null;
+  startSeconds?: number | null;
+  audioUrl?: string | null;
+  mediaType: "youtube" | "audio" | string;
 }
 
-const CLIP_SECONDS = 30;
+/*
+  Media player wrapped in a parchment "tile panel" surface.
+  - audio  -> full-width, custom-styled play bar (see .lahjat-audio in globals.css)
+  - youtube -> click-to-reveal embed behind a gold play medallion
+*/
+export function VideoPlayer({
+  youtubeId,
+  startSeconds,
+  audioUrl,
+  mediaType,
+}: VideoPlayerProps) {
+  const [playing, setPlaying] = useState(false);
 
-export function VideoPlayer({ youtubeId, startSeconds, audioUrl, mediaType }: VideoPlayerProps) {
-  const t = useT();
-  const [revealed, setRevealed] = useState(false);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const mediaRef = useRef<HTMLAudioElement | HTMLVideoElement | null>(null);
-  const isVideo = mediaType?.startsWith("video/") ?? false;
+  const cardStyle: React.CSSProperties = {
+    background: "var(--surface)",
+    border: "1px solid var(--border-strong)",
+    boxShadow: "var(--shadow-card)",
+  };
 
-  // Auto-pause after CLIP_SECONDS once the player is revealed
-  useEffect(() => {
-    if (!revealed) return;
-    const timer = setTimeout(() => {
-      if (audioUrl) {
-        mediaRef.current?.pause();
-      } else {
-        iframeRef.current?.contentWindow?.postMessage(
-          JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
-          "*"
-        );
-      }
-    }, CLIP_SECONDS * 1000);
-    return () => clearTimeout(timer);
-  }, [revealed, audioUrl]);
-
-  // enablejsapi=1 is required for the postMessage pause command to work
-  const src = `https://www.youtube.com/embed/${youtubeId}?start=${startSeconds}&autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&enablejsapi=1`;
-
-  const cover = (
-    <button
-      onClick={() => setRevealed(true)}
-      className="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-3"
-      style={{ background: "var(--surface)", cursor: "pointer" }}
-    >
-      <div
-        className="w-16 h-16 rounded-full flex items-center justify-center"
-        style={{ background: "var(--accent)" }}
-      >
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="white" style={{ marginLeft: 3 }}>
-          <path d="M8 5v14l11-7z" />
-        </svg>
-      </div>
-      <span className="text-sm" style={{ color: "var(--text-muted)" }}>
-        {t.clickToListen}
-      </span>
-    </button>
-  );
-
-  if (audioUrl) {
+  /* ---- Audio clip ---- */
+  if (mediaType === "audio" && audioUrl) {
     return (
-      <div
-        className="relative w-full rounded-xl overflow-hidden mb-3.5 flex items-center justify-center"
-        style={isVideo ? { aspectRatio: "16/9" } : { minHeight: "120px", background: "var(--surface)" }}
-      >
-        {!revealed ? cover : isVideo ? (
-          <video
-            ref={mediaRef as React.RefObject<HTMLVideoElement>}
-            src={audioUrl}
-            controls
-            autoPlay
-            className="w-full h-full object-contain"
-            style={{ background: "#000" }}
-          />
-        ) : (
-          <audio
-            ref={mediaRef as React.RefObject<HTMLAudioElement>}
-            src={audioUrl}
-            controls
-            autoPlay
-            className="w-full px-6"
-            style={{ accentColor: "var(--accent)" }}
-          />
-        )}
+      <div className="rounded-2xl p-4 sm:p-5" style={cardStyle}>
+        <div className="flex items-center gap-3 mb-3">
+          <span
+            className="inline-flex items-center justify-center w-9 h-9 rounded-full shrink-0"
+            style={{ background: "var(--accent)", color: "var(--gold-ink)" }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z" />
+            </svg>
+          </span>
+          <span
+            className="text-xs uppercase tracking-[0.16em]"
+            style={{ color: "var(--text-faint)" }}
+          >
+            Listen to the clip
+          </span>
+        </div>
+        <audio className="lahjat-audio" controls preload="metadata" src={audioUrl} />
       </div>
     );
   }
 
+  /* ---- YouTube clip ---- */
+  if (youtubeId) {
+    const src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&start=${
+      startSeconds ?? 0
+    }&rel=0`;
+
+    return (
+      <div className="rounded-2xl overflow-hidden" style={cardStyle}>
+        <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
+          {playing ? (
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src={src}
+              title="Dialect clip"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setPlaying(true)}
+              className="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-3 group"
+              style={{ background: "var(--surface)" }}
+            >
+              <span
+                className="inline-flex items-center justify-center w-16 h-16 rounded-full transition-transform duration-150 group-hover:scale-105"
+                style={{
+                  background: "var(--accent)",
+                  color: "var(--gold-ink)",
+                  boxShadow: "var(--shadow-lift)",
+                }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </span>
+              <span
+                className="text-sm font-medium"
+                style={{ color: "var(--text-muted)" }}
+              >
+                Click to listen
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  /* ---- Fallback ---- */
   return (
     <div
-      className="relative w-full rounded-xl overflow-hidden mb-3.5"
-      style={{ aspectRatio: "16/9", background: "var(--surface)" }}
+      className="rounded-2xl p-8 text-center text-sm"
+      style={{ ...cardStyle, color: "var(--text-muted)" }}
     >
-      {!revealed ? cover : (
-        <>
-          {/* Hides the YouTube title overlay at the top of the player */}
-          <div
-            className="absolute top-0 left-0 right-0 z-10 pointer-events-none"
-            style={{ height: "18%", background: "var(--surface)" }}
-          />
-          {/* Hides the control bar (progress bar, buttons, YouTube logo).
-              pointer-events:none so clicks still reach the player underneath. */}
-          <div
-            className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none"
-            style={{ height: "22%", background: "var(--surface)" }}
-          />
-          <iframe
-            ref={iframeRef}
-            src={src}
-            className="w-full h-full border-0 block"
-            allow="autoplay; encrypted-media"
-            allowFullScreen
-          />
-        </>
-      )}
+      No clip available
     </div>
   );
 }
