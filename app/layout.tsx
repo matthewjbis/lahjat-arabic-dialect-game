@@ -22,7 +22,8 @@ export default function RootLayout({
     <html lang="en" className="h-full">
       <body className="min-h-full flex flex-col">
         <LanguageProvider>
-          <div className="fixed top-4 right-4 z-50">
+          {/* Inline style bypasses Tailwind's RTL class processing — right: 1rem is always physical */}
+          <div style={{ position: "fixed", top: "1rem", right: "1rem", zIndex: 50 }}>
             <LangToggle />
           </div>
           {children}
