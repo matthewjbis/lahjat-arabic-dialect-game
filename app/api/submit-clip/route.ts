@@ -17,14 +17,14 @@ export async function POST(req: NextRequest) {
   const formData = await req.formData();
 
   const file = formData.get("file") as File | null;
-  const city = (formData.get("city") as string | null)?.trim();
+  const city = (formData.get("city") as string | null)?.trim() || null;
   const country = (formData.get("country") as string | null)?.trim();
   const name = (formData.get("name") as string | null)?.trim() || null;
   const sourceType = (formData.get("source_type") as string | null) ?? "upload";
 
-  if (!file || !city || !country) {
+  if (!file || !country) {
     return NextResponse.json(
-      { error: "file, city, and country are required" },
+      { error: "file and country are required" },
       { status: 400 }
     );
   }

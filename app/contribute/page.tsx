@@ -404,7 +404,6 @@ export default function ContributePage() {
           </label>
           <input
             type="text"
-            required
             placeholder={t.cityPlaceholder}
             value={city}
             onChange={(e) => setCity(e.target.value)}
@@ -442,7 +441,7 @@ export default function ContributePage() {
 
         <button
           type="submit"
-          disabled={!file || !country || !city.trim() || status === "uploading"}
+          disabled={!file || !country || status === "uploading"}
           className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ background: "var(--accent)", color: "#fff" }}
         >
