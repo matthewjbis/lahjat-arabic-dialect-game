@@ -74,7 +74,7 @@ export function SummaryScreen({
         className="text-xs uppercase tracking-[0.18em] mb-3 text-center"
         style={{ color: "var(--on-bg-muted)" }}
       >
-        {t.resultsTitle ?? "Final results"}
+        {t.summaryTitle}
       </p>
 
       {/* The reward — total displayed large & bold */}
@@ -107,7 +107,7 @@ export function SummaryScreen({
           </span>
         </div>
         <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>
-          {t.summaryPct ? t.summaryPct(pct) : `${pct}% — ${results.length} clips`}
+          {`${pct}% — ${results.length} clips`}
         </p>
         {/* progress meter */}
         <div
@@ -194,7 +194,7 @@ export function SummaryScreen({
           onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
         >
-          {t.playAgain ?? "Play again"}
+          {t.playAgain}
         </button>
         <Link
           href="/dialects"
