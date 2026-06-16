@@ -1,8 +1,17 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import type { Clip, Cluster, ScoreResult } from "@/lib/scoring";
 import { MAX_SCORE } from "@/lib/scoring";
 import { useT } from "@/contexts/LanguageContext";
+
+interface SummaryScreenProps {
+  results: ScoreResult[];
+  clips: Clip[];
+  clusterMap: Record<string, Cluster>;
+  onPlayAgain: () => void;
+}
 
 const REL_COLORS: Record<string, string> = {
   exact: "#1D9E75",
@@ -11,18 +20,37 @@ const REL_COLORS: Record<string, string> = {
   none: "var(--surface-2)",
 };
 
-const REL_TEXT: Record<string, string> = {
-  exact: "#fff",
-  adjacent: "#1a1a18",
-  macro: "#1a1a18",
-  none: "var(--text-muted)",
-};
+function tierColor(ratio: number): string {
+  if (ratio >= 0.66) return "var(--score-high)";
+  if (ratio >= 0.33) return "var(--score-mid)";
+  return "var(--score-low)";
+}
 
-interface SummaryScreenProps {
-  results: ScoreResult[];
-  clips: Clip[];
-  clusterMap: Record<string, Cluster>;
-  onPlayAgain: () => void;
+/* Big total counts up — the summary is the reward. */
+function useCountUp(target: number, duration = 1400): number {
+  const [value, setValue] = useState(0);
+  const raf = useRef<number | null>(null);
+  useEffect(() => {
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      setValue(target);
+      return;
+    }
+    const start = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setValue(Math.round(eased * target));
+      if (p < 1) raf.current = requestAnimationFrame(tick);
+    };
+    raf.current = requestAnimationFrame(tick);
+    return () => {
+      if (raf.current) cancelAnimationFrame(raf.current);
+    };
+  }, [target, duration]);
+  return value;
 }
 
 export function SummaryScreen({
@@ -34,126 +62,154 @@ export function SummaryScreen({
   const t = useT();
 
   const total = results.reduce((sum, r) => sum + r.total, 0);
-  const maxTotal = MAX_SCORE * clips.length;
-  const pct = total / maxTotal;
-
-  const relLabels: Record<string, string> = {
-    exact: t.relExact,
-    adjacent: t.relAdjacent,
-    macro: t.relMacro,
-    none: t.relNone,
-  };
+  const maxTotal = results.length * MAX_SCORE;
+  const ratio = maxTotal > 0 ? total / maxTotal : 0;
+  const color = tierColor(ratio);
+  const animatedTotal = useCountUp(total);
+  const pct = Math.round(ratio * 100);
 
   return (
-    <div className="max-w-3xl mx-auto px-5 py-7 pb-12">
-      {/* Header */}
-      <div className="mb-6">
-        <h1
-          className="text-2xl font-medium tracking-tight mb-1"
-          style={{ color: "var(--text)" }}
-        >
-          Lahjat{" "}
-          <span style={{ fontFamily: "serif", fontWeight: 400 }}>لهجات</span>
-        </h1>
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          {t.summaryTitle}
-        </p>
-      </div>
+    <div className="max-w-2xl mx-auto px-4 sm:px-5 py-8 sm:py-12 pb-16">
+      <p
+        className="text-xs uppercase tracking-[0.18em] mb-3 text-center"
+        style={{ color: "var(--on-bg-muted)" }}
+      >
+        {t.resultsTitle ?? "Final results"}
+      </p>
 
-      {/* Score card */}
+      {/* The reward — total displayed large & bold */}
       <div
-        className="rounded-xl p-5 mb-4"
-        style={{ background: "var(--surface)" }}
+        className="rounded-2xl px-6 py-9 mb-6 text-center lahjat-pop relative overflow-hidden"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border-gold)",
+          boxShadow: "var(--shadow-card)",
+        }}
       >
         <div
-          className="text-3xl font-semibold mb-1"
-          style={{ color: "var(--text)" }}
+          className="ar-display mb-3"
+          style={{ color: "var(--accent)", fontSize: "1.9rem", opacity: 0.9 }}
         >
-          {t.points(total, maxTotal)}
+          لهجات
         </div>
-        <span
-          className="inline-block text-xs font-medium px-2.5 py-1 rounded-full"
-          style={{ background: "var(--accent)", color: "#fff" }}
+        <div className="flex items-baseline justify-center gap-2">
+          <span
+            className="font-bold tabular-nums leading-none"
+            style={{ fontSize: "clamp(3.5rem, 16vw, 5.5rem)", color }}
+          >
+            {animatedTotal}
+          </span>
+          <span
+            className="text-2xl font-medium"
+            style={{ color: "var(--text-faint)" }}
+          >
+            / {maxTotal}
+          </span>
+        </div>
+        <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>
+          {t.summaryPct ? t.summaryPct(pct) : `${pct}% — ${results.length} clips`}
+        </p>
+        {/* progress meter */}
+        <div
+          className="mt-5 mx-auto max-w-xs h-2 rounded-full overflow-hidden"
+          style={{ background: "var(--surface-2)" }}
         >
-          {t.tierLabel(pct)}
-        </span>
+          <div
+            className="h-full rounded-full transition-all duration-1000"
+            style={{ width: `${pct}%`, background: color }}
+          />
+        </div>
       </div>
 
-      {/* Per-clip breakdown */}
+      {/* Per-clip breakdown — clean list */}
       <div
-        className="rounded-xl overflow-hidden mb-4"
-        style={{ background: "var(--surface)" }}
+        className="rounded-2xl overflow-hidden mb-6"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border-strong)",
+          boxShadow: "var(--shadow-card)",
+        }}
       >
-        {results.map((result, i) => {
+        {results.map((r, i) => {
           const clip = clips[i];
-          const answerCluster = clusterMap[clip.answer.cluster];
-
+          const cluster = clip ? clusterMap[clip.answer.cluster] : null;
+          const rRatio = MAX_SCORE > 0 ? r.total / MAX_SCORE : 0;
           return (
             <div
-              key={clip.id}
-              className="flex items-center gap-3 px-4 py-3 text-sm"
+              key={i}
+              className="flex items-center gap-3 px-4 sm:px-5 py-3"
               style={{
-                borderBottom:
-                  i < results.length - 1
-                    ? "0.5px solid var(--border)"
-                    : undefined,
+                borderTop: i === 0 ? "none" : "1px solid var(--border)",
               }}
             >
-              {/* Clip number */}
               <span
-                className="text-xs tabular-nums shrink-0 w-14"
+                className="w-6 shrink-0 text-xs font-semibold tabular-nums"
                 style={{ color: "var(--text-faint)" }}
               >
-                {t.clipLabel(i + 1)}
+                {String(i + 1).padStart(2, "0")}
               </span>
-
-              {/* Location + cluster */}
-              <div className="flex-1 min-w-0">
-                <span
-                  className="font-medium truncate block"
+              <div className="min-w-0 flex-1">
+                <div
+                  className="text-sm font-medium truncate"
                   style={{ color: "var(--text)" }}
                 >
-                  {clip.answer.city}, {clip.answer.country}
-                </span>
-                <span
-                  className="text-xs truncate block"
+                  {clip?.answer.city}, {clip?.answer.country}
+                </div>
+                <div
+                  className="text-xs truncate flex items-center gap-1.5"
                   style={{ color: "var(--text-muted)" }}
                 >
-                  {answerCluster?.name ?? clip.answer.cluster}
-                </span>
+                  <span
+                    className="inline-block w-2 h-2 rounded-full shrink-0"
+                    style={{
+                      background:
+                        REL_COLORS[r.relationship] ?? "var(--surface-2)",
+                    }}
+                  />
+                  {cluster?.name ?? clip?.answer.cluster}
+                </div>
               </div>
-
-              {/* Relationship badge */}
               <span
-                className="text-xs font-medium px-2 py-0.5 rounded-full shrink-0 hidden sm:inline-block"
-                style={{
-                  background: REL_COLORS[result.relationship],
-                  color: REL_TEXT[result.relationship],
-                }}
+                className="text-base font-bold tabular-nums shrink-0"
+                style={{ color: tierColor(rRatio) }}
               >
-                {relLabels[result.relationship]}
-              </span>
-
-              {/* Score */}
-              <span
-                className="text-sm font-semibold tabular-nums shrink-0 w-14 text-end"
-                style={{ color: "var(--text)" }}
-              >
-                {result.total.toLocaleString()}
+                {r.total}
               </span>
             </div>
           );
         })}
       </div>
 
-      {/* Play again */}
-      <button
-        onClick={onPlayAgain}
-        className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-85"
-        style={{ background: "var(--accent)", color: "#fff" }}
-      >
-        {t.playAgain}
-      </button>
+      <div className="flex flex-col sm:flex-row gap-2.5">
+        <button
+          onClick={onPlayAgain}
+          className="w-full sm:flex-1 rounded-xl text-sm font-semibold transition-all duration-150"
+          style={{
+            minHeight: 48,
+            background: "var(--accent)",
+            color: "var(--gold-ink)",
+            border: "1px solid var(--accent-strong)",
+            boxShadow: "var(--shadow-lift)",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+        >
+          {t.playAgain ?? "Play again"}
+        </button>
+        <Link
+          href="/dialects"
+          className="w-full sm:w-auto rounded-xl text-sm font-medium flex items-center justify-center transition-opacity hover:opacity-85"
+          style={{
+            minHeight: 48,
+            padding: "0 1.5rem",
+            background: "rgba(236,226,205,0.06)",
+            color: "var(--on-bg)",
+            border: "1px solid var(--border-on-bg)",
+          }}
+        >
+          {t.dialectMap}
+        </Link>
+      </div>
     </div>
   );
 }
