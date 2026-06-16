@@ -22,10 +22,13 @@
   --text-muted: #6c6252;
   --text-faint: #978c76;
 
-  /* Ink on the dark page — bright enough to read on navy */
+  /* Ink on the dark page — readable on navy */
   --on-bg: #f0e8d8;
   --on-bg-muted: #b8af99;
   --on-bg-faint: #7a7464;
+
+  /* Heading colour across all pages — RGB(194, 168, 74) */
+  --heading: #c2a84a;
 
   /* Map land — kept parchment so D3 cluster dots read clearly. DO NOT change cluster colors. */
   --land: #e6dabf;
@@ -110,7 +113,7 @@ body::before {
 
 /*
   Keep app content above the texture layer.
-  Placed in @layer base so Tailwind utility classes (position: fixed, absolute, etc.)
+  In @layer base so Tailwind utility classes (position: fixed, absolute, etc.)
   from @layer utilities correctly override this rule.
 */
 @layer base {
