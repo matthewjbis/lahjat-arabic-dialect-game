@@ -44,12 +44,17 @@ export function DialectMapView({ cities, clusters }: Props) {
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const tooltipRef = useRef<TooltipSel | null>(null);
   const selectedRef = useRef<string | null>(null);
+  const langRef = useRef(lang);
   const [isZoomed, setIsZoomed] = useState(false);
 
   const clusterMap = useMemo(
     () => Object.fromEntries(clusters.map(c => [c.id, c])),
     [clusters]
   );
+
+  function clusterName(cluster: Cluster) {
+    return (lang === "ar" && cluster.name_ar) ? cluster.name_ar : cluster.name;
+  }
 
   const clusterCountries = useMemo(() => {
     const map: Record<string, string[]> = {};
@@ -74,6 +79,9 @@ export function DialectMapView({ cities, clusters }: Props) {
     () => cities.filter(c => c.cluster === selectedClusterId),
     [selectedClusterId, cities]
   );
+
+  // Keep lang ref in sync
+  useEffect(() => { langRef.current = lang; }, [lang]);
 
   // Sync selection ref and update dot opacities
   useEffect(() => {
@@ -179,8 +187,11 @@ export function DialectMapView({ cities, clusters }: Props) {
           .style("cursor", "pointer")
           .on("mouseover", (event, d) => {
             const cluster = clusterMap[d.cluster];
+            const label = cluster
+              ? (langRef.current === "ar" && cluster.name_ar ? cluster.name_ar : cluster.name)
+              : d.cluster;
             tooltip
-              .html(`${flagEmoji(d.country)} <strong>${d.name}</strong><br/><span style="color:var(--text-muted)">${cluster?.name ?? d.cluster}</span>`)
+              .html(`${flagEmoji(d.country)} <strong>${d.name}</strong><br/><span style="color:var(--text-muted)">${label}</span>`)
               .style("opacity", "1");
             d3.select(event.currentTarget as SVGCircleElement).attr("r", 6);
           })
@@ -259,7 +270,7 @@ export function DialectMapView({ cities, clusters }: Props) {
               />
               <div>
                 <p className="font-semibold text-sm" style={{ color: "var(--text)" }}>
-                  {selectedCluster.name}
+                  {clusterName(selectedCluster)}
                 </p>
                 <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                   {t.macroGroupName(selectedCluster.macro_group)}
@@ -310,7 +321,7 @@ export function DialectMapView({ cities, clusters }: Props) {
                 >
                   <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: cluster.color }} />
                   <span className="text-xs font-medium flex-1 truncate" style={{ color: "var(--text)" }}>
-                    {cluster.name}
+                    {clusterName(cluster)}
                   </span>
                   <span className="text-sm shrink-0">
                     {(clusterCountries[cluster.id] ?? []).map(flagEmoji).join("")}

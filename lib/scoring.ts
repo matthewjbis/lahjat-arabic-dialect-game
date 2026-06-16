@@ -19,6 +19,7 @@ export interface City {
 export interface Cluster {
   id: string;
   name: string;
+  name_ar?: string;
   macro_group: string;
   color: string;
 }
