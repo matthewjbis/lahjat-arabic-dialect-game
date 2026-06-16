@@ -11,8 +11,9 @@ interface VideoPlayerProps {
 
 /*
   Media player wrapped in a parchment "tile panel" surface.
-  - audio  -> full-width, custom-styled play bar (see .lahjat-audio in globals.css)
-  - youtube -> click-to-reveal embed behind a gold play medallion
+  - audio/*  -> full-width audio bar (see .lahjat-audio in globals.css)
+  - video/*  -> inline <video> player
+  - youtube  -> click-to-reveal embed behind a gold play medallion
 */
 export function VideoPlayer({
   youtubeId,
@@ -28,8 +29,11 @@ export function VideoPlayer({
     boxShadow: "var(--shadow-card)",
   };
 
-  /* ---- Audio clip ---- */
-  if (mediaType === "audio" && audioUrl) {
+  const isAudio = mediaType === "audio" || mediaType.startsWith("audio/");
+  const isVideo = mediaType.startsWith("video/");
+
+  /* ---- Audio clip (audio/webm, audio/mp4, audio/mpeg, etc.) ---- */
+  if (isAudio && audioUrl) {
     return (
       <div className="rounded-2xl p-4 sm:p-5" style={cardStyle}>
         <div className="flex items-center gap-3 mb-3">
@@ -49,6 +53,23 @@ export function VideoPlayer({
           </span>
         </div>
         <audio className="lahjat-audio" controls preload="metadata" src={audioUrl} />
+      </div>
+    );
+  }
+
+  /* ---- Video clip (video/mp4, video/webm, video/quicktime, etc.) ---- */
+  if (isVideo && audioUrl) {
+    return (
+      <div className="rounded-2xl overflow-hidden" style={cardStyle}>
+        <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
+          <video
+            className="absolute inset-0 w-full h-full"
+            controls
+            preload="metadata"
+            src={audioUrl}
+            style={{ background: "#000" }}
+          />
+        </div>
       </div>
     );
   }
