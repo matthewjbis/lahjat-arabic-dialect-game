@@ -4,6 +4,11 @@
 
 ---
 
+## 2026-06-16
+
+- Added Arabic language support to the dialect map, now Arabic language is mapped to each country, city, and dialect
+- Added Classical / Quranic Arabic to the dialect map, located in Hotat Bani Tamim
+
 ## 2026-06-15 (continued)
 
 ### Added
