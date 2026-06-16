@@ -173,7 +173,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
           <button
             onClick={handleNext}
             className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-85"
-            style={{ background: "var(--surface-2)", color: "var(--text)" }}
+            style={{ background: "var(--accent)", color: "#fff" }}
           >
             {t.nextClip}
           </button>
