@@ -5,6 +5,7 @@ import * as d3 from "d3";
 import * as topojson from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import type { City, Cluster } from "@/lib/scoring";
+import Link from "next/link";
 import { useT, useLang } from "@/contexts/LanguageContext";
 
 const W = 1000;
@@ -216,6 +217,9 @@ export function DialectMapView({ cities, clusters }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-5 py-7 pb-12">
+      <Link href="/" className="text-sm mb-5 inline-block" style={{ color: "var(--text-muted)" }}>
+        {t.backLink}
+      </Link>
       <h1 className="text-2xl font-medium tracking-tight mb-1" style={{ color: "var(--text)" }}>
         Lahjat <span style={{ fontFamily: "serif", fontWeight: 400 }}>لهجات</span>
         {" — "}{t.dialectMap}
