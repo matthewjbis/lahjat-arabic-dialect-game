@@ -131,11 +131,11 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-5 py-5 sm:py-7 pb-16">
+    <div className="max-w-3xl mx-auto px-4 sm:px-5 pt-14 sm:pt-7 pb-16">
       {/* Header — single flex row that wraps on small screens */}
       <header className="flex items-center justify-between flex-wrap gap-y-3 gap-x-3 mb-3">
         <Brand />
-        <nav className="flex items-center gap-2 flex-wrap">
+        <nav className="flex items-center gap-2 flex-wrap pr-24 sm:pr-0">
           <NavPill href="/dialects">{t.dialectMap}</NavPill>
           <NavPill href="/contribute">{t.contribute}</NavPill>
         </nav>
