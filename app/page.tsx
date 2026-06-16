@@ -9,8 +9,8 @@ export default function Home() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen px-5 text-center">
       <h1 className="font-semibold tracking-tight flex items-baseline gap-3 mb-1">
-        <span className="text-4xl" style={{ color: "var(--on-bg)" }}>Lahjat</span>
-        <span className="ar-display" style={{ color: "var(--accent)", fontSize: "3rem" }}>
+        <span className="text-4xl" style={{ color: "var(--heading)" }}>Lahjat</span>
+        <span className="ar-display" style={{ color: "var(--heading)", fontSize: "3rem" }}>
           لهجات
         </span>
       </h1>
