@@ -36,12 +36,11 @@ function Brand({ size = "sm" }: { size?: "sm" | "lg" }) {
       className={`font-semibold tracking-tight flex items-baseline gap-2 ${
         size === "lg" ? "text-3xl" : "text-xl"
       }`}
-      style={{ color: "var(--on-bg)" }}
     >
-      <span>Lahjat</span>
+      <span style={{ color: "var(--heading)" }}>Lahjat</span>
       <span
         className="ar-display"
-        style={{ color: "var(--accent)", fontSize: size === "lg" ? "2.4rem" : "1.7rem" }}
+        style={{ color: "var(--heading)", fontSize: size === "lg" ? "2.4rem" : "1.7rem" }}
       >
         لهجات
       </span>
@@ -99,7 +98,6 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     setResult(scored);
     setResults((prev) => [...prev, scored]);
     setLocked(true);
-    // weighty "locked in" flash on the map card
     setFlash(true);
     window.setTimeout(() => setFlash(false), 650);
   }
