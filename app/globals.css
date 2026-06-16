@@ -1,48 +1,82 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Aref+Ruqaa:wght@400;700&display=swap");
 @import "tailwindcss";
 
-:root {
-  --bg: #faf9f5;
-  --surface: #f1efe8;
-  --surface-2: #e8e6df;
-  --land: #f1efe8;
-  --land-other: #e8e6df;
-  --border: rgba(0, 0, 0, 0.15);
-  --text: #1a1a18;
-  --text-muted: #5f5e5a;
-  --text-faint: #888780;
-  --accent: #1d9e75;
-  --accent-2: #d85a30;
-}
+/*
+  Lahjat — لهجات
+  Arabesque, restrained: deep midnight-navy base, gold/amber accent,
+  warm desert-sand parchment surfaces. Islamic geometry as texture, not theme.
+*/
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f0f0e;
-    --surface: #1f1f1d;
-    --surface-2: #2a2a28;
-    --land: #2a2a28;
-    --land-other: #1a1a18;
-    --border: rgba(255, 255, 255, 0.12);
-    --text: #f5f4ef;
-    --text-muted: #b4b2a9;
-    --text-faint: #888780;
-  }
+:root {
+  /* Page — deep midnight navy with a warm undertone */
+  --bg: #12131b;
+  --bg-2: #181a25;
+
+  /* Parchment / desert-sand card surfaces */
+  --surface: #ece2cd;
+  --surface-2: #e2d5ba;
+  --surface-inset: #f4ecda;
+
+  /* Ink on parchment */
+  --text: #2b261c;
+  --text-muted: #6c6252;
+  --text-faint: #978c76;
+
+  /* Ink on the dark page */
+  --on-bg: #ece2cd;
+  --on-bg-muted: #a99f88;
+  --on-bg-faint: #6f6a5b;
+
+  /* Map land — kept parchment so D3 cluster dots read clearly. DO NOT change cluster colors. */
+  --land: #e6dabf;
+  --land-other: #ddcfb0;
+
+  /* Borders */
+  --border: rgba(43, 38, 28, 0.16);
+  --border-strong: rgba(43, 38, 28, 0.28);
+  --border-gold: rgba(200, 168, 50, 0.45);
+  --border-on-bg: rgba(236, 226, 205, 0.12);
+
+  /* Accents */
+  --accent: #c8a832;        /* gold / amber */
+  --accent-strong: #b5942a; /* hover gold */
+  --accent-soft: #d9c163;
+  --gold-ink: #221d10;      /* ink that sits on gold */
+  --accent-2: #b25a30;      /* terracotta — reset / destructive */
+
+  /* Score colour-coding */
+  --score-high: #4f9367;
+  --score-mid: #c8a832;
+  --score-low: #9a8f78;
+
+  /* Type */
+  --font-ui: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display-ar: "Aref Ruqaa", "Amiri", serif;
+
+  /* Elevation */
+  --shadow-card: 0 1px 2px rgba(0,0,0,.18), 0 10px 30px -12px rgba(0,0,0,.45);
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,.5), inset 0 0 0 1px rgba(43,38,28,.05);
+  --shadow-lift: 0 2px 4px rgba(0,0,0,.2), 0 14px 28px -10px rgba(200,168,50,.4);
 }
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-inset: var(--surface-inset);
   --color-border: var(--border);
   --color-text: var(--text);
   --color-text-muted: var(--text-muted);
   --color-text-faint: var(--text-faint);
+  --color-on-bg: var(--on-bg);
+  --color-on-bg-muted: var(--on-bg-muted);
   --color-accent: var(--accent);
   --color-accent-2: var(--accent-2);
+  --font-sans: var(--font-ui);
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 html {
   margin: 0;
@@ -54,7 +88,82 @@ body {
   margin: 0;
   padding: 0;
   background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--on-bg);
+  font-family: var(--font-ui);
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Faint 8-pointed star (khatam) grid — two overlapping squares — as page texture (~5%). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'%3E%3Cg fill='none' stroke='%23c8a832' stroke-width='1.25'%3E%3Crect x='21' y='21' width='42' height='42'/%3E%3Crect x='21' y='21' width='42' height='42' transform='rotate(45 42 42)'/%3E%3Ccircle cx='42' cy='42' r='7'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 84px 84px;
+}
+
+/* Keep app content above the texture layer */
+body > * { position: relative; z-index: 1; }
+
+/* The Arabic title لهجات is a design feature — calligraphic display face. */
+.ar-display {
+  font-family: var(--font-display-ar);
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ---- Custom full-width audio bar (replaces the browser default) ---- */
+audio.lahjat-audio {
+  width: 100%;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--surface-inset);
+  box-shadow: var(--shadow-inset);
+  accent-color: var(--accent);
+}
+audio.lahjat-audio::-webkit-media-controls-panel {
+  background: var(--surface-inset);
+}
+audio.lahjat-audio::-webkit-media-controls-play-button,
+audio.lahjat-audio::-webkit-media-controls-mute-button {
+  filter: sepia(1) saturate(3) hue-rotate(5deg) brightness(.7);
+}
+
+/* ---- Motion ---- */
+@keyframes lahjat-pin-lock {
+  0%   { box-shadow: 0 0 0 0 rgba(200,168,50,.55); }
+  40%  { box-shadow: 0 0 0 10px rgba(200,168,50,.18); }
+  100% { box-shadow: 0 0 0 22px rgba(200,168,50,0); }
+}
+@keyframes lahjat-flash {
+  0%   { box-shadow: var(--shadow-card), inset 0 0 0 2px rgba(200,168,50,0); }
+  25%  { box-shadow: var(--shadow-card), inset 0 0 0 2px rgba(200,168,50,.8); }
+  100% { box-shadow: var(--shadow-card), inset 0 0 0 2px rgba(200,168,50,0); }
+}
+@keyframes lahjat-pop {
+  0%   { transform: scale(.96); opacity: 0; }
+  60%  { transform: scale(1.015); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes lahjat-rise {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.lahjat-flash { animation: lahjat-flash .6s ease-out; }
+.lahjat-pop   { animation: lahjat-pop .42s cubic-bezier(.22,1,.36,1); }
+.lahjat-rise  { animation: lahjat-rise .4s ease-out both; }
+
+/* GameMap can opt the locked guess pin into a pulse with this class. */
+.guess-pin-locked { animation: lahjat-pin-lock .7s ease-out; transform-origin: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lahjat-flash, .lahjat-pop, .lahjat-rise, .guess-pin-locked,
+  body::before { animation: none !important; }
 }
