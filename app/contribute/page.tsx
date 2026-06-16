@@ -42,6 +42,7 @@ export default function ContributePage() {
   const chunksRef = useRef<BlobPart[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mp3InputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return () => {
@@ -91,12 +92,23 @@ export default function ContributePage() {
     setAudioUrl(null);
     setFile(null);
     setSeconds(0);
+    if (mp3InputRef.current) mp3InputRef.current.value = "";
+  }
+
+  function handleMp3Upload(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = e.target.files?.[0];
+    if (!picked) return;
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    setFile(picked);
+    setAudioUrl(URL.createObjectURL(picked));
+    setSeconds(0);
   }
 
   function switchSource(s: Source) {
     clearRecording();
     setFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    if (mp3InputRef.current) mp3InputRef.current.value = "";
     setSource(s);
   }
 
@@ -138,6 +150,7 @@ export default function ContributePage() {
     setStatus("idle");
     setErrorMsg("");
     if (fileInputRef.current) fileInputRef.current.value = "";
+    if (mp3InputRef.current) mp3InputRef.current.value = "";
   }
 
   if (status === "success") {
@@ -282,12 +295,42 @@ export default function ContributePage() {
                     </p>
                   )}
                 </div>
+
+                {!isRecording && (
+                  <>
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                      <span className="text-xs" style={{ color: "var(--text-faint)" }}>{t.orDivider}</span>
+                      <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                    </div>
+                    <div className="w-full">
+                      <p className="text-xs mb-2 text-center" style={{ color: "var(--text-muted)" }}>
+                        {t.uploadAudioHint}
+                      </p>
+                      <input
+                        ref={mp3InputRef}
+                        type="file"
+                        accept="audio/*,.mp3,.m4a,.wav,.aac"
+                        onChange={handleMp3Upload}
+                        className="w-full text-sm rounded-lg px-3 py-2.5"
+                        style={{
+                          background: "var(--surface-2)",
+                          color: "var(--text)",
+                          border: "0.5px solid var(--border)",
+                        }}
+                      />
+                      <p className="text-xs mt-1.5" style={{ color: "var(--text-faint)" }}>
+                        {t.uploadAudioFormats}
+                      </p>
+                    </div>
+                  </>
+                )}
               </>
             ) : (
               <>
                 <audio controls src={audioUrl} className="w-full" style={{ accentColor: "var(--accent)" }} />
                 <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                  {t.recordedLabel(formatTime(seconds))}
+                  {seconds > 0 ? t.recordedLabel(formatTime(seconds)) : file?.name}
                 </p>
                 <button
                   type="button"
