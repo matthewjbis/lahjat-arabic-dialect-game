@@ -38,7 +38,8 @@
     { "id": "hadrami",         "name": "Hadrami",                  "macro_group": "yemeni",     "color": "#F4C0D1" },
     { "id": "djibouti",        "name": "Djibouti Arabic",          "macro_group": "peripheral", "color": "#444441" },
     { "id": "somali",          "name": "Somali Arabic (L2)",       "macro_group": "peripheral", "color": "#5F5E5A" },
-    { "id": "comorian",        "name": "Comorian Arabic (L2)",     "macro_group": "peripheral", "color": "#2C2C2A" }
+    { "id": "comorian",        "name": "Comorian Arabic (L2)",     "macro_group": "peripheral", "color": "#2C2C2A" },
+    { "id": "classical",       "name": "Classical / Quranic Arabic","macro_group": "classical",  "color": "#C8A832" }
   ],
   "cities": [
     { "name": "Casablanca",     "country": "MA", "lat": 33.5731,  "lon": -7.5898,  "cluster": "moroccan" },
@@ -150,6 +151,7 @@
     { "name": "Mukalla",        "country": "YE", "lat": 14.5500,  "lon": 49.1227,  "cluster": "hadrami", "note": "Hadrami diaspora connections to Indonesia & East Africa" },
     { "name": "Djibouti",       "country": "DJ", "lat": 11.5886,  "lon": 43.1454,  "cluster": "djibouti" },
     { "name": "Mogadishu",      "country": "SO", "lat": 2.0372,   "lon": 45.3379,  "cluster": "somali", "note": "Arabic as L2; curveball clip category" },
-    { "name": "Moroni",         "country": "KM", "lat": -11.7061, "lon": 43.2517,  "cluster": "comorian", "note": "Arabic as liturgical/L2" }
+    { "name": "Moroni",         "country": "KM", "lat": -11.7061, "lon": 43.2517,  "cluster": "comorian", "note": "Arabic as liturgical/L2" },
+    { "name": "Hotat Bani Tamim","country": "SA", "lat": 23.4908,  "lon": 46.8325,  "cluster": "classical", "note": "Associated with Classical / Quranic Arabic" }
   ]
 }

@@ -30,7 +30,8 @@ const en = {
     ({ maghrebi: "Maghrebi", egyptian: "Egyptian", levantine: "Levantine",
        mesopotamian: "Mesopotamian", peninsular: "Gulf & Peninsular",
        yemeni: "Yemeni", sudanese: "Sudanese",
-       creole: "Creole & Mixed", peripheral: "Peripheral" }[id] ?? id),
+       creole: "Creole & Mixed", peripheral: "Peripheral",
+       classical: "Classical / Quranic" }[id] ?? id),
 
   // Score panel
   points: (score: number, max: number) =>
@@ -126,7 +127,8 @@ const ar: typeof en = {
     ({ maghrebi: "المغاربية", egyptian: "المصرية", levantine: "الشامية",
        mesopotamian: "العراقية", peninsular: "الخليجية",
        yemeni: "اليمنية", sudanese: "السودانية",
-       creole: "الكريولية والمختلطة", peripheral: "الهامشية" }[id] ?? id),
+       creole: "الكريولية والمختلطة", peripheral: "الهامشية",
+       classical: "الفصحى / القرآنية" }[id] ?? id),
 
   points: (score: number, max: number) =>
     `${score.toLocaleString()} / ${max.toLocaleString()} نقطة`,
