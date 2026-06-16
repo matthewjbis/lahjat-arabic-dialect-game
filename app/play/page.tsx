@@ -17,36 +17,36 @@ export default async function PlayPage() {
   const { data: submissions } = await supabaseAdmin
     .from("submissions")
     .select("id, file_path, file_type, country, city, cluster, macro_group, lat, lon, reveal_draft")
-    .eq("approved", true)
-    .not("cluster", "is", null)
-    .not("lat", "is", null);
+    .eq("status", "approved");
 
-  const dbClips: Clip[] = (submissions ?? []).map((s) => {
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from("clip-submissions")
-      .getPublicUrl(s.file_path);
-    return {
-      id: `sub-${s.id}`,
-      source: "upload",
-      youtube_id: "",
-      audio_url: publicUrl,
-      media_type: s.file_type,
-      start_seconds: 0,
-      label_provided: s.cluster,
-      answer: {
-        city: s.city ?? "",
-        country: s.country,
-        cluster: s.cluster,
-        macro_group: s.macro_group,
-        lat: s.lat,
-        lon: s.lon,
-      },
-      alternate_acceptable_clusters: [],
-      verification_status: "approved",
-      notes: "",
-      reveal_draft: s.reveal_draft ?? "",
-    };
-  });
+  const dbClips: Clip[] = (submissions ?? [])
+    .filter((s) => s.lat != null && s.lon != null)
+    .map((s) => {
+      const { data: { publicUrl } } = supabaseAdmin.storage
+        .from("clip-submissions")
+        .getPublicUrl(s.file_path);
+      return {
+        id: `sub-${s.id}`,
+        source: "upload",
+        youtube_id: "",
+        audio_url: publicUrl,
+        media_type: s.file_type,
+        start_seconds: 0,
+        label_provided: s.cluster ?? s.country,
+        answer: {
+          city: s.city ?? "",
+          country: s.country,
+          cluster: s.cluster ?? "unknown",
+          macro_group: s.macro_group ?? "unknown",
+          lat: s.lat,
+          lon: s.lon,
+        },
+        alternate_acceptable_clusters: [],
+        verification_status: "approved",
+        notes: "",
+        reveal_draft: s.reveal_draft ?? "",
+      };
+    });
 
   const clips = [...staticClips, ...dbClips];
 
