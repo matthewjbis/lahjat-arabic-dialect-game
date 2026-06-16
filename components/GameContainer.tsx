@@ -180,7 +180,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
           youtubeId={currentClip.youtube_id}
           startSeconds={currentClip.start_seconds}
           audioUrl={currentClip.audio_url}
-          mediaType={currentClip.media_type}
+          mediaType={currentClip.media_type ?? "youtube"}
         />
       </div>
 
