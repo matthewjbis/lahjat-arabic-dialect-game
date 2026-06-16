@@ -29,6 +29,42 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+/* ---- Reusable header (title + nav). Wraps gracefully on narrow screens. ---- */
+function Brand({ size = "sm" }: { size?: "sm" | "lg" }) {
+  return (
+    <h1
+      className={`font-semibold tracking-tight flex items-baseline gap-2 ${
+        size === "lg" ? "text-3xl" : "text-xl"
+      }`}
+      style={{ color: "var(--on-bg)" }}
+    >
+      <span>Lahjat</span>
+      <span
+        className="ar-display"
+        style={{ color: "var(--accent)", fontSize: size === "lg" ? "2.4rem" : "1.7rem" }}
+      >
+        لهجات
+      </span>
+    </h1>
+  );
+}
+
+function NavPill({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="text-xs px-3 py-1.5 rounded-full transition-colors whitespace-nowrap"
+      style={{
+        background: "rgba(236,226,205,0.06)",
+        color: "var(--on-bg-muted)",
+        border: "1px solid var(--border-on-bg)",
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
+
 export function GameContainer({ dialectData, clips }: GameContainerProps) {
   const t = useT();
 
@@ -39,6 +75,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [results, setResults] = useState<ScoreResult[]>([]);
   const [showSummary, setShowSummary] = useState(false);
+  const [flash, setFlash] = useState(false);
 
   const clusterMap: Record<string, Cluster> = Object.fromEntries(
     dialectData.clusters.map((c) => [c.id, c])
@@ -46,11 +83,15 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
 
   const currentClip = shuffledClips[clipIndex];
   const isLastClip = clipIndex === shuffledClips.length - 1;
+  const total = shuffledClips.length;
 
-  const handleGuess = useCallback((lat: number, lon: number) => {
-    if (locked) return;
-    setGuess({ lat, lon });
-  }, [locked]);
+  const handleGuess = useCallback(
+    (lat: number, lon: number) => {
+      if (locked) return;
+      setGuess({ lat, lon });
+    },
+    [locked]
+  );
 
   function handleSubmit() {
     if (!guess || locked) return;
@@ -58,6 +99,9 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     setResult(scored);
     setResults((prev) => [...prev, scored]);
     setLocked(true);
+    // weighty "locked in" flash on the map card
+    setFlash(true);
+    window.setTimeout(() => setFlash(false), 650);
   }
 
   function handleNext() {
@@ -89,81 +133,122 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-5 py-7 pb-12">
-      <div className="flex items-center justify-between mb-1">
-        <h1
-          className="text-2xl font-medium tracking-tight"
-          style={{ color: "var(--text)" }}
-        >
-          Lahjat{" "}
-          <span style={{ fontFamily: "serif", fontWeight: 400 }}>لهجات</span>
-        </h1>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dialects"
-            className="text-xs px-2.5 py-1 rounded-md transition-opacity hover:opacity-80"
-            style={{ background: "var(--surface-2)", color: "var(--text-muted)", border: "0.5px solid var(--border)" }}
-          >
-            {t.dialectMap}
-          </Link>
-          <Link
-            href="/contribute"
-            className="text-xs px-2.5 py-1 rounded-md transition-opacity hover:opacity-80"
-            style={{ background: "var(--surface-2)", color: "var(--text-muted)", border: "0.5px solid var(--border)" }}
-          >
-            {t.contribute}
-          </Link>
+    <div className="max-w-3xl mx-auto px-4 sm:px-5 py-5 sm:py-7 pb-16">
+      {/* Header — single flex row that wraps on small screens */}
+      <header className="flex items-center justify-between flex-wrap gap-y-3 gap-x-3 mb-3">
+        <Brand />
+        <nav className="flex items-center gap-2 flex-wrap">
+          <NavPill href="/dialects">{t.dialectMap}</NavPill>
+          <NavPill href="/contribute">{t.contribute}</NavPill>
+        </nav>
+      </header>
+
+      {/* Journey progress strip */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-xs sm:text-sm" style={{ color: "var(--on-bg-muted)" }}>
+            {t.subtitle}
+          </p>
           <span
-            className="text-xs"
-            style={{ color: "var(--text-muted)", fontVariantNumeric: "tabular-nums" }}
+            className="text-xs font-medium tabular-nums shrink-0"
+            style={{ color: "var(--accent)" }}
           >
-            {t.clipOf(clipIndex + 1, shuffledClips.length)}
+            {t.clipOf(clipIndex + 1, total)}
           </span>
+        </div>
+        <div className="flex gap-1" aria-hidden>
+          {Array.from({ length: total }).map((_, i) => (
+            <span
+              key={i}
+              className="h-1.5 flex-1 rounded-full transition-all duration-300"
+              style={{
+                background:
+                  i < clipIndex
+                    ? "var(--accent)"
+                    : i === clipIndex
+                    ? "var(--accent-soft)"
+                    : "rgba(236,226,205,0.14)",
+                boxShadow: i === clipIndex ? "0 0 0 1px rgba(200,168,50,.4)" : "none",
+              }}
+            />
+          ))}
         </div>
       </div>
 
-      <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
-        {t.subtitle}
-      </p>
+      {/* Media player card */}
+      <div className="mb-4">
+        <VideoPlayer
+          key={currentClip.id}
+          youtubeId={currentClip.youtube_id}
+          startSeconds={currentClip.start_seconds}
+          audioUrl={currentClip.audio_url}
+          mediaType={currentClip.media_type}
+        />
+      </div>
 
-      <VideoPlayer
-        key={currentClip.id}
-        youtubeId={currentClip.youtube_id}
-        startSeconds={currentClip.start_seconds}
-        audioUrl={currentClip.audio_url}
-        mediaType={currentClip.media_type}
-      />
-
-      <p className="text-xs mb-2.5" style={{ color: "var(--text-muted)" }}>
+      <p className="text-xs mb-2.5" style={{ color: "var(--on-bg-muted)" }}>
         {locked ? t.instructionsAfter : t.instructionsBefore}
       </p>
 
-      <GameMap
-        onGuess={handleGuess}
-        locked={locked}
-        guess={guess}
-        answer={locked ? { lat: currentClip.answer.lat, lon: currentClip.answer.lon } : null}
-        cities={dialectData.cities}
-      />
+      {/* Map card — flashes gold when a guess is locked in */}
+      <div
+        className={`rounded-2xl overflow-hidden mb-4 ${flash ? "lahjat-flash" : ""}`}
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border-strong)",
+          boxShadow: "var(--shadow-card)",
+        }}
+      >
+        <GameMap
+          onGuess={handleGuess}
+          locked={locked}
+          guess={guess}
+          answer={
+            locked
+              ? { lat: currentClip.answer.lat, lon: currentClip.answer.lon }
+              : null
+          }
+          cities={dialectData.cities}
+        />
+      </div>
 
-      <div className="flex flex-wrap gap-2.5 mb-3.5">
-        <button
-          onClick={handleSubmit}
-          disabled={!guess || locked}
-          className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:cursor-not-allowed"
-          style={{
-            background: !guess || locked ? "var(--surface-2)" : "var(--accent)",
-            color: !guess || locked ? "var(--text-faint)" : "#fff",
-          }}
-        >
-          {t.submitGuess}
-        </button>
+      {/* Actions — full-width & thumb-friendly on mobile, inline on larger screens */}
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2.5 mb-4">
+        {!locked && (
+          <button
+            onClick={handleSubmit}
+            disabled={!guess}
+            className="w-full sm:w-auto rounded-xl text-sm font-semibold transition-all duration-150 disabled:cursor-not-allowed active:translate-y-0"
+            style={{
+              minHeight: 48,
+              padding: "0 1.5rem",
+              background: !guess ? "rgba(236,226,205,0.08)" : "var(--accent)",
+              color: !guess ? "var(--on-bg-faint)" : "var(--gold-ink)",
+              border: !guess ? "1px solid var(--border-on-bg)" : "1px solid var(--accent-strong)",
+              boxShadow: !guess ? "none" : "var(--shadow-lift)",
+            }}
+            onMouseEnter={(e) => {
+              if (guess) e.currentTarget.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
+            {t.submitGuess}
+          </button>
+        )}
 
         {guess && !locked && (
           <button
             onClick={() => setGuess(null)}
-            className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-85"
-            style={{ background: "var(--accent-2)", color: "#fff" }}
+            className="w-full sm:w-auto rounded-xl text-sm font-medium transition-opacity hover:opacity-85"
+            style={{
+              minHeight: 48,
+              padding: "0 1.25rem",
+              background: "transparent",
+              color: "var(--accent-2)",
+              border: "1px solid color-mix(in srgb, var(--accent-2) 55%, transparent)",
+            }}
           >
             {t.resetPin}
           </button>
@@ -172,30 +257,44 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
         {locked && !isLastClip && (
           <button
             onClick={handleNext}
-            className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-85"
-            style={{ background: "var(--accent)", color: "#fff" }}
+            className="w-full sm:w-auto rounded-xl text-sm font-semibold transition-all duration-150"
+            style={{
+              minHeight: 48,
+              padding: "0 1.75rem",
+              background: "var(--accent)",
+              color: "var(--gold-ink)",
+              border: "1px solid var(--accent-strong)",
+              boxShadow: "var(--shadow-lift)",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
           >
-            {t.nextClip}
+            {t.nextClip} →
           </button>
         )}
 
         {locked && isLastClip && (
           <button
             onClick={() => setShowSummary(true)}
-            className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-85"
-            style={{ background: "var(--accent)", color: "#fff" }}
+            className="w-full sm:w-auto rounded-xl text-sm font-semibold transition-all duration-150"
+            style={{
+              minHeight: 48,
+              padding: "0 1.75rem",
+              background: "var(--accent)",
+              color: "var(--gold-ink)",
+              border: "1px solid var(--accent-strong)",
+              boxShadow: "var(--shadow-lift)",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
           >
-            {t.viewResults}
+            {t.viewResults} →
           </button>
         )}
       </div>
 
       {result && (
-        <ScorePanel
-          result={result}
-          clip={currentClip}
-          clusterMap={clusterMap}
-        />
+        <ScorePanel result={result} clip={currentClip} clusterMap={clusterMap} />
       )}
     </div>
   );
