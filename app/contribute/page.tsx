@@ -165,7 +165,7 @@ export default function ContributePage() {
           </svg>
         </div>
         {/* Success title and body sit on the dark page background */}
-        <h1 className="text-xl font-semibold mb-2" style={{ color: "var(--on-bg)" }}>
+        <h1 className="text-xl font-semibold mb-2" style={{ color: "var(--heading)" }}>
           {t.successTitle}
         </h1>
         <p className="text-sm mb-6" style={{ color: "var(--on-bg-muted)" }}>
@@ -199,7 +199,7 @@ export default function ContributePage() {
       </Link>
 
       {/* Page-level heading and subtitle on dark background */}
-      <h1 className="text-2xl font-medium tracking-tight mb-1" style={{ color: "var(--on-bg)" }}>
+      <h1 className="text-2xl font-medium tracking-tight mb-1" style={{ color: "var(--heading)" }}>
         {t.contributeTitle}
       </h1>
       <p className="text-sm mb-7" style={{ color: "var(--on-bg-muted)" }}>
