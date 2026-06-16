@@ -75,6 +75,7 @@ export default async function PlayPage() {
         macro_group: location.macro_group,
         lat: location.lat,
         lon: location.lon,
+        city_confidence: s.city ? undefined : "country",
       },
       alternate_acceptable_clusters: [],
       verification_status: "approved",

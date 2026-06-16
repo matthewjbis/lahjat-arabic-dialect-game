@@ -189,9 +189,10 @@ export function scoreGuess(
   const clusterMacroGroup = Object.fromEntries(clusters.map((c) => [c.id, c.macro_group]));
 
   const distanceKm = haversineDistanceKm(guessLat, guessLon, answer.lat, answer.lon);
-  const distancePoints = Math.round(
-    MAX_DISTANCE_POINTS * Math.exp(-distanceKm / DISTANCE_DECAY_KM)
-  );
+  const countryOnly = answer.city_confidence === "country";
+  const distancePoints = countryOnly
+    ? MAX_DISTANCE_POINTS
+    : Math.round(MAX_DISTANCE_POINTS * Math.exp(-distanceKm / DISTANCE_DECAY_KM));
 
   const guessedCity = nearestCity(guessLat, guessLon, cities);
   const guessedCluster = guessedCity ? guessedCity.cluster : null;
@@ -204,6 +205,7 @@ export function scoreGuess(
   const dialectPoints = Math.round(MAX_DIALECT_POINTS * DIALECT_MULTIPLIERS[relationship]);
 
   const exactCity = !!(
+    !countryOnly &&
     guessedCity &&
     guessedCity.name === answer.city &&
     guessedCity.country === answer.country
