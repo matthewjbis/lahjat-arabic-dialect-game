@@ -114,7 +114,7 @@ export default function ContributePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file || !country || !city.trim()) return;
+    if (!file || !country) return;
 
     setStatus("uploading");
     setErrorMsg("");
