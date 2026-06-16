@@ -42,19 +42,29 @@ export default async function PlayPage() {
   if (error) console.error("[lahjat] submissions fetch error:", error.message);
   console.log(`[lahjat] submissions: ${submissions?.length ?? 0} rows, dbClips will be built next`);
 
+  const filePaths = (submissions ?? []).map((s) => s.file_path);
+  const { data: signedEntries } = filePaths.length
+    ? await supabaseAdmin.storage
+        .from("clip-submissions")
+        .createSignedUrls(filePaths, 60 * 60)
+    : { data: [] };
+
+  const signedUrlMap = Object.fromEntries(
+    (signedEntries ?? []).map((e) => [e.path, e.signedUrl])
+  );
+
   const dbClips: Clip[] = (submissions ?? []).flatMap((s) => {
     const location = resolveLocation(s.city ?? null, s.country);
     if (!location) return [];
 
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from("clip-submissions")
-      .getPublicUrl(s.file_path);
+    const audioUrl = signedUrlMap[s.file_path];
+    if (!audioUrl) return [];
 
     return [{
       id: `sub-${s.id}`,
       source: "upload",
       youtube_id: "",
-      audio_url: publicUrl,
+      audio_url: audioUrl,
       media_type: s.file_type,
       start_seconds: 0,
       label_provided: location.cluster,
