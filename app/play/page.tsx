@@ -1,5 +1,4 @@
 import dialectCitiesJson from "@/lib/data/dialect-cities.json";
-import clipsJson from "@/lib/data/clips.json";
 import { supabaseAdmin } from "@/lib/supabase";
 import { GameContainer } from "@/components/GameContainer";
 import type { DialectData, Clip } from "@/lib/scoring";
@@ -32,7 +31,6 @@ function resolveLocation(cityName: string | null, country: string) {
 
 export default async function PlayPage() {
   const dialectData = dialectCitiesJson as unknown as DialectData;
-  const staticClips = (clipsJson as { clips: Clip[] }).clips;
 
   const { data: submissions, error } = await supabaseAdmin
     .from("submissions")
@@ -84,7 +82,7 @@ export default async function PlayPage() {
     }];
   });
 
-  const clips = [...staticClips, ...dbClips];
+  const clips = dbClips;
 
   return <GameContainer dialectData={dialectData} clips={clips} />;
 }
