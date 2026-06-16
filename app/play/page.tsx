@@ -10,7 +10,7 @@ export const metadata = {
   title: "Play — Lahjat",
 };
 
-type RawCity = { name: string; country: string; lat: number; lon: number; cluster: string };
+type RawCity = { name: string; name_ar?: string; country: string; lat: number; lon: number; cluster: string };
 type RawCluster = { id: string; macro_group: string };
 
 const rawCities = dialectCitiesJson.cities as unknown as RawCity[];
@@ -20,7 +20,10 @@ const clusterMacroGroup = Object.fromEntries(
 
 function resolveLocation(cityName: string | null, country: string) {
   const city = (cityName
-    ? rawCities.find((c) => c.name.toLowerCase() === cityName.toLowerCase() && c.country === country)
+    ? rawCities.find((c) => c.country === country && (
+        c.name.toLowerCase() === cityName.toLowerCase() ||
+        (c.name_ar != null && c.name_ar === cityName)
+      ))
     : null) ?? rawCities.find((c) => c.country === country) ?? null;
 
   if (!city) return null;
