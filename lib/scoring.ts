@@ -43,6 +43,7 @@ export interface Clip {
   id: string;
   source: string;
   youtube_id: string;
+  audio_url?: string;
   start_seconds: number;
   label_provided: string;
   answer: ClipAnswer;

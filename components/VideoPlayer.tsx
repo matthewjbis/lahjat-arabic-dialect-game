@@ -6,54 +6,82 @@ import { useT } from "@/contexts/LanguageContext";
 interface VideoPlayerProps {
   youtubeId: string;
   startSeconds: number;
+  audioUrl?: string;
 }
 
 const CLIP_SECONDS = 30;
 
-export function VideoPlayer({ youtubeId, startSeconds }: VideoPlayerProps) {
+export function VideoPlayer({ youtubeId, startSeconds, audioUrl }: VideoPlayerProps) {
   const t = useT();
   const [revealed, setRevealed] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   // Auto-pause after CLIP_SECONDS once the player is revealed
   useEffect(() => {
     if (!revealed) return;
     const timer = setTimeout(() => {
-      iframeRef.current?.contentWindow?.postMessage(
-        JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
-        "*"
-      );
+      if (audioUrl) {
+        audioRef.current?.pause();
+      } else {
+        iframeRef.current?.contentWindow?.postMessage(
+          JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
+          "*"
+        );
+      }
     }, CLIP_SECONDS * 1000);
     return () => clearTimeout(timer);
-  }, [revealed]);
+  }, [revealed, audioUrl]);
 
   // enablejsapi=1 is required for the postMessage pause command to work
   const src = `https://www.youtube.com/embed/${youtubeId}?start=${startSeconds}&autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&enablejsapi=1`;
+
+  const cover = (
+    <button
+      onClick={() => setRevealed(true)}
+      className="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-3"
+      style={{ background: "var(--surface)", cursor: "pointer" }}
+    >
+      <div
+        className="w-16 h-16 rounded-full flex items-center justify-center"
+        style={{ background: "var(--accent)" }}
+      >
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="white" style={{ marginLeft: 3 }}>
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </div>
+      <span className="text-sm" style={{ color: "var(--text-muted)" }}>
+        {t.clickToListen}
+      </span>
+    </button>
+  );
+
+  if (audioUrl) {
+    return (
+      <div
+        className="relative w-full rounded-xl overflow-hidden mb-3.5 flex items-center justify-center"
+        style={{ minHeight: "120px", background: "var(--surface)" }}
+      >
+        {!revealed ? cover : (
+          <audio
+            ref={audioRef}
+            src={audioUrl}
+            controls
+            autoPlay
+            className="w-full px-6"
+            style={{ accentColor: "var(--accent)" }}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
       className="relative w-full rounded-xl overflow-hidden mb-3.5"
       style={{ aspectRatio: "16/9", background: "var(--surface)" }}
     >
-      {!revealed ? (
-        <button
-          onClick={() => setRevealed(true)}
-          className="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-3"
-          style={{ background: "var(--surface)", cursor: "pointer" }}
-        >
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ background: "var(--accent)" }}
-          >
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="white" style={{ marginLeft: 3 }}>
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </div>
-          <span className="text-sm" style={{ color: "var(--text-muted)" }}>
-            {t.clickToListen}
-          </span>
-        </button>
-      ) : (
+      {!revealed ? cover : (
         <>
           {/* Hides the YouTube title overlay at the top of the player */}
           <div

@@ -20,9 +20,19 @@ interface GuessState {
   lon: number;
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export function GameContainer({ dialectData, clips }: GameContainerProps) {
   const t = useT();
 
+  const [shuffledClips, setShuffledClips] = useState(() => shuffle(clips));
   const [clipIndex, setClipIndex] = useState(0);
   const [guess, setGuess] = useState<GuessState | null>(null);
   const [locked, setLocked] = useState(false);
@@ -34,8 +44,8 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     dialectData.clusters.map((c) => [c.id, c])
   );
 
-  const currentClip = clips[clipIndex];
-  const isLastClip = clipIndex === clips.length - 1;
+  const currentClip = shuffledClips[clipIndex];
+  const isLastClip = clipIndex === shuffledClips.length - 1;
 
   const handleGuess = useCallback((lat: number, lon: number) => {
     if (locked) return;
@@ -58,6 +68,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
   }
 
   function handlePlayAgain() {
+    setShuffledClips(shuffle(clips));
     setClipIndex(0);
     setGuess(null);
     setLocked(false);
@@ -70,7 +81,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     return (
       <SummaryScreen
         results={results}
-        clips={clips}
+        clips={shuffledClips}
         clusterMap={clusterMap}
         onPlayAgain={handlePlayAgain}
       />
@@ -106,7 +117,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
             className="text-xs"
             style={{ color: "var(--text-muted)", fontVariantNumeric: "tabular-nums" }}
           >
-            {t.clipOf(clipIndex + 1, clips.length)}
+            {t.clipOf(clipIndex + 1, shuffledClips.length)}
           </span>
         </div>
       </div>
@@ -116,9 +127,10 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
       </p>
 
       <VideoPlayer
-        key={currentClip.youtube_id}
+        key={currentClip.id}
         youtubeId={currentClip.youtube_id}
         startSeconds={currentClip.start_seconds}
+        audioUrl={currentClip.audio_url}
       />
 
       <p className="text-xs mb-2.5" style={{ color: "var(--text-muted)" }}>
