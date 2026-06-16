@@ -22,6 +22,15 @@ const en = {
   playAgain: "Play again",
   resetZoom: "Reset zoom",
   contribute: "Contribute",
+  dialectMap: "Dialect Map",
+  dialectMapSubtitle: "Explore Arabic dialects across the Arab world. Click any city or dialect to learn more.",
+  clickToExplore: "Click a city or dialect to explore",
+  citiesLabel: "Cities",
+  macroGroupName: (id: string): string =>
+    ({ maghrebi: "Maghrebi", egyptian: "Egyptian", levantine: "Levantine",
+       mesopotamian: "Mesopotamian", peninsular: "Gulf & Peninsular",
+       yemeni: "Yemeni", sudanese: "Sudanese",
+       creole: "Creole & Mixed", peripheral: "Peripheral" }[id] ?? id),
 
   // Score panel
   points: (score: number, max: number) =>
@@ -109,6 +118,15 @@ const ar: typeof en = {
   playAgain: "العب مجدداً",
   resetZoom: "إعادة ضبط التكبير",
   contribute: "ساهم",
+  dialectMap: "خريطة اللهجات",
+  dialectMapSubtitle: "استكشف اللهجات العربية عبر العالم العربي. انقر على أي مدينة أو لهجة لمعرفة المزيد.",
+  clickToExplore: "انقر على مدينة أو لهجة للاستكشاف",
+  citiesLabel: "المدن",
+  macroGroupName: (id: string): string =>
+    ({ maghrebi: "المغاربية", egyptian: "المصرية", levantine: "الشامية",
+       mesopotamian: "العراقية", peninsular: "الخليجية",
+       yemeni: "اليمنية", sudanese: "السودانية",
+       creole: "الكريولية والمختلطة", peripheral: "الهامشية" }[id] ?? id),
 
   points: (score: number, max: number) =>
     `${score.toLocaleString()} / ${max.toLocaleString()} نقطة`,

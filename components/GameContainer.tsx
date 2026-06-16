@@ -89,13 +89,16 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
         </h1>
         <div className="flex items-center gap-3">
           <Link
+            href="/dialects"
+            className="text-xs px-2.5 py-1 rounded-md transition-opacity hover:opacity-80"
+            style={{ background: "var(--surface-2)", color: "var(--text-muted)", border: "0.5px solid var(--border)" }}
+          >
+            {t.dialectMap}
+          </Link>
+          <Link
             href="/contribute"
             className="text-xs px-2.5 py-1 rounded-md transition-opacity hover:opacity-80"
-            style={{
-              background: "var(--surface-2)",
-              color: "var(--text-muted)",
-              border: "0.5px solid var(--border)",
-            }}
+            style={{ background: "var(--surface-2)", color: "var(--text-muted)", border: "0.5px solid var(--border)" }}
           >
             {t.contribute}
           </Link>
