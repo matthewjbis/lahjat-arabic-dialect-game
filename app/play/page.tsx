@@ -2,7 +2,7 @@ import dialectCitiesJson from "@/lib/data/dialect-cities.json";
 import clipsJson from "@/lib/data/clips.json";
 import { supabaseAdmin } from "@/lib/supabase";
 import { GameContainer } from "@/components/GameContainer";
-import type { DialectData, Clip, City } from "@/lib/scoring";
+import type { DialectData, Clip } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -10,17 +10,21 @@ export const metadata = {
   title: "Play — Lahjat",
 };
 
-const cities = dialectCitiesJson.cities as City[];
+type RawCity = { name: string; country: string; lat: number; lon: number; cluster: string };
+type RawCluster = { id: string; macro_group: string };
+
+const rawCities = dialectCitiesJson.cities as unknown as RawCity[];
+const clusterMacroGroup = Object.fromEntries(
+  (dialectCitiesJson.clusters as unknown as RawCluster[]).map((c) => [c.id, c.macro_group])
+);
 
 function resolveLocation(cityName: string | null, country: string) {
-  if (cityName) {
-    const exact = cities.find(
-      (c) => c.name.toLowerCase() === cityName.toLowerCase() && c.country === country
-    );
-    if (exact) return exact;
-  }
-  // Fall back to any city in the same country
-  return cities.find((c) => c.country === country) ?? null;
+  const city = (cityName
+    ? rawCities.find((c) => c.name.toLowerCase() === cityName.toLowerCase() && c.country === country)
+    : null) ?? rawCities.find((c) => c.country === country) ?? null;
+
+  if (!city) return null;
+  return { ...city, macro_group: clusterMacroGroup[city.cluster] ?? "unknown" };
 }
 
 export default async function PlayPage() {
@@ -32,10 +36,11 @@ export default async function PlayPage() {
     .select("id, file_path, file_type, country, city")
     .eq("status", "approved");
 
-  if (error) console.error("Submissions fetch error:", error.message);
+  if (error) console.error("[lahjat] submissions fetch error:", error.message);
+  console.log(`[lahjat] submissions: ${submissions?.length ?? 0} rows, dbClips will be built next`);
 
   const dbClips: Clip[] = (submissions ?? []).flatMap((s) => {
-    const location = resolveLocation(s.city, s.country);
+    const location = resolveLocation(s.city ?? null, s.country);
     if (!location) return [];
 
     const { data: { publicUrl } } = supabaseAdmin.storage
