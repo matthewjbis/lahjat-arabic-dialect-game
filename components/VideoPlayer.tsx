@@ -7,22 +7,24 @@ interface VideoPlayerProps {
   youtubeId: string;
   startSeconds: number;
   audioUrl?: string;
+  mediaType?: string;
 }
 
 const CLIP_SECONDS = 30;
 
-export function VideoPlayer({ youtubeId, startSeconds, audioUrl }: VideoPlayerProps) {
+export function VideoPlayer({ youtubeId, startSeconds, audioUrl, mediaType }: VideoPlayerProps) {
   const t = useT();
   const [revealed, setRevealed] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const mediaRef = useRef<HTMLAudioElement | HTMLVideoElement | null>(null);
+  const isVideo = mediaType?.startsWith("video/") ?? false;
 
   // Auto-pause after CLIP_SECONDS once the player is revealed
   useEffect(() => {
     if (!revealed) return;
     const timer = setTimeout(() => {
       if (audioUrl) {
-        audioRef.current?.pause();
+        mediaRef.current?.pause();
       } else {
         iframeRef.current?.contentWindow?.postMessage(
           JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
@@ -60,11 +62,20 @@ export function VideoPlayer({ youtubeId, startSeconds, audioUrl }: VideoPlayerPr
     return (
       <div
         className="relative w-full rounded-xl overflow-hidden mb-3.5 flex items-center justify-center"
-        style={{ minHeight: "120px", background: "var(--surface)" }}
+        style={isVideo ? { aspectRatio: "16/9" } : { minHeight: "120px", background: "var(--surface)" }}
       >
-        {!revealed ? cover : (
+        {!revealed ? cover : isVideo ? (
+          <video
+            ref={mediaRef as React.RefObject<HTMLVideoElement>}
+            src={audioUrl}
+            controls
+            autoPlay
+            className="w-full h-full object-contain"
+            style={{ background: "#000" }}
+          />
+        ) : (
           <audio
-            ref={audioRef}
+            ref={mediaRef as React.RefObject<HTMLAudioElement>}
             src={audioUrl}
             controls
             autoPlay

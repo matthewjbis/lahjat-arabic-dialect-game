@@ -44,6 +44,7 @@ export interface Clip {
   source: string;
   youtube_id: string;
   audio_url?: string;
+  media_type?: string;
   start_seconds: number;
   label_provided: string;
   answer: ClipAnswer;

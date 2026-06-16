@@ -16,7 +16,7 @@ export default async function PlayPage() {
 
   const { data: submissions } = await supabaseAdmin
     .from("submissions")
-    .select("id, file_path, country, city, cluster, macro_group, lat, lon, reveal_draft")
+    .select("id, file_path, file_type, country, city, cluster, macro_group, lat, lon, reveal_draft")
     .eq("approved", true)
     .not("cluster", "is", null)
     .not("lat", "is", null);
@@ -30,6 +30,7 @@ export default async function PlayPage() {
       source: "upload",
       youtube_id: "",
       audio_url: publicUrl,
+      media_type: s.file_type,
       start_seconds: 0,
       label_provided: s.cluster,
       answer: {

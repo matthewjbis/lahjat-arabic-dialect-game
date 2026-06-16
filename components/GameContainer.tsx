@@ -131,6 +131,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
         youtubeId={currentClip.youtube_id}
         startSeconds={currentClip.start_seconds}
         audioUrl={currentClip.audio_url}
+        mediaType={currentClip.media_type}
       />
 
       <p className="text-xs mb-2.5" style={{ color: "var(--text-muted)" }}>
