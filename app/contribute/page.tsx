@@ -164,17 +164,18 @@ export default function ContributePage() {
             <polyline points="20 6 9 17 4 12" />
           </svg>
         </div>
-        <h1 className="text-xl font-semibold mb-2" style={{ color: "var(--text)" }}>
+        {/* Success title and body sit on the dark page background */}
+        <h1 className="text-xl font-semibold mb-2" style={{ color: "var(--on-bg)" }}>
           {t.successTitle}
         </h1>
-        <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
+        <p className="text-sm mb-6" style={{ color: "var(--on-bg-muted)" }}>
           {t.successBody}
         </p>
         <div className="flex gap-3 justify-center">
           <button
             onClick={handleReset}
             className="px-4 py-2.5 rounded-lg text-sm font-medium"
-            style={{ background: "var(--accent)", color: "#fff" }}
+            style={{ background: "var(--accent)", color: "var(--gold-ink)" }}
           >
             {t.submitAnother}
           </button>
@@ -192,18 +193,20 @@ export default function ContributePage() {
 
   return (
     <main className="max-w-lg mx-auto px-5 py-10">
-      <Link href="/" className="text-sm mb-6 inline-block" style={{ color: "var(--text-muted)" }}>
+      {/* Back link sits on the dark page background */}
+      <Link href="/" className="text-sm mb-6 inline-block" style={{ color: "var(--on-bg-muted)" }}>
         {t.backLink}
       </Link>
 
-      <h1 className="text-2xl font-medium tracking-tight mb-1" style={{ color: "var(--text)" }}>
+      {/* Page-level heading and subtitle on dark background */}
+      <h1 className="text-2xl font-medium tracking-tight mb-1" style={{ color: "var(--on-bg)" }}>
         {t.contributeTitle}
       </h1>
-      <p className="text-sm mb-7" style={{ color: "var(--text-muted)" }}>
+      <p className="text-sm mb-7" style={{ color: "var(--on-bg-muted)" }}>
         {t.contributeSubtitle}
       </p>
 
-      {/* Recording guidelines */}
+      {/* Recording guidelines — sits on parchment surface card */}
       <div
         className="rounded-xl p-3 mb-2 text-xs"
         style={{ background: "var(--surface)", border: "0.5px solid var(--border)" }}
@@ -348,7 +351,7 @@ export default function ContributePage() {
         {/* Upload panel */}
         {source === "upload" && (
           <div>
-            <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
+            <p className="text-xs mb-2" style={{ color: "var(--on-bg-muted)" }}>
               {t.uploadVideoHint}
             </p>
             <input
@@ -363,11 +366,11 @@ export default function ContributePage() {
                 border: "0.5px solid var(--border)",
               }}
             />
-            <p className="text-xs mt-1.5" style={{ color: "var(--text-faint)" }}>
+            <p className="text-xs mt-1.5" style={{ color: "var(--on-bg-muted)" }}>
               {t.uploadFormats}
             </p>
             {file && (
-              <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+              <p className="text-xs mt-1" style={{ color: "var(--on-bg-muted)" }}>
                 {file.name} — {(file.size / 1024 / 1024).toFixed(1)} MB
               </p>
             )}
@@ -376,7 +379,7 @@ export default function ContributePage() {
 
         {/* Country */}
         <div>
-          <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--on-bg-muted)" }}>
             {t.countryLabel}
           </label>
           <select
@@ -399,7 +402,7 @@ export default function ContributePage() {
 
         {/* City */}
         <div>
-          <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--on-bg-muted)" }}>
             {t.cityLabel}
           </label>
           <input
@@ -418,8 +421,8 @@ export default function ContributePage() {
 
         {/* Name */}
         <div>
-          <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
-            {t.nameLabel} <span style={{ color: "var(--text-faint)" }}>{t.nameOptional}</span>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--on-bg-muted)" }}>
+            {t.nameLabel} <span style={{ color: "var(--on-bg-faint)" }}>{t.nameOptional}</span>
           </label>
           <input
             type="text"
@@ -443,7 +446,7 @@ export default function ContributePage() {
           type="submit"
           disabled={!file || !country || status === "uploading"}
           className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{ background: "var(--accent)", color: "#fff" }}
+          style={{ background: "var(--accent)", color: "var(--gold-ink)" }}
         >
           {status === "uploading" ? t.uploading : t.submitClip}
         </button>
