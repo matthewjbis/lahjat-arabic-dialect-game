@@ -80,10 +80,8 @@ export function DialectMapView({ cities, clusters }: Props) {
     [selectedClusterId, cities]
   );
 
-  // Keep lang ref in sync
   useEffect(() => { langRef.current = lang; }, [lang]);
 
-  // Sync selection ref and update dot opacities
   useEffect(() => {
     selectedRef.current = selectedClusterId;
     cityDotsRef.current?.attr("opacity", (d: City) =>
@@ -91,7 +89,6 @@ export function DialectMapView({ cities, clusters }: Props) {
     );
   }, [selectedClusterId]);
 
-  // Initialize D3 map once
   useEffect(() => {
     if (!containerRef.current || svgRef.current) return;
     const container = containerRef.current;
@@ -228,14 +225,18 @@ export function DialectMapView({ cities, clusters }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-5 py-7 pb-12">
-      <Link href="/" className="text-sm mb-5 inline-block" style={{ color: "var(--text-muted)" }}>
+      {/* Back link on dark bg */}
+      <Link href="/" className="text-sm mb-5 inline-block" style={{ color: "var(--on-bg-muted)" }}>
         {t.backLink}
       </Link>
-      <h1 className="text-2xl font-medium tracking-tight mb-1" style={{ color: "var(--text)" }}>
-        Lahjat <span style={{ fontFamily: "serif", fontWeight: 400 }}>لهجات</span>
-        {" — "}{t.dialectMap}
+
+      {/* Page heading on dark bg */}
+      <h1 className="text-2xl font-semibold tracking-tight mb-1">
+        <span style={{ color: "var(--heading)" }}>Lahjat </span>
+        <span className="ar-display" style={{ color: "var(--heading)", fontSize: "1.6rem" }}>لهجات</span>
+        <span style={{ color: "var(--on-bg-muted)", fontWeight: 400 }}>{" — "}{t.dialectMap}</span>
       </h1>
-      <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
+      <p className="text-sm mb-4" style={{ color: "var(--on-bg-muted)" }}>
         {t.dialectMapSubtitle}
       </p>
 
@@ -256,7 +257,7 @@ export function DialectMapView({ cities, clusters }: Props) {
         )}
       </div>
 
-      {/* Selected cluster panel */}
+      {/* Selected cluster panel — on parchment surface card */}
       {selectedCluster && (
         <div
           className="rounded-xl p-4 mb-4"
@@ -300,11 +301,11 @@ export function DialectMapView({ cities, clusters }: Props) {
         </div>
       )}
 
-      {/* Legend grouped by macro group */}
+      {/* Legend — macro group labels are on dark bg, cluster buttons are on parchment */}
       <div className="flex flex-col gap-5">
         {Object.entries(groupedClusters).map(([macroId, macroCluster]) => (
           <div key={macroId}>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-faint)" }}>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--on-bg-faint)" }}>
               {t.macroGroupName(macroId)}
             </p>
             <div className="grid gap-1.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
