@@ -8,11 +8,11 @@ export function LangToggle() {
   return (
     <button
       onClick={() => setLang(lang === "en" ? "ar" : "en")}
-      className="text-xs px-2.5 py-1 rounded-md transition-opacity hover:opacity-80"
+      className="text-xs px-3 py-1.5 rounded-full transition-colors whitespace-nowrap"
       style={{
-        background: "var(--surface-2)",
-        color: "var(--text-muted)",
-        border: "0.5px solid var(--border)",
+        background: "rgba(236,226,205,0.06)",
+        color: "var(--on-bg-muted)",
+        border: "1px solid var(--border-on-bg)",
         fontFamily: "inherit",
         cursor: "pointer",
       }}
