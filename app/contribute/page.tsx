@@ -1,31 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useT, useLang } from "@/contexts/LanguageContext";
 
-const ARAB_COUNTRIES = [
-  { code: "DZ", name: "Algeria" },
-  { code: "BH", name: "Bahrain" },
-  { code: "KM", name: "Comoros" },
-  { code: "DJ", name: "Djibouti" },
-  { code: "EG", name: "Egypt" },
-  { code: "IQ", name: "Iraq" },
-  { code: "JO", name: "Jordan" },
-  { code: "KW", name: "Kuwait" },
-  { code: "LB", name: "Lebanon" },
-  { code: "LY", name: "Libya" },
-  { code: "MR", name: "Mauritania" },
-  { code: "MA", name: "Morocco" },
-  { code: "OM", name: "Oman" },
-  { code: "PS", name: "Palestine" },
-  { code: "QA", name: "Qatar" },
-  { code: "SA", name: "Saudi Arabia" },
-  { code: "SO", name: "Somalia" },
-  { code: "SD", name: "Sudan" },
-  { code: "SY", name: "Syria" },
-  { code: "TN", name: "Tunisia" },
-  { code: "AE", name: "United Arab Emirates" },
-  { code: "YE", name: "Yemen" },
+const COUNTRY_CODES = [
+  "DZ","BH","KM","DJ","EG","IQ","JO","KW","LB","LY",
+  "MR","MA","OM","PS","QA","SA","SO","SD","SY","TN","AE","YE",
 ];
 
 type Source = "record" | "upload";
@@ -36,6 +17,16 @@ function formatTime(s: number) {
 }
 
 export default function ContributePage() {
+  const t = useT();
+  const { lang } = useLang();
+
+  const countries = useMemo(() => {
+    const names = new Intl.DisplayNames([lang], { type: "region" });
+    return COUNTRY_CODES
+      .map((code) => ({ code, name: names.of(code) ?? code }))
+      .sort((a, b) => a.name.localeCompare(b.name, lang));
+  }, [lang]);
+
   const [source, setSource] = useState<Source>("record");
   const [file, setFile] = useState<File | null>(null);
   const [country, setCountry] = useState("");
@@ -44,7 +35,6 @@ export default function ContributePage() {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Recorder state
   const [isRecording, setIsRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -86,7 +76,7 @@ export default function ContributePage() {
       setSeconds(0);
       timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
     } catch {
-      setErrorMsg("Microphone access denied — please allow mic access and try again.");
+      setErrorMsg(t.micDenied);
     }
   }
 
@@ -128,13 +118,13 @@ export default function ContributePage() {
       const res = await fetch("/api/submit-clip", { method: "POST", body: form });
       const json = await res.json();
       if (!res.ok) {
-        setErrorMsg(json.error ?? "Something went wrong");
+        setErrorMsg(json.error ?? t.somethingWrong);
         setStatus("error");
       } else {
         setStatus("success");
       }
     } catch {
-      setErrorMsg("Network error, please try again");
+      setErrorMsg(t.networkError);
       setStatus("error");
     }
   }
@@ -162,10 +152,10 @@ export default function ContributePage() {
           </svg>
         </div>
         <h1 className="text-xl font-semibold mb-2" style={{ color: "var(--text)" }}>
-          Clip submitted
+          {t.successTitle}
         </h1>
         <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
-          Thank you for contributing. We'll review your clip and add it to the game.
+          {t.successBody}
         </p>
         <div className="flex gap-3 justify-center">
           <button
@@ -173,14 +163,14 @@ export default function ContributePage() {
             className="px-4 py-2.5 rounded-lg text-sm font-medium"
             style={{ background: "var(--accent)", color: "#fff" }}
           >
-            Submit another
+            {t.submitAnother}
           </button>
           <Link
             href="/"
             className="px-4 py-2.5 rounded-lg text-sm font-medium"
             style={{ background: "var(--surface-2)", color: "var(--text)" }}
           >
-            Back to home
+            {t.backToHome}
           </Link>
         </div>
       </main>
@@ -190,14 +180,14 @@ export default function ContributePage() {
   return (
     <main className="max-w-lg mx-auto px-5 py-10">
       <Link href="/" className="text-sm mb-6 inline-block" style={{ color: "var(--text-muted)" }}>
-        ← Back
+        {t.backLink}
       </Link>
 
       <h1 className="text-2xl font-medium tracking-tight mb-1" style={{ color: "var(--text)" }}>
-        Contribute a clip
+        {t.contributeTitle}
       </h1>
       <p className="text-sm mb-7" style={{ color: "var(--text-muted)" }}>
-        Are you a native Arabic speaker? Record a quick audio clip in your browser, or upload a video of yourself speaking. Your clip may be used in the game.
+        {t.contributeSubtitle}
       </p>
 
       {/* Recording guidelines */}
@@ -206,28 +196,28 @@ export default function ContributePage() {
         style={{ background: "var(--surface)", border: "0.5px solid var(--border)" }}
       >
         <p className="text-xs font-medium mb-1.5" style={{ color: "var(--text)" }}>
-          Recording guidelines
+          {t.guidelinesTitle}
         </p>
         <ul className="flex flex-col gap-1" style={{ color: "var(--text-muted)" }}>
           <li className="flex gap-2">
             <span style={{ color: "var(--accent-2)" }}>✕</span>
-            Don't mention your country, city, or region by name
+            {t.guidelineNo1}
           </li>
           <li className="flex gap-2">
             <span style={{ color: "var(--accent-2)" }}>✕</span>
-            Avoid referencing local landmarks or places that would give away your location
+            {t.guidelineNo2}
           </li>
           <li className="flex gap-2">
             <span style={{ color: "var(--accent)" }}>✓</span>
-            Talk naturally about everyday topics — food, family, weather, daily life
+            {t.guidelineYes1}
           </li>
           <li className="flex gap-2">
             <span style={{ color: "var(--accent)" }}>✓</span>
-            Cultural references, traditions, and expressions are welcome
+            {t.guidelineYes2}
           </li>
           <li className="flex gap-2">
             <span style={{ color: "var(--accent)" }}>✓</span>
-            Aim for 10–30 seconds of natural, conversational speech
+            {t.guidelineYes3}
           </li>
         </ul>
       </div>
@@ -235,10 +225,7 @@ export default function ContributePage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
         {/* Source toggle */}
-        <div
-          className="flex rounded-lg p-1 gap-1"
-          style={{ background: "var(--surface)" }}
-        >
+        <div className="flex rounded-lg p-1 gap-1" style={{ background: "var(--surface)" }}>
           {(["record", "upload"] as Source[]).map((s) => (
             <button
               key={s}
@@ -250,7 +237,7 @@ export default function ContributePage() {
                 color: source === s ? "var(--text)" : "var(--text-faint)",
               }}
             >
-              {s === "record" ? "Record audio" : "Upload video"}
+              {s === "record" ? t.tabRecord : t.tabUpload}
             </button>
           ))}
         </div>
@@ -284,15 +271,14 @@ export default function ContributePage() {
                     </svg>
                   )}
                 </button>
-
                 <div className="text-center">
                   {isRecording ? (
                     <p className="text-sm font-medium tabular-nums" style={{ color: "var(--accent-2)" }}>
-                      Recording {formatTime(seconds)}
+                      {t.recordingLabel(formatTime(seconds))}
                     </p>
                   ) : (
                     <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                      Tap to start recording
+                      {t.tapToRecord}
                     </p>
                   )}
                 </div>
@@ -301,7 +287,7 @@ export default function ContributePage() {
               <>
                 <audio controls src={audioUrl} className="w-full" style={{ accentColor: "var(--accent)" }} />
                 <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                  {formatTime(seconds)} recorded
+                  {t.recordedLabel(formatTime(seconds))}
                 </p>
                 <button
                   type="button"
@@ -309,7 +295,7 @@ export default function ContributePage() {
                   className="text-xs px-3 py-1.5 rounded-md"
                   style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}
                 >
-                  Re-record
+                  {t.reRecord}
                 </button>
               </>
             )}
@@ -320,7 +306,7 @@ export default function ContributePage() {
         {source === "upload" && (
           <div>
             <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
-              Upload a short video of yourself speaking — face on camera or just audio-over-video is fine.
+              {t.uploadVideoHint}
             </p>
             <input
               ref={fileInputRef}
@@ -335,7 +321,7 @@ export default function ContributePage() {
               }}
             />
             <p className="text-xs mt-1.5" style={{ color: "var(--text-faint)" }}>
-              MP4, WebM, MOV — max 50 MB
+              {t.uploadFormats}
             </p>
             {file && (
               <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
@@ -348,7 +334,7 @@ export default function ContributePage() {
         {/* Country */}
         <div>
           <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
-            Country
+            {t.countryLabel}
           </label>
           <select
             required
@@ -361,8 +347,8 @@ export default function ContributePage() {
               border: "0.5px solid var(--border)",
             }}
           >
-            <option value="" disabled>Select your country</option>
-            {ARAB_COUNTRIES.map((c) => (
+            <option value="" disabled>{t.countryPlaceholder}</option>
+            {countries.map((c) => (
               <option key={c.code} value={c.code}>{c.name}</option>
             ))}
           </select>
@@ -371,12 +357,12 @@ export default function ContributePage() {
         {/* City */}
         <div>
           <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
-            City
+            {t.cityLabel}
           </label>
           <input
             type="text"
             required
-            placeholder="e.g. Cairo"
+            placeholder={t.cityPlaceholder}
             value={city}
             onChange={(e) => setCity(e.target.value)}
             className="w-full text-sm rounded-lg px-3 py-2.5"
@@ -391,11 +377,11 @@ export default function ContributePage() {
         {/* Name */}
         <div>
           <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
-            Your name <span style={{ color: "var(--text-faint)" }}>(optional)</span>
+            {t.nameLabel} <span style={{ color: "var(--text-faint)" }}>{t.nameOptional}</span>
           </label>
           <input
             type="text"
-            placeholder="e.g. Ahmed"
+            placeholder={t.namePlaceholder}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full text-sm rounded-lg px-3 py-2.5"
@@ -417,7 +403,7 @@ export default function ContributePage() {
           className="px-4 py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ background: "var(--accent)", color: "#fff" }}
         >
-          {status === "uploading" ? "Uploading…" : "Submit clip"}
+          {status === "uploading" ? t.uploading : t.submitClip}
         </button>
       </form>
     </main>
