@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SoundProvider } from "@/contexts/SoundContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { LangToggle } from "@/components/LangToggle";
 import { SoundToggle } from "@/components/SoundToggle";
+import { AuthButton } from "@/components/AuthButton";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,26 +25,29 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="min-h-full flex flex-col">
-        <LanguageProvider>
-          <SoundProvider>
-            {/* Inline style bypasses Tailwind's RTL class processing — right: 1rem is always physical */}
-            <div
-              style={{
-                position: "fixed",
-                top: "1rem",
-                right: "1rem",
-                zIndex: 50,
-                display: "flex",
-                gap: "0.5rem",
-                alignItems: "center",
-              }}
-            >
-              <SoundToggle />
-              <LangToggle />
-            </div>
-            {children}
-          </SoundProvider>
-        </LanguageProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            <SoundProvider>
+              {/* Inline style bypasses Tailwind's RTL class processing — right: 1rem is always physical */}
+              <div
+                style={{
+                  position: "fixed",
+                  top: "1rem",
+                  right: "1rem",
+                  zIndex: 50,
+                  display: "flex",
+                  gap: "0.5rem",
+                  alignItems: "center",
+                }}
+              >
+                <AuthButton />
+                <SoundToggle />
+                <LangToggle />
+              </div>
+              {children}
+            </SoundProvider>
+          </LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   );
