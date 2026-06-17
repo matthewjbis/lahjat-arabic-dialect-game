@@ -24,7 +24,7 @@ const SoundContext = createContext<SoundContextValue>({
 const SOUND_PATHS: Record<"success" | "medium" | "fail", string> = {
   success: "/sounds/success.mp3",
   medium:  "/sounds/medium.mp3",
-  fail:    "/sounds/fail.mp3",
+  fail:    "/sounds/failure.mp3",
 };
 
 export function SoundProvider({ children }: { children: ReactNode }) {
