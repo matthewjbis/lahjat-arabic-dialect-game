@@ -46,7 +46,7 @@ export function VideoPlayer({
   if (isAudio && audioUrl) {
     return (
       <div className="rounded-2xl p-4 sm:p-5" style={cardStyle}>
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center justify-center gap-3 mb-3">
           <span
             className="inline-flex items-center justify-center w-9 h-9 rounded-full shrink-0"
             style={{ background: "var(--accent)", color: "var(--gold-ink)" }}
