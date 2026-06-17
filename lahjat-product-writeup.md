@@ -41,13 +41,72 @@ Player hears a 5-15 second clip of natural Arabic speech (vlog, podcast, street 
 - **Native virality.** Watching someone correctly identify a speaker's hometown from a 10-second clip is shareable content. The Arabic-speaking internet has no equivalent product.
 - **The data is the moat.** Aggregated guesses produce a continuously self-correcting dialect corpus with confidence scores, which is valuable infrastructure for the broader product roadmap.
 ## Game modes
- 
+
+### Format variants (apply to any region)
+
 - **Classic** — single clip, one guess, distance-scored
 - **Daily challenge** — one curated hard clip per day, global leaderboard, shareable result cards (the Wordle pattern)
 - **Round-based** — 5 clips, cumulative score, shareable summary
 - **Speed round** — country-level only, as many as possible in 60 seconds
 - **Expert mode** — sub-regional only, no country hints
 - **Modality variants** — audio only, video only, song lyrics, poetry recitation, written text
+
+### Regional modes
+
+Each region constrains the clip pool and the map to a specific part of the Arab world. Regional modes lower the skill floor (fewer options to choose from) while raising the skill ceiling (finer distinctions required within a tighter area). They also let players build expertise in the region they know best before tackling Classic.
+
+---
+
+**Maghrebi** — Morocco, Algeria, Tunisia, Libya, Mauritania
+- 5 countries, 6 dialect clusters: Moroccan Darija, Hassaniya (Mauritanian), Algerian, Saharan Algerian, Tunisian, Libyan
+- Notable design note: Saharan Algerian (Ghardaia, Tamanrasset) is heavily Berber-influenced and among the most distinctive clips in the game — consider flagging these as hard-tier within the mode
+- Map zooms to Northwest Africa and the Western Sahara
+
+---
+
+**Arabian Peninsula** *(working title: "Gulf")* — Saudi Arabia, UAE, Kuwait, Qatar, Bahrain, Oman
+- 6 countries, 6 clusters: Gulf, Najdi, Hejazi, Asiri, Omani, Dhofari
+- Important nuance: "Gulf" is a misnomer for this mode — Saudi Arabia alone contains three very distinct dialect groups (Najdi in the interior, Hejazi on the Red Sea coast, Asiri in the southwest highlands). The map should zoom to the full peninsula, not just the Gulf coast
+- Dhofari (Salalah) sits at the edge of the Yemeni continuum and is a strong differentiator for expert players
+- Also includes Classical Arabic (Hotat Bani Tamim, SA) as a bonus clip type — fits thematically given the Peninsula's religious significance
+
+---
+
+**Levant** — Syria, Lebanon, Jordan, Palestine
+- 4 countries, 10 clusters: North Levantine, Aleppine, Coastal Syrian, Eastern Syrian, Lebanese, Palestinian Urban, Palestinian Rural, Gazan, Jordanian Urban, Jordanian Bedouin
+- Richest region in the dataset by cluster count — best suited for expert-level play
+- The qeltu/gilit divide runs through eastern Syria and into Iraq; clips from Deir ez-Zor and Hasakah are edge cases that approach Mesopotamian features
+- Aleppine is distinctive enough from North Levantine to reliably trip up even strong Levant players
+
+---
+
+**Iraq** — Iraq (+ Khuzestan, Iran as a future addition)
+- 1 country currently, 4 clusters: Baghdadi, Moslawi (qeltu), Southern Iraqi (gilit), Anbari/Western
+- Smallest regional map but high internal differentiation — the qeltu (Mosul) vs. gilit (Baghdad/Basra) split is one of the most phonologically salient contrasts in all of Arabic
+- **Khuzestan (Ahvazi Arabic):** the Arabic-speaking region of southwest Iran speaks a dialect essentially continuous with Southern Iraqi. Not yet in the dataset but a strong future addition — it would make Iraq mode the first mode to cross a non-Arab-country border, which is linguistically honest and politically interesting
+
+---
+
+**Egypt & Sudan** — Egypt, Sudan
+- 2 countries, 4 clusters: Cairene, Sa'idi (Upper Egyptian), Sudanese, Darfuri
+- Sa'idi (southern Egypt, Nile Valley) is significantly more conservative than Cairene and often mistaken for a non-Egyptian variety by players — strong differentiation within a small geographic area
+- Darfuri sits at the contact zone between Sudanese Arabic and Chadic/Saharan languages; distinctive enough to justify its own cluster
+
+---
+
+**Yemen & the Horn** — Yemen, Somalia, Djibouti
+- 3 countries, 5 clusters: Sanaani, Taizzi-Adeni, Hadrami, Somali Arabic, Djibouti Arabic
+- Djibouti belongs here rather than in Specialty — geographically and linguistically it sits at the junction of Yemeni and Somali Arabic influence, which is exactly what makes it interesting as a clip
+- Hadrami Arabic is spoken not just in Yemen but across a historic diaspora (East Africa, South/Southeast Asia); clips may reflect contact features worth noting in the reveal text
+
+---
+
+**Specialty & Peripheral** — South Sudan, Comoros, + select hard-tier clips from other regions
+- **Juba Arabic (South Sudan):** a genuine Arabic-based creole, not a dialect — used as a lingua franca in South Sudan with highly simplified morphology; the only clip in the game where a native Arabic speaker may score no better than a non-speaker
+- **Comorian Arabic (Comoros):** peripheral variety influenced by Comorian/Bantu; geographically isolated in the Indian Ocean
+- **Classical / Quranic Arabic (Hotat Bani Tamim, SA):** formal register used in religious and media contexts; identifiable by root-faithful morphology and absence of regional phonological features — a natural "boss level" clip type
+- **Saharan Algerian (Ghardaia, Tamanrasset):** could belong in Maghrebi mode, but the Ibadi/Mozabite and Touareg contact features make it unusual enough to double as a Specialty clip; dual-listing is an option
+- This mode is intentionally the smallest and hardest — designed for players who have mastered the other regions
 ## Content sourcing
  
 - Hand-curated MVP library (200-500 clips covering major dialect groups)
