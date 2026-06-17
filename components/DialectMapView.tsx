@@ -225,10 +225,12 @@ export function DialectMapView({ cities, clusters }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-5 py-7 pb-12">
-      {/* Back link on dark bg */}
-      <Link href="/" className="text-sm mb-5 inline-block" style={{ color: "var(--on-bg-muted)" }}>
-        {t.backLink}
-      </Link>
+      {/* text-left is a physical property — keeps the back link on the left even in RTL */}
+      <div className="text-left mb-5">
+        <Link href="/" className="text-sm" style={{ color: "var(--on-bg-muted)" }}>
+          {t.backLink}
+        </Link>
+      </div>
 
       {/* Page heading on dark bg */}
       <h1 className="text-2xl font-semibold tracking-tight mb-1">

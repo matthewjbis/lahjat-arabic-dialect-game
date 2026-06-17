@@ -193,10 +193,12 @@ export default function ContributePage() {
 
   return (
     <main className="max-w-lg mx-auto px-5 py-10">
-      {/* Back link sits on the dark page background */}
-      <Link href="/" className="text-sm mb-6 inline-block" style={{ color: "var(--on-bg-muted)" }}>
-        {t.backLink}
-      </Link>
+      {/* text-left is a physical property — keeps the back link on the left even in RTL */}
+      <div className="text-left mb-6">
+        <Link href="/" className="text-sm" style={{ color: "var(--on-bg-muted)" }}>
+          {t.backLink}
+        </Link>
+      </div>
 
       {/* Page-level heading and subtitle on dark background */}
       <h1 className="text-2xl font-medium tracking-tight mb-1" style={{ color: "var(--heading)" }}>
