@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useT } from "@/contexts/LanguageContext";
 
 type Tab = "signin" | "signup";
 
@@ -29,6 +30,7 @@ const cardStyle: React.CSSProperties = {
 };
 
 function AuthForm() {
+  const t = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? "/";
@@ -75,19 +77,19 @@ function AuthForm() {
         className="flex rounded-xl mb-6 p-1 gap-1"
         style={{ background: "var(--surface-inset)" }}
       >
-        {(["signin", "signup"] as Tab[]).map((t) => (
+        {(["signin", "signup"] as Tab[]).map((tabKey) => (
           <button
-            key={t}
+            key={tabKey}
             type="button"
-            onClick={() => { setTab(t); setError(null); }}
+            onClick={() => { setTab(tabKey); setError(null); }}
             className="flex-1 rounded-lg py-1.5 text-sm font-medium transition-all duration-150"
             style={{
-              background: tab === t ? "var(--surface)" : "transparent",
-              color: tab === t ? "var(--text)" : "var(--text-muted)",
-              boxShadow: tab === t ? "var(--shadow-card)" : "none",
+              background: tab === tabKey ? "var(--surface)" : "transparent",
+              color: tab === tabKey ? "var(--text)" : "var(--text-muted)",
+              boxShadow: tab === tabKey ? "var(--shadow-card)" : "none",
             }}
           >
-            {t === "signin" ? "Sign in" : "Create account"}
+            {tabKey === "signin" ? t.authSignIn : t.authCreateAccount}
           </button>
         ))}
       </div>
@@ -95,15 +97,15 @@ function AuthForm() {
       {status === "done" ? (
         <div className="text-center text-sm" style={{ color: "var(--text-muted)" }}>
           <p className="mb-1 font-medium" style={{ color: "var(--text)" }}>
-            Check your email
+            {t.authCheckEmailTitle}
           </p>
-          <p>We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.</p>
+          <p>{t.authConfirmSentTo} <strong>{email}</strong>. {t.authConfirmSentAfter}</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
-              Email
+              {t.authEmail}
             </label>
             <input
               type="email"
@@ -118,7 +120,7 @@ function AuthForm() {
           {tab === "signup" && (
             <div className="flex flex-col gap-1.5">
               <label className="text-xs uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
-                Display name <span style={{ color: "var(--text-faint)", textTransform: "none", letterSpacing: 0 }}>(optional)</span>
+                {t.authDisplayName} <span style={{ color: "var(--text-faint)", textTransform: "none", letterSpacing: 0 }}>{t.nameOptional}</span>
               </label>
               <input
                 type="text"
@@ -126,7 +128,7 @@ function AuthForm() {
                 maxLength={40}
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="e.g. Ahmed"
+                placeholder={t.authDisplayNamePlaceholder}
                 style={{ ...inputStyle, color: displayName ? "var(--text)" : undefined }}
               />
             </div>
@@ -134,7 +136,7 @@ function AuthForm() {
 
           <div className="flex flex-col gap-1.5">
             <label className="text-xs uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
-              Password
+              {t.authPassword}
             </label>
             <input
               type="password"
@@ -167,31 +169,40 @@ function AuthForm() {
             {status === "loading"
               ? "…"
               : tab === "signin"
-              ? "Sign in"
-              : "Create account"}
+              ? t.authSignIn
+              : t.authCreateAccount}
           </button>
 
           {tab === "signin" && (
             <button
               type="button"
               onClick={async () => {
-                if (!email) { setError("Enter your email first."); return; }
+                if (!email) { setError(t.authEnterEmailFirst); return; }
                 setError(null);
                 const { error } = await supabase.auth.resetPasswordForEmail(email, {
                   redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset`,
                 });
                 if (error) setError(error.message);
-                else setError("Password reset email sent.");
+                else setError(t.authResetEmailSent);
               }}
               className="text-xs text-center"
               style={{ color: "var(--text-faint)" }}
             >
-              Forgot password?
+              {t.authForgotPassword}
             </button>
           )}
         </form>
       )}
     </div>
+  );
+}
+
+function BackHomeLink() {
+  const t = useT();
+  return (
+    <Link href="/" className="text-xs" style={{ color: "var(--text-faint)" }}>
+      {t.authBackHome}
+    </Link>
   );
 }
 
@@ -210,9 +221,7 @@ export default function AuthPage() {
         <AuthForm />
       </Suspense>
 
-      <Link href="/" className="text-xs" style={{ color: "var(--text-faint)" }}>
-        ← Back to home
-      </Link>
+      <BackHomeLink />
     </main>
   );
 }

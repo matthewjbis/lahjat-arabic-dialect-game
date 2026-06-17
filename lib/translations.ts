@@ -97,6 +97,30 @@ const en = {
   muteSound: "Mute sounds",
   unmuteSound: "Unmute sounds",
 
+  // Auth
+  authSignIn: "Sign in",
+  authCreateAccount: "Create account",
+  authEmail: "Email",
+  authPassword: "Password",
+  authDisplayName: "Display name",
+  authDisplayNamePlaceholder: "e.g. Ahmed",
+  authCheckEmailTitle: "Check your email",
+  authConfirmSentTo: "We sent a confirmation link to",
+  authConfirmSentAfter: "Click it to activate your account.",
+  authForgotPassword: "Forgot password?",
+  authEnterEmailFirst: "Enter your email first.",
+  authResetEmailSent: "Password reset email sent.",
+  authSignOut: "Sign out",
+  authAccountMenu: "Account menu",
+  authBackHome: "← Back to home",
+  authSetNewPassword: "Set a new password",
+  authSetNewPasswordBody: "Choose a new password for your account.",
+  authPasswordUpdated: "Password updated. Redirecting…",
+  authNewPassword: "New password",
+  authConfirmPassword: "Confirm password",
+  authPasswordsNoMatch: "Passwords don't match.",
+  authUpdatePassword: "Update password",
+
   // Speed-bonus timer
   speedBonus: "Speed bonus",
   multiplierBreakdown: (base: number, mult: string, final: number) =>
@@ -210,6 +234,30 @@ const ar: typeof en = {
   // Sound toggle
   muteSound: "كتم الأصوات",
   unmuteSound: "تفعيل الأصوات",
+
+  // Auth
+  authSignIn: "تسجيل الدخول",
+  authCreateAccount: "إنشاء حساب",
+  authEmail: "البريد الإلكتروني",
+  authPassword: "كلمة المرور",
+  authDisplayName: "الاسم المعروض",
+  authDisplayNamePlaceholder: "مثال: أحمد",
+  authCheckEmailTitle: "تحقق من بريدك الإلكتروني",
+  authConfirmSentTo: "أرسلنا رابط تأكيد إلى",
+  authConfirmSentAfter: "انقر عليه لتفعيل حسابك.",
+  authForgotPassword: "نسيت كلمة المرور؟",
+  authEnterEmailFirst: "أدخل بريدك الإلكتروني أولاً.",
+  authResetEmailSent: "تم إرسال رسالة إعادة تعيين كلمة المرور.",
+  authSignOut: "تسجيل الخروج",
+  authAccountMenu: "قائمة الحساب",
+  authBackHome: "→ العودة للرئيسية",
+  authSetNewPassword: "تعيين كلمة مرور جديدة",
+  authSetNewPasswordBody: "اختر كلمة مرور جديدة لحسابك.",
+  authPasswordUpdated: "تم تحديث كلمة المرور. جارٍ إعادة التوجيه…",
+  authNewPassword: "كلمة المرور الجديدة",
+  authConfirmPassword: "تأكيد كلمة المرور",
+  authPasswordsNoMatch: "كلمتا المرور غير متطابقتين.",
+  authUpdatePassword: "تحديث كلمة المرور",
 
   // Speed-bonus timer
   speedBonus: "مكافأة السرعة",

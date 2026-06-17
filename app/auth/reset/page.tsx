@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useT } from "@/contexts/LanguageContext";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -27,6 +28,7 @@ const cardStyle: React.CSSProperties = {
 };
 
 export default function ResetPasswordPage() {
+  const t = useT();
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -38,7 +40,7 @@ export default function ResetPasswordPage() {
     setError(null);
 
     if (password !== confirm) {
-      setError("Passwords don't match.");
+      setError(t.authPasswordsNoMatch);
       return;
     }
 
@@ -66,21 +68,21 @@ export default function ResetPasswordPage() {
 
       <div style={cardStyle}>
         <h1 className="text-base font-semibold mb-1" style={{ color: "var(--text)" }}>
-          Set a new password
+          {t.authSetNewPassword}
         </h1>
         <p className="text-xs mb-5" style={{ color: "var(--text-muted)" }}>
-          Choose a new password for your account.
+          {t.authSetNewPasswordBody}
         </p>
 
         {status === "done" ? (
           <p className="text-sm text-center" style={{ color: "var(--text-muted)" }}>
-            Password updated. Redirecting…
+            {t.authPasswordUpdated}
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
-                New password
+                {t.authNewPassword}
               </label>
               <input
                 type="password"
@@ -95,7 +97,7 @@ export default function ResetPasswordPage() {
 
             <div className="flex flex-col gap-1.5">
               <label className="text-xs uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
-                Confirm password
+                {t.authConfirmPassword}
               </label>
               <input
                 type="password"
@@ -125,14 +127,14 @@ export default function ResetPasswordPage() {
                 minHeight: 44,
               }}
             >
-              {status === "loading" ? "…" : "Update password"}
+              {status === "loading" ? "…" : t.authUpdatePassword}
             </button>
           </form>
         )}
       </div>
 
       <Link href="/" className="text-xs" style={{ color: "var(--text-faint)" }}>
-        ← Back to home
+        {t.authBackHome}
       </Link>
     </main>
   );

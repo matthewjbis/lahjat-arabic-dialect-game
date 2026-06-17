@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { useT } from "@/contexts/LanguageContext";
 
 export function AuthButton() {
   const { user, loading, signOut } = useAuth();
+  const t = useT();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -24,7 +26,7 @@ export function AuthButton() {
           border: "1px solid var(--border-strong)",
         }}
       >
-        Sign in
+        {t.authSignIn}
       </Link>
     );
   }
@@ -43,7 +45,7 @@ export function AuthButton() {
           background: "var(--accent)",
           color: "var(--gold-ink)",
         }}
-        aria-label="Account menu"
+        aria-label={t.authAccountMenu}
       >
         {initial}
       </button>
@@ -82,7 +84,7 @@ export function AuthButton() {
               className="w-full text-start px-3 py-2 transition-colors hover:bg-white/5"
               style={{ color: "var(--text-muted)" }}
             >
-              Sign out
+              {t.authSignOut}
             </button>
           </div>
         </>

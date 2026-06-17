@@ -16,6 +16,7 @@
 - **Contributor attribution** — `/api/submit-clip` now reads the signed-in session server-side and stores `user_id` on the submission (null for anonymous uploads)
 
 ### Changed
+- **Auth UI internationalized** — the `/auth` sign-in/create-account page, the `/auth/reset` password page, and the `AuthButton` header control now pull all copy from `lib/translations.ts` (en + ar) and flip correctly in RTL, matching the rest of the app; ~22 new translation keys (Supabase's own error messages remain server-provided English)
 - **`middleware.ts` → `proxy.ts`** — renamed to the Next.js 16 `proxy` file convention (function `middleware` → `proxy`); clears the build-time deprecation warning
 - **`export const runtime = "nodejs"` added to `/api/submit-clip`** for parity with the clips route (both use the service-role admin client)
 - **Memoized `clusterMap`** in `GameContainer` with `useMemo`
