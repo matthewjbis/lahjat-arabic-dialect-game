@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 interface VideoPlayerProps {
   youtubeId?: string | null;
   startSeconds?: number | null;
   audioUrl?: string | null;
   mediaType: "youtube" | "audio" | string;
+  onPlayStart?: () => void;
 }
 
 /*
@@ -20,8 +21,17 @@ export function VideoPlayer({
   startSeconds,
   audioUrl,
   mediaType,
+  onPlayStart,
 }: VideoPlayerProps) {
   const [playing, setPlaying] = useState(false);
+  // Guard so onPlayStart fires only on the very first playback event per mount
+  const playStartFired = useRef(false);
+  const firePlayStart = () => {
+    if (!playStartFired.current) {
+      playStartFired.current = true;
+      onPlayStart?.();
+    }
+  };
 
   const cardStyle: React.CSSProperties = {
     background: "var(--surface)",
@@ -52,7 +62,13 @@ export function VideoPlayer({
             Listen to the clip
           </span>
         </div>
-        <audio className="lahjat-audio" controls preload="metadata" src={audioUrl} />
+        <audio
+          className="lahjat-audio"
+          controls
+          preload="metadata"
+          src={audioUrl}
+          onPlay={firePlayStart}
+        />
       </div>
     );
   }
@@ -68,6 +84,7 @@ export function VideoPlayer({
             preload="metadata"
             src={audioUrl}
             style={{ background: "#000" }}
+            onPlay={firePlayStart}
           />
         </div>
       </div>
@@ -94,7 +111,7 @@ export function VideoPlayer({
           ) : (
             <button
               type="button"
-              onClick={() => setPlaying(true)}
+              onClick={() => { setPlaying(true); firePlayStart(); }}
               className="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-3 group"
               style={{ background: "var(--surface)" }}
             >

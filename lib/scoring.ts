@@ -1,5 +1,5 @@
 /**
- * Lahjat scoring engine — v0.1
+ * Lahjat scoring engine — v0.2
  *
  * Score = distance points (geographic accuracy, decays with distance)
  *       + dialect points (how closely the guessed cluster relates to the answer's cluster)
@@ -72,6 +72,14 @@ const MAX_DISTANCE_POINTS = 3000;
 const MAX_DIALECT_POINTS = 2000;
 const EXACT_CITY_BONUS = 200;
 const DISTANCE_DECAY_KM = 1000;
+
+// Tunable: gentler than DISTANCE_DECAY_KM so any in-country guess still scores well
+export const COUNTRY_DECAY_KM = 1500;
+
+// Tunable: pin must be within GATE_FREE_KM of a city to get full dialect credit;
+// beyond that, credit decays over GATE_DECAY_KM so ocean clicks score near zero
+export const GATE_FREE_KM = 150;
+export const GATE_DECAY_KM = 250;
 
 const DIALECT_MULTIPLIERS: Record<string, number> = {
   exact: 1.0,
@@ -153,6 +161,25 @@ export function nearestCity(lat: number, lon: number, cities: City[]): City | nu
   return best;
 }
 
+export function nearestCityInCountry(
+  lat: number,
+  lon: number,
+  country: string,
+  cities: City[]
+): City | null {
+  let best: City | null = null;
+  let bestDist = Infinity;
+  for (const city of cities) {
+    if (city.country !== country) continue;
+    const d = haversineDistanceKm(lat, lon, city.lat, city.lon);
+    if (d < bestDist) {
+      bestDist = d;
+      best = city;
+    }
+  }
+  return best;
+}
+
 export function getClusterRelationship(
   guessedCluster: string | null,
   answer: ClipAnswer,
@@ -190,19 +217,48 @@ export function scoreGuess(
 
   const distanceKm = haversineDistanceKm(guessLat, guessLon, answer.lat, answer.lon);
   const countryOnly = answer.city_confidence === "country";
-  const distancePoints = countryOnly
-    ? MAX_DISTANCE_POINTS
-    : Math.round(MAX_DISTANCE_POINTS * Math.exp(-distanceKm / DISTANCE_DECAY_KM));
+
+  // Bug 1 fix: for country-only clips, decay from the nearest in-country city
+  // rather than awarding the maximum unconditionally.
+  let distancePoints: number;
+  if (countryOnly) {
+    const nearestInCountry = nearestCityInCountry(guessLat, guessLon, answer.country, cities);
+    if (nearestInCountry) {
+      const distToNearest = haversineDistanceKm(
+        guessLat, guessLon,
+        nearestInCountry.lat, nearestInCountry.lon
+      );
+      distancePoints = Math.round(MAX_DISTANCE_POINTS * Math.exp(-distToNearest / COUNTRY_DECAY_KM));
+    } else {
+      // Fallback: no cities on record for this country — grant max as before
+      distancePoints = MAX_DISTANCE_POINTS;
+    }
+  } else {
+    distancePoints = Math.round(MAX_DISTANCE_POINTS * Math.exp(-distanceKm / DISTANCE_DECAY_KM));
+  }
 
   const guessedCity = nearestCity(guessLat, guessLon, cities);
   const guessedCluster = guessedCity ? guessedCity.cluster : null;
+
+  // Bug 2 fix: scale dialect credit by proximity to the nearest city so that
+  // an ocean pin cannot snap to a coastal city and claim full dialect points.
+  const distToNearestCity = guessedCity
+    ? haversineDistanceKm(guessLat, guessLon, guessedCity.lat, guessedCity.lon)
+    : Infinity;
+  const proximityFactor = Math.min(
+    1,
+    Math.exp(-Math.max(0, distToNearestCity - GATE_FREE_KM) / GATE_DECAY_KM)
+  );
+
   const relationship = getClusterRelationship(
     guessedCluster,
     answer,
     clip.alternate_acceptable_clusters,
     clusterMacroGroup
   );
-  const dialectPoints = Math.round(MAX_DIALECT_POINTS * DIALECT_MULTIPLIERS[relationship]);
+  const dialectPoints = Math.round(
+    MAX_DIALECT_POINTS * DIALECT_MULTIPLIERS[relationship] * proximityFactor
+  );
 
   const exactCity = !!(
     !countryOnly &&

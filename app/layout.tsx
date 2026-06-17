@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { SoundProvider } from "@/contexts/SoundContext";
 import { LangToggle } from "@/components/LangToggle";
+import { SoundToggle } from "@/components/SoundToggle";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,11 +24,24 @@ export default function RootLayout({
     <html lang="en" className="h-full">
       <body className="min-h-full flex flex-col">
         <LanguageProvider>
-          {/* Inline style bypasses Tailwind's RTL class processing — right: 1rem is always physical */}
-          <div style={{ position: "fixed", top: "1rem", right: "1rem", zIndex: 50 }}>
-            <LangToggle />
-          </div>
-          {children}
+          <SoundProvider>
+            {/* Inline style bypasses Tailwind's RTL class processing — right: 1rem is always physical */}
+            <div
+              style={{
+                position: "fixed",
+                top: "1rem",
+                right: "1rem",
+                zIndex: 50,
+                display: "flex",
+                gap: "0.5rem",
+                alignItems: "center",
+              }}
+            >
+              <SoundToggle />
+              <LangToggle />
+            </div>
+            {children}
+          </SoundProvider>
         </LanguageProvider>
       </body>
     </html>

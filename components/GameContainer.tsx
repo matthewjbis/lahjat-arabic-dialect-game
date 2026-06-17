@@ -1,14 +1,31 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { GameMap } from "@/components/GameMap";
 import { ScorePanel } from "@/components/ScorePanel";
 import { SummaryScreen } from "@/components/SummaryScreen";
 import { useT } from "@/contexts/LanguageContext";
-import { scoreGuess } from "@/lib/scoring";
+import { useSound } from "@/contexts/SoundContext";
+import { scoreGuess, MAX_SCORE } from "@/lib/scoring";
 import type { Clip, Cluster, DialectData, ScoreResult } from "@/lib/scoring";
+
+// --- Tunable speed-bonus constants ---
+const TIMER_MAX_MULTIPLIER = 1.5; // Tunable: multiplier awarded for an instant submission
+const TIMER_FLOOR = 1.0;          // Tunable: multiplier never drops below this (pure upside)
+const TIMER_WINDOW_SEC = 30;      // Tunable: seconds from first play until the floor is reached
+
+function computeMultiplier(startMs: number): number {
+  const t = Math.min(1, (Date.now() - startMs) / 1000 / TIMER_WINDOW_SEC);
+  return TIMER_FLOOR + (TIMER_MAX_MULTIPLIER - TIMER_FLOOR) * (1 - t);
+}
+
+export interface RoundResult {
+  score: ScoreResult;
+  multiplier: number;
+  finalScore: number;
+}
 
 interface GameContainerProps {
   dialectData: DialectData;
@@ -64,17 +81,43 @@ function NavPill({ href, children }: { href: string; children: React.ReactNode }
   );
 }
 
+function multiplierBarColor(mult: number): string {
+  const ratio = (mult - TIMER_FLOOR) / (TIMER_MAX_MULTIPLIER - TIMER_FLOOR);
+  if (ratio > 0.55) return "var(--accent)";
+  if (ratio > 0.2) return "var(--score-mid)";
+  return "var(--text-faint)";
+}
+
 export function GameContainer({ dialectData, clips }: GameContainerProps) {
   const t = useT();
+  const playSound = useSound();
 
   const [shuffledClips, setShuffledClips] = useState(() => shuffle(clips));
   const [clipIndex, setClipIndex] = useState(0);
   const [guess, setGuess] = useState<GuessState | null>(null);
   const [locked, setLocked] = useState(false);
-  const [result, setResult] = useState<ScoreResult | null>(null);
-  const [results, setResults] = useState<ScoreResult[]>([]);
+  const [result, setResult] = useState<RoundResult | null>(null);
+  const [results, setResults] = useState<RoundResult[]>([]);
   const [showSummary, setShowSummary] = useState(false);
   const [flash, setFlash] = useState(false);
+
+  // Timer state — set to Date.now() the first time the player starts the clip
+  const [playStartedAt, setPlayStartedAt] = useState<number | null>(null);
+  const [liveMultiplier, setLiveMultiplier] = useState<number | null>(null);
+
+  // Tick the live multiplier display while the player is deciding
+  useEffect(() => {
+    if (playStartedAt === null || locked) {
+      setLiveMultiplier(null);
+      return;
+    }
+    const tick = () => {
+      setLiveMultiplier(computeMultiplier(playStartedAt));
+    };
+    tick();
+    const id = window.setInterval(tick, 100);
+    return () => window.clearInterval(id);
+  }, [playStartedAt, locked]);
 
   const clusterMap: Record<string, Cluster> = Object.fromEntries(
     dialectData.clusters.map((c) => [c.id, c])
@@ -92,11 +135,31 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     [locked]
   );
 
+  const handlePlayStart = useCallback(() => {
+    // Functional update: only record the first play; ignore subsequent fires
+    setPlayStartedAt((prev) => (prev === null ? Date.now() : prev));
+  }, []);
+
   function handleSubmit() {
     if (!guess || locked) return;
     const scored = scoreGuess(guess.lat, guess.lon, currentClip, dialectData);
-    setResult(scored);
-    setResults((prev) => [...prev, scored]);
+
+    const multiplier =
+      playStartedAt !== null ? computeMultiplier(playStartedAt) : TIMER_FLOOR;
+    const finalScore = Math.round(scored.total * multiplier);
+
+    // Play the result sound on the submit click — satisfies browser autoplay policy
+    const soundKind =
+      scored.relationship === "exact"
+        ? "success"
+        : scored.relationship === "none"
+        ? "fail"
+        : "medium";
+    playSound(soundKind);
+
+    const roundResult: RoundResult = { score: scored, multiplier, finalScore };
+    setResult(roundResult);
+    setResults((prev) => [...prev, roundResult]);
     setLocked(true);
     setFlash(true);
     window.setTimeout(() => setFlash(false), 650);
@@ -107,6 +170,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     setGuess(null);
     setLocked(false);
     setResult(null);
+    setPlayStartedAt(null);
   }
 
   function handlePlayAgain() {
@@ -117,6 +181,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     setResult(null);
     setResults([]);
     setShowSummary(false);
+    setPlayStartedAt(null);
   }
 
   if (showSummary) {
@@ -125,10 +190,16 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
         results={results}
         clips={shuffledClips}
         clusterMap={clusterMap}
+        maxPossible={shuffledClips.length * MAX_SCORE * TIMER_MAX_MULTIPLIER}
         onPlayAgain={handlePlayAgain}
       />
     );
   }
+
+  const barFill =
+    liveMultiplier !== null
+      ? ((liveMultiplier - TIMER_FLOOR) / (TIMER_MAX_MULTIPLIER - TIMER_FLOOR)) * 100
+      : 0;
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-5 pt-14 sm:pt-7 pb-16">
@@ -174,15 +245,50 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
       </div>
 
       {/* Media player card */}
-      <div className="mb-4">
+      <div className="mb-3">
         <VideoPlayer
           key={currentClip.id}
           youtubeId={currentClip.youtube_id}
           startSeconds={currentClip.start_seconds}
           audioUrl={currentClip.audio_url}
           mediaType={currentClip.media_type ?? "youtube"}
+          onPlayStart={handlePlayStart}
         />
       </div>
+
+      {/* Live speed-bonus badge — appears after first play, before submit */}
+      {liveMultiplier !== null && !locked && (
+        <div
+          className="rounded-xl px-3.5 py-2 mb-3 flex items-center gap-3"
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border-strong)",
+          }}
+        >
+          <span className="text-xs" style={{ color: "var(--text-faint)" }}>
+            {t.speedBonus}
+          </span>
+          <span
+            className="text-sm font-bold tabular-nums ml-auto"
+            style={{ color: multiplierBarColor(liveMultiplier) }}
+          >
+            ×{liveMultiplier.toFixed(1)}
+          </span>
+          {/* Depleting bar */}
+          <div
+            className="w-24 h-1.5 rounded-full overflow-hidden shrink-0"
+            style={{ background: "rgba(236,226,205,0.12)" }}
+          >
+            <div
+              className="h-full rounded-full transition-none"
+              style={{
+                width: `${barFill}%`,
+                background: multiplierBarColor(liveMultiplier),
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       <p className="text-xs mb-2.5" style={{ color: "var(--on-bg-muted)" }}>
         {locked ? t.instructionsAfter : t.instructionsBefore}

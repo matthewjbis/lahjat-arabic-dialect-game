@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Clip, Cluster, ScoreResult } from "@/lib/scoring";
+import type { Clip, Cluster } from "@/lib/scoring";
 import { MAX_SCORE } from "@/lib/scoring";
+import type { RoundResult } from "@/components/GameContainer";
 import { useT } from "@/contexts/LanguageContext";
 
 const REL_COLORS: Record<string, string> = {
@@ -57,22 +58,26 @@ function useCountUp(target: number, duration = 900): number {
 }
 
 interface ScorePanelProps {
-  result: ScoreResult;
+  result: RoundResult;
   clip: Clip;
   clusterMap: Record<string, Cluster>;
 }
 
 export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
   const t = useT();
+  const { score, multiplier, finalScore } = result;
 
-  const ratio = MAX_SCORE > 0 ? result.total / MAX_SCORE : 0;
+  const ratio = MAX_SCORE > 0 ? finalScore / MAX_SCORE : 0;
   const color = scoreColor(ratio);
-  const animated = useCountUp(result.total);
+  const animated = useCountUp(finalScore);
 
   const answerCluster = clusterMap[clip.answer.cluster];
-  const guessedCluster = result.guessedCluster
-    ? clusterMap[result.guessedCluster]
+  const guessedCluster = score.guessedCluster
+    ? clusterMap[score.guessedCluster]
     : null;
+
+  const hasBonus = multiplier > 1.001;
+  const multStr = multiplier.toFixed(1);
 
   const relLabels: Record<string, string> = {
     exact: t.relExact,
@@ -92,40 +97,48 @@ export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
     >
       {/* Earned score — large, colour-coded, counts up */}
       <div className="flex items-end justify-between gap-3 mb-1">
-        <div className="flex items-baseline gap-1.5">
-          <span
-            className="font-bold tabular-nums leading-none"
-            style={{ fontSize: "2.75rem", color }}
-          >
-            {animated}
-          </span>
-          <span
-            className="text-base font-medium"
-            style={{ color: "var(--text-faint)" }}
-          >
-            / {MAX_SCORE}
-          </span>
+        <div>
+          <div className="flex items-baseline gap-1.5">
+            <span
+              className="font-bold tabular-nums leading-none"
+              style={{ fontSize: "2.75rem", color }}
+            >
+              {animated}
+            </span>
+            <span
+              className="text-base font-medium"
+              style={{ color: "var(--text-faint)" }}
+            >
+              / {MAX_SCORE}
+            </span>
+          </div>
+          {/* Speed-bonus breakdown — only shown when a bonus was applied */}
+          {hasBonus && (
+            <p className="text-xs mt-0.5 tabular-nums" style={{ color: "var(--text-faint)" }}>
+              {t.multiplierBreakdown(score.total, multStr, finalScore)}
+            </p>
+          )}
         </div>
         {/* thin gold rule, a quiet calligraphic flourish */}
         <div
-          className="flex-1 h-px mb-2.5"
+          className="flex-1 h-px mb-2.5 self-end"
           style={{ background: "var(--border-gold)" }}
         />
       </div>
 
       <div className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
-        {t.kmFrom(result.distanceKm, clip.answer.city, clip.answer.country)}
+        {t.kmFrom(score.distanceKm, clip.answer.city, clip.answer.country)}
       </div>
 
       {/* Breakdown */}
       <div
         className="grid gap-2 mb-4"
-        style={{ gridTemplateColumns: "repeat(3, 1fr)" }}
+        style={{ gridTemplateColumns: hasBonus ? "repeat(4, 1fr)" : "repeat(3, 1fr)" }}
       >
         {[
-          { label: t.distanceLabel, value: result.distancePoints },
-          { label: t.dialectLabel, value: result.dialectPoints },
-          { label: t.cityBonusLabel, value: result.exactCityBonus },
+          { label: t.distanceLabel, value: score.distancePoints },
+          { label: t.dialectLabel, value: score.dialectPoints },
+          { label: t.cityBonusLabel, value: score.exactCityBonus },
         ].map(({ label, value }) => (
           <div
             key={label}
@@ -149,6 +162,31 @@ export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
             </span>
           </div>
         ))}
+
+        {/* Speed tile — only when a bonus was earned */}
+        {hasBonus && (
+          <div
+            className="rounded-xl px-3 py-2.5"
+            style={{
+              background: "var(--surface-inset)",
+              boxShadow: "var(--shadow-inset)",
+              border: "1px solid rgba(200,168,50,.18)",
+            }}
+          >
+            <span
+              className="block text-[11px] mb-1 uppercase tracking-wide"
+              style={{ color: "var(--text-faint)" }}
+            >
+              {t.speedBonus}
+            </span>
+            <span
+              className="font-bold text-lg tabular-nums"
+              style={{ color: "var(--accent)" }}
+            >
+              ×{multStr}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Reveal */}
@@ -162,17 +200,17 @@ export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
           <span
             className="text-xs font-semibold px-2 py-0.5 rounded-full"
             style={{
-              background: REL_COLORS[result.relationship],
-              color: REL_TEXT[result.relationship],
+              background: REL_COLORS[score.relationship],
+              color: REL_TEXT[score.relationship],
             }}
           >
-            {relLabels[result.relationship]}
+            {relLabels[score.relationship]}
           </span>
         </div>
 
         {guessedCluster && (
           <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
-            {t.guessedNearest(result.guessedCity ?? "", guessedCluster.name)}
+            {t.guessedNearest(score.guessedCity ?? "", guessedCluster.name)}
           </p>
         )}
 

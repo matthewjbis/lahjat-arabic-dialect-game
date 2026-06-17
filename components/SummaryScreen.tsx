@@ -2,14 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import type { Clip, Cluster, ScoreResult } from "@/lib/scoring";
+import type { Clip, Cluster } from "@/lib/scoring";
 import { MAX_SCORE } from "@/lib/scoring";
+import type { RoundResult } from "@/components/GameContainer";
 import { useT } from "@/contexts/LanguageContext";
 
 interface SummaryScreenProps {
-  results: ScoreResult[];
+  results: RoundResult[];
   clips: Clip[];
   clusterMap: Record<string, Cluster>;
+  maxPossible: number;
   onPlayAgain: () => void;
 }
 
@@ -57,15 +59,15 @@ export function SummaryScreen({
   results,
   clips,
   clusterMap,
+  maxPossible,
   onPlayAgain,
 }: SummaryScreenProps) {
   const t = useT();
 
-  const total = results.reduce((sum, r) => sum + r.total, 0);
-  const maxTotal = results.length * MAX_SCORE;
-  const ratio = maxTotal > 0 ? total / maxTotal : 0;
+  const grandTotal = results.reduce((sum, r) => sum + r.finalScore, 0);
+  const ratio = maxPossible > 0 ? grandTotal / maxPossible : 0;
   const color = tierColor(ratio);
-  const animatedTotal = useCountUp(total);
+  const animatedTotal = useCountUp(grandTotal);
   const pct = Math.round(ratio * 100);
 
   return (
@@ -103,7 +105,7 @@ export function SummaryScreen({
             className="text-2xl font-medium"
             style={{ color: "var(--text-faint)" }}
           >
-            / {maxTotal}
+            / {Math.round(maxPossible)}
           </span>
         </div>
         <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>
@@ -116,7 +118,7 @@ export function SummaryScreen({
         >
           <div
             className="h-full rounded-full transition-all duration-1000"
-            style={{ width: `${pct}%`, background: color }}
+            style={{ width: `${Math.min(100, pct)}%`, background: color }}
           />
         </div>
       </div>
@@ -133,7 +135,8 @@ export function SummaryScreen({
         {results.map((r, i) => {
           const clip = clips[i];
           const cluster = clip ? clusterMap[clip.answer.cluster] : null;
-          const rRatio = MAX_SCORE > 0 ? r.total / MAX_SCORE : 0;
+          const rRatio = MAX_SCORE > 0 ? r.finalScore / MAX_SCORE : 0;
+          const hasBonus = r.multiplier > 1.001;
           return (
             <div
               key={i}
@@ -163,18 +166,28 @@ export function SummaryScreen({
                     className="inline-block w-2 h-2 rounded-full shrink-0"
                     style={{
                       background:
-                        REL_COLORS[r.relationship] ?? "var(--surface-2)",
+                        REL_COLORS[r.score.relationship] ?? "var(--surface-2)",
                     }}
                   />
                   {cluster?.name ?? clip?.answer.cluster}
                 </div>
               </div>
-              <span
-                className="text-base font-bold tabular-nums shrink-0"
-                style={{ color: tierColor(rRatio) }}
-              >
-                {r.total}
-              </span>
+              <div className="flex items-baseline gap-1.5 shrink-0">
+                <span
+                  className="text-base font-bold tabular-nums"
+                  style={{ color: tierColor(rRatio) }}
+                >
+                  {r.finalScore}
+                </span>
+                {hasBonus && (
+                  <span
+                    className="text-xs font-semibold tabular-nums"
+                    style={{ color: "var(--accent)" }}
+                  >
+                    ×{r.multiplier.toFixed(1)}
+                  </span>
+                )}
+              </div>
             </div>
           );
         })}

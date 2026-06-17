@@ -4,6 +4,66 @@
 
 ---
 
+## 2026-06-17 (continued — sound)
+
+### Added
+- **Result sound effects** in Classic mode — triggered on the submit click (satisfies browser autoplay policy):
+  - `exact` relationship → `public/sounds/success.mp3`
+  - `adjacent` or `macro` → `public/sounds/medium.mp3`
+  - `none` → `public/sounds/fail.mp3`
+  - Three `HTMLAudioElement` objects are preloaded once on `SoundProvider` mount; 404 errors are silently swallowed so a missing file never throws
+- **Mute toggle** button (speaker icon) in the fixed header, left of the language toggle; preference persisted to `localStorage` under `lahjat-muted`
+- `contexts/SoundContext.tsx` — `SoundProvider`, `useSound()`, `useMuted()`, `useToggleMute()` hooks, mirroring the LanguageContext pattern
+- `components/SoundToggle.tsx` — icon button that switches between speaker-on / speaker-crossed-out SVGs
+- New translation keys `muteSound` / `unmuteSound` in en + ar
+
+---
+
+## 2026-06-17 (continued — security)
+
+### Security
+- **Clip URLs no longer appear in crawlable HTML** — signed Supabase media URLs were previously embedded in the SSR output of `/play`, exposing them to scrapers and spoiling clip locations before a player interacted with the page
+- Moved clip fetching entirely to a new server-only API route (`app/api/clips/route.ts`): queries approved submissions, generates signed URLs, and returns `Clip[]` as JSON — `supabaseAdmin` and the service-role key never leave the server
+- `/play` is now a static server component that passes only `dialect-cities.json` (public geographic data) at build time; no Supabase calls at SSR
+- Added `components/GameLoader.tsx` — client component that fetches `/api/clips` on mount and renders a loading spinner until clips arrive, then hands off to `GameContainer`
+- Extracted `resolveLocation()` from the old play page into `lib/resolveLocation.ts` for reuse by the API route
+- Added `app/robots.ts` (Next.js Metadata API) — allows `/`, `/dialects`, `/contribute`; disallows `/play` and `/api/`
+
+---
+
+## 2026-06-17 (continued)
+
+### Added
+- **Speed-bonus multiplier in Classic mode** — rewards quick guesses, never punishes slow ones
+  - Timer starts on first play (first "Click to listen"), not on clip load
+  - Multiplier decays smoothly from **×1.5** (instant) down to a **×1.0 floor** over **30 seconds** (all three values are tunable constants in `GameContainer.tsx`)
+  - `finalScore = round(baseScore × multiplier)` — accumulated into all totals
+  - **Live ticking badge** appears between the player and the map once the clip starts, showing the current multiplier and a depleting bar; disappears on submit
+  - **ScorePanel** shows `finalScore` as the primary number; when a bonus was earned, a "Speed bonus ×X.X" breakdown tile is added to the grid and a `base × mult = final` annotation appears under the score
+  - **SummaryScreen** uses `finalScore` for all per-clip and grand totals; per-clip rows show a `×X.X` badge when a bonus applied; the denominator reflects the multiplied maximum
+  - Timer resets correctly in `handleNext` and `handlePlayAgain`
+  - New translations: `speedBonus` and `multiplierBreakdown` (en + ar)
+  - `RoundResult` type exported from `GameContainer.tsx` — wraps `ScoreResult` with `multiplier` and `finalScore`
+
+---
+
+## 2026-06-17
+
+### Fixed
+- **Ocean clicks no longer score points** — two bugs in `lib/scoring.ts` let a pin dropped in open water earn a full score:
+  - *Bug 1 (country-only clips):* `scoreGuess()` was awarding a flat `MAX_DISTANCE_POINTS` (3000) for any `city_confidence === "country"` clip regardless of where the pin landed. Fixed by measuring distance to the nearest in-country city and decaying with `COUNTRY_DECAY_KM = 1500` (gentler than the city-level decay so any reasonable in-country guess still scores well).
+  - *Bug 2 (dialect points):* `dialectPoints` had no distance gate, so an ocean pin could snap to a coastal city and claim full cluster credit. Fixed by computing a `proximityFactor` that is 1.0 within `GATE_FREE_KM = 150 km` of the nearest city and decays to near-zero over `GATE_DECAY_KM = 250 km` beyond that.
+- New exported tunable constants: `COUNTRY_DECAY_KM`, `GATE_FREE_KM`, `GATE_DECAY_KM`
+- New helper `nearestCityInCountry(lat, lon, country, cities)` exported from `lib/scoring.ts`
+
+### Added
+- Vitest test suite (`lib/scoring.test.ts`) covering:
+  - Mosul guess scores higher than Baghdad guess for an Aleppo clip (adjacent vs. none relationship)
+  - Ocean click on a country-only clip scores < 500
+  - In-country click on a country-only clip scores ≥ 4000
+
+---
+
 ## 2026-06-16
 
 - Added Arabic language support to the dialect map, now Arabic language is mapped to each country, city, and dialect

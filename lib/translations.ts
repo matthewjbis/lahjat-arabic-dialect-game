@@ -87,6 +87,15 @@ const en = {
   networkError: "Network error, please try again",
   somethingWrong: "Something went wrong",
 
+  // Sound toggle
+  muteSound: "Mute sounds",
+  unmuteSound: "Unmute sounds",
+
+  // Speed-bonus timer
+  speedBonus: "Speed bonus",
+  multiplierBreakdown: (base: number, mult: string, final: number) =>
+    `${base.toLocaleString()} × ${mult} = ${final.toLocaleString()}`,
+
   // Summary screen
   summaryTitle: "Round complete",
   viewResults: "View results",
@@ -185,6 +194,15 @@ const ar: typeof en = {
   micDenied: "تم رفض الوصول إلى الميكروفون — يرجى السماح بالوصول والمحاولة مجدداً.",
   networkError: "خطأ في الشبكة، يرجى المحاولة مرة أخرى",
   somethingWrong: "حدث خطأ ما",
+
+  // Sound toggle
+  muteSound: "كتم الأصوات",
+  unmuteSound: "تفعيل الأصوات",
+
+  // Speed-bonus timer
+  speedBonus: "مكافأة السرعة",
+  multiplierBreakdown: (base: number, mult: string, final: number) =>
+    `${base.toLocaleString()} × ${mult} = ${final.toLocaleString()}`,
 
   // Summary screen
   summaryTitle: "انتهت الجولة",
