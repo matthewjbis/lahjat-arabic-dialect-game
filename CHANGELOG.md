@@ -14,6 +14,7 @@
 - **Fail sound mapped to correct filename** — code expected `fail.mp3` but uploaded file was named `failure.mp3`; path updated in `SoundContext`
 - **Subtitle / clip counter no longer run together** — added `gap-4` to the flex row so "Classic Mode — …" and "Clip X of Y" always have space between them
 - **Speed bonus window halved** — `TIMER_WINDOW_SEC` reduced from 30 s → 15 s for more meaningful time pressure
+- **Something to add** - 'TIMER_WINDOW_SEC' can go negative, so if you take too long it will cause the score multiplier to go red and hurt your score
 
 ---
 
