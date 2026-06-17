@@ -45,9 +45,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Attribute the submission to the signed-in user, if any (null for anonymous)
+  // Uploads require a signed-in account — prevents anonymous abuse of the
+  // open upload endpoint and ties every clip to a real user.
   const authClient = await createServerSupabase();
   const { data: { user } } = await authClient.auth.getUser();
+  if (!user) {
+    return NextResponse.json(
+      { error: "You must be signed in to submit a clip" },
+      { status: 401 }
+    );
+  }
 
   const ext = file.name.split(".").pop() ?? "bin";
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
@@ -72,7 +79,7 @@ export async function POST(req: NextRequest) {
     file_type: file.type,
     source_type: sourceType,
     status: "pending",
-    user_id: user?.id ?? null,
+    user_id: user.id,
   });
 
   if (dbError) {

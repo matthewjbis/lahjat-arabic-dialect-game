@@ -7,6 +7,7 @@
 ## 2026-06-17 (continued — audit fixes)
 
 ### Security
+- **Uploads now require a signed-in account** — `/api/submit-clip` returns 401 for anonymous requests, closing the open 50 MB upload endpoint to abuse; the contribute page shows a "Sign in to contribute" gate (translated en + ar) with a link to `/auth?redirectTo=/contribute` instead of letting users fill the form and hit a 401
 - **`/api/clips?debug=1` gated to development** — the debug view (which exposes internal storage `file_path`s and drop reasons) now only responds when `NODE_ENV !== "production"`; production requests always get the plain `Clip[]`
 - **Removed per-request console logging** from the clips route
 

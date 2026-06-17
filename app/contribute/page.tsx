@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useT, useLang } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const COUNTRY_CODES = [
   "DZ","BH","KM","DJ","EG","IQ","JO","KW","LB","LY",
@@ -19,6 +20,7 @@ function formatTime(s: number) {
 export default function ContributePage() {
   const t = useT();
   const { lang } = useLang();
+  const { user, loading: authLoading } = useAuth();
 
   const countries = useMemo(() => {
     const names = new Intl.DisplayNames([lang], { type: "region" });
@@ -185,6 +187,40 @@ export default function ContributePage() {
             style={{ background: "var(--surface-2)", color: "var(--text)" }}
           >
             {t.backToHome}
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  // Submitting requires an account — gate the form behind sign-in
+  if (!authLoading && !user) {
+    return (
+      <main className="max-w-lg mx-auto px-5 py-10">
+        <div className="text-left mb-6">
+          <Link href="/" className="text-sm" style={{ color: "var(--on-bg-muted)" }}>
+            {t.backLink}
+          </Link>
+        </div>
+        <h1 className="text-2xl font-medium tracking-tight mb-1" style={{ color: "var(--heading)" }}>
+          {t.contributeTitle}
+        </h1>
+        <div
+          className="rounded-xl p-6 mt-6 text-center"
+          style={{ background: "var(--surface)", border: "1px solid var(--border-strong)", boxShadow: "var(--shadow-card)" }}
+        >
+          <h2 className="text-base font-semibold mb-2" style={{ color: "var(--text)" }}>
+            {t.signInToContributeTitle}
+          </h2>
+          <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
+            {t.signInToContributeBody}
+          </p>
+          <Link
+            href="/auth?redirectTo=/contribute"
+            className="inline-block px-5 py-2.5 rounded-xl text-sm font-semibold"
+            style={{ background: "var(--accent)", color: "var(--gold-ink)" }}
+          >
+            {t.signInCta}
           </Link>
         </div>
       </main>
