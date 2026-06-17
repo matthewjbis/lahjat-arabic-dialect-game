@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-06-17 (continued — auto-fail timer)
+
+### Added
+- **Penalty zone and auto-fail** — the speed-bonus timer now continues past the 1.0× floor instead of stopping:
+  - **Phase 1** (0 – 15 s): 1.5× → 1.0× gold/amber bar (speed bonus, unchanged)
+  - **Phase 2** (15 – 35 s): 1.0× → 0× red bar (penalty zone)
+  - **At 0×**: round auto-fails — fail sound plays, map locks, player scores 0 for that clip
+  - Live badge bar turns red and the multiplier text turns red once in the penalty zone
+  - ScorePanel shows "Time's up — 0 points" in red (translated in en + ar) and a red `×0.0` speed tile when auto-failed
+  - New tunable constant `TIMER_PENALTY_SEC = 20` (seconds for the penalty phase)
+  - New translation keys `timesUp` in en + ar
+
+---
+
 ## 2026-06-17 (continued — UI fixes)
 
 ### Fixed
@@ -14,7 +28,6 @@
 - **Fail sound mapped to correct filename** — code expected `fail.mp3` but uploaded file was named `failure.mp3`; path updated in `SoundContext`
 - **Subtitle / clip counter no longer run together** — added `gap-4` to the flex row so "Classic Mode — …" and "Clip X of Y" always have space between them
 - **Speed bonus window halved** — `TIMER_WINDOW_SEC` reduced from 30 s → 15 s for more meaningful time pressure
-- **Something to add** - 'TIMER_WINDOW_SEC' can go negative, so if you take too long it will cause the score multiplier to go red and hurt your score
 
 ---
 
