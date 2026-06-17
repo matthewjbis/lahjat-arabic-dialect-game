@@ -30,7 +30,8 @@ export function AuthButton() {
   }
 
   // Logged-in: show avatar initial + dropdown
-  const initial = (user.email ?? "?")[0].toUpperCase();
+  const displayName = user.user_metadata?.display_name as string | undefined;
+  const initial = (displayName ?? user.email ?? "?")[0].toUpperCase();
 
   return (
     <div className="relative">
@@ -62,12 +63,19 @@ export function AuthButton() {
               boxShadow: "var(--shadow-lift)",
             }}
           >
-            <p
-              className="px-3 py-2 text-xs truncate"
-              style={{ color: "var(--text-faint)", borderBottom: "1px solid var(--border)" }}
+            <div
+              className="px-3 py-2"
+              style={{ borderBottom: "1px solid var(--border)" }}
             >
-              {user.email}
-            </p>
+              {displayName && (
+                <p className="text-xs font-medium truncate" style={{ color: "var(--text)" }}>
+                  {displayName}
+                </p>
+              )}
+              <p className="text-xs truncate" style={{ color: "var(--text-faint)" }}>
+                {user.email}
+              </p>
+            </div>
             <button
               type="button"
               onClick={async () => { setMenuOpen(false); await signOut(); }}

@@ -36,6 +36,7 @@ function AuthForm() {
   const [tab, setTab] = useState<Tab>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +54,11 @@ function AuthForm() {
         router.push(redirectTo);
       }
     } else {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { display_name: displayName.trim() || null } },
+      });
       if (error) {
         setError(error.message);
         setStatus("idle");
@@ -109,6 +114,23 @@ function AuthForm() {
               style={inputStyle}
             />
           </div>
+
+          {tab === "signup" && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
+                Display name <span style={{ color: "var(--text-faint)", textTransform: "none", letterSpacing: 0 }}>(optional)</span>
+              </label>
+              <input
+                type="text"
+                autoComplete="nickname"
+                maxLength={40}
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="e.g. Ahmed"
+                style={{ ...inputStyle, color: displayName ? "var(--text)" : undefined }}
+              />
+            </div>
+          )}
 
           <div className="flex flex-col gap-1.5">
             <label className="text-xs uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
