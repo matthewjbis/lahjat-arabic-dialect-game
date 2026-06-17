@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-06-17 (continued — auth)
+
+### Added
+- **Email authentication** — players can create an account and sign in with email + password; auth is entirely optional and gameplay requires no account
+  - `app/auth/page.tsx` — sign in / create account page matching the Lahjat design system; tabbed layout with error display and "Check your email" confirmation state
+  - `app/auth/callback/route.ts` — handles email confirmation links and future OAuth redirects
+  - `contexts/AuthContext.tsx` — `useAuth()` hook providing `user`, `loading`, and `signOut`; listens to `onAuthStateChange` so state stays in sync across tabs
+  - `components/AuthButton.tsx` — "Sign in" pill in the fixed top-right header when logged out; avatar initial + email/sign-out dropdown when logged in
+  - `middleware.ts` — refreshes the session cookie on every request so sessions never silently expire
+  - `lib/supabase-server.ts` — server-side Supabase client (`createServerSupabase`) and admin client, separated from the browser client to prevent `next/headers` bundling into the client
+  - `supabase/schema.sql` — database schema: `profiles` table (auto-created on sign-up via trigger), `game_sessions` table for score persistence, `user_id` column on `submissions` for contributor attribution
+  - Supabase `Site URL` updated to `https://lahjat.app` so confirmation emails link to the live domain
+  - Google and other OAuth providers can be added later with a single dashboard toggle + one button
+
+---
+
+## 2026-06-17 (continued — content & fixes)
+
+### Added
+- **South Sudan added to contribute page** — `SS` (Juba Arabic / `jubaArabic` cluster) was already in `dialect-cities.json`; added to the country dropdown in `app/contribute/page.tsx`
+- **End screen sound** — `public/sounds/endscreen.mp3` plays when the player clicks "View results"; fires on the button click (user-gesture tick, satisfying browser autoplay policy); preloaded alongside the other sounds in `SoundProvider`
+- **`/api/clips?debug=1` diagnostic mode** — returns `{ total, serving, dropped[{id, country, city, file_path, reason}], clips }` so missing clips can be diagnosed without digging into server logs; normal requests return `Clip[]` as before
+
+### Fixed
+- **Video thumbnail hidden on desktop** — `preload="metadata"` caused Chrome to display the first video frame as a poster image before the user clicked play, potentially revealing the clip's location; replaced with the same click-to-reveal cover pattern used for YouTube embeds (`preload="none"`, solid surface overlay, gold play button, `videoRef.current.play()` on click)
+
+---
+
 ## 2026-06-17 (continued — auto-fail timer)
 
 ### Added
