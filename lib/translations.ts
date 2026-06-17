@@ -18,7 +18,7 @@ const en = {
   // Buttons
   submitGuess: "Submit guess",
   resetPin: "Reset pin",
-  nextClip: "Next clip →",
+  nextClip: "Next clip",
   playAgain: "Play again",
   resetZoom: "Reset zoom",
   contribute: "Contribute",
@@ -127,7 +127,7 @@ const ar: typeof en = {
 
   submitGuess: "أرسل تخمينك",
   resetPin: "أعد تعيين الدبوس",
-  nextClip: "← المقطع التالي",
+  nextClip: "المقطع التالي",
   playAgain: "العب مجدداً",
   resetZoom: "إعادة ضبط التكبير",
   contribute: "ساهم",
