@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-server";
 import { resolveLocation } from "@/lib/resolveLocation";
 import type { Clip } from "@/lib/scoring";
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 const ALLOWED_TYPES = new Set([
