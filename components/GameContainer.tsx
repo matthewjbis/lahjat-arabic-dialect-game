@@ -407,7 +407,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
 
         {locked && isLastClip && (
           <button
-            onClick={() => setShowSummary(true)}
+            onClick={() => { playSound("endscreen"); setShowSummary(true); }}
             className="w-full sm:w-auto rounded-xl text-sm font-semibold transition-all duration-150"
             style={{
               minHeight: 48,

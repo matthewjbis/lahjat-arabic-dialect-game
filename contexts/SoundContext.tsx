@@ -12,7 +12,7 @@ import {
 interface SoundContextValue {
   muted: boolean;
   toggleMute: () => void;
-  playSound: (kind: "success" | "medium" | "fail") => void;
+  playSound: (kind: "success" | "medium" | "fail" | "endscreen") => void;
 }
 
 const SoundContext = createContext<SoundContextValue>({
@@ -21,10 +21,11 @@ const SoundContext = createContext<SoundContextValue>({
   playSound: () => {},
 });
 
-const SOUND_PATHS: Record<"success" | "medium" | "fail", string> = {
-  success: "/sounds/success.mp3",
-  medium:  "/sounds/medium.mp3",
-  fail:    "/sounds/failure.mp3",
+const SOUND_PATHS: Record<"success" | "medium" | "fail" | "endscreen", string> = {
+  success:   "/sounds/success.mp3",
+  medium:    "/sounds/medium.mp3",
+  fail:      "/sounds/failure.mp3",
+  endscreen: "/sounds/endscreen.mp3",
 };
 
 export function SoundProvider({ children }: { children: ReactNode }) {
@@ -36,14 +37,15 @@ export function SoundProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Preload one HTMLAudioElement per sound — created once on mount
-  const audioRef = useRef<Record<"success" | "medium" | "fail", HTMLAudioElement | null>>({
+  const audioRef = useRef<Record<"success" | "medium" | "fail" | "endscreen", HTMLAudioElement | null>>({
     success: null,
     medium: null,
     fail: null,
+    endscreen: null,
   });
 
   useEffect(() => {
-    (["success", "medium", "fail"] as const).forEach((kind) => {
+    (["success", "medium", "fail", "endscreen"] as const).forEach((kind) => {
       const el = new Audio(SOUND_PATHS[kind]);
       el.preload = "auto";
       // Silence 404s — the player will drop the files in; until then nothing throws
@@ -60,7 +62,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     });
   }
 
-  function playSound(kind: "success" | "medium" | "fail") {
+  function playSound(kind: "success" | "medium" | "fail" | "endscreen") {
     if (muted) return;
     const el = audioRef.current[kind];
     if (!el) return;
