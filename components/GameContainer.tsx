@@ -14,7 +14,7 @@ import type { Clip, Cluster, DialectData, ScoreResult } from "@/lib/scoring";
 // --- Tunable speed-bonus constants ---
 const TIMER_MAX_MULTIPLIER = 1.5; // Tunable: multiplier awarded for an instant submission
 const TIMER_FLOOR = 1.0;          // Tunable: multiplier never drops below this (pure upside)
-const TIMER_WINDOW_SEC = 30;      // Tunable: seconds from first play until the floor is reached
+const TIMER_WINDOW_SEC = 15;      // Tunable: seconds from first play until the floor is reached
 
 function computeMultiplier(startMs: number): number {
   const t = Math.min(1, (Date.now() - startMs) / 1000 / TIMER_WINDOW_SEC);
@@ -214,7 +214,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
 
       {/* Journey progress strip */}
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center justify-between gap-4 mb-1.5">
           <p className="text-xs sm:text-sm" style={{ color: "var(--on-bg-muted)" }}>
             {t.subtitle}
           </p>
@@ -373,7 +373,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
             onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
             onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
           >
-            {t.nextClip} →
+            {t.nextClip}
           </button>
         )}
 
