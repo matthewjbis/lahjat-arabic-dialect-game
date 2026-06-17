@@ -4,6 +4,23 @@
 
 ---
 
+## 2026-06-17 (continued — audit fixes)
+
+### Security
+- **`/api/clips?debug=1` gated to development** — the debug view (which exposes internal storage `file_path`s and drop reasons) now only responds when `NODE_ENV !== "production"`; production requests always get the plain `Clip[]`
+- **Removed per-request console logging** from the clips route
+
+### Added
+- **Password reset page** (`app/auth/reset/page.tsx`) — completes the "Forgot password?" flow, which previously linked to a non-existent route and 404'd; user sets a new password via `supabase.auth.updateUser` with a confirm-password check
+- **Contributor attribution** — `/api/submit-clip` now reads the signed-in session server-side and stores `user_id` on the submission (null for anonymous uploads)
+
+### Changed
+- **`middleware.ts` → `proxy.ts`** — renamed to the Next.js 16 `proxy` file convention (function `middleware` → `proxy`); clears the build-time deprecation warning
+- **`export const runtime = "nodejs"` added to `/api/submit-clip`** for parity with the clips route (both use the service-role admin client)
+- **Memoized `clusterMap`** in `GameContainer` with `useMemo`
+
+---
+
 ## 2026-06-17 (continued — auth)
 
 ### Added
