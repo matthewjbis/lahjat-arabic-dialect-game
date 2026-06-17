@@ -77,6 +77,8 @@ export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
     : null;
 
   const hasBonus = multiplier > 1.001;
+  const isTimedOut = multiplier < 0.001;
+  const showSpeedTile = hasBonus || isTimedOut;
   const multStr = multiplier.toFixed(1);
 
   const relLabels: Record<string, string> = {
@@ -126,14 +128,16 @@ export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
         />
       </div>
 
-      <div className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
-        {t.kmFrom(score.distanceKm, clip.answer.city, clip.answer.country)}
+      <div className="text-xs mb-4" style={{ color: isTimedOut ? "var(--accent-2)" : "var(--text-muted)" }}>
+        {isTimedOut
+          ? t.timesUp
+          : t.kmFrom(score.distanceKm, clip.answer.city, clip.answer.country)}
       </div>
 
       {/* Breakdown */}
       <div
         className="grid gap-2 mb-4"
-        style={{ gridTemplateColumns: hasBonus ? "repeat(4, 1fr)" : "repeat(3, 1fr)" }}
+        style={{ gridTemplateColumns: showSpeedTile ? "repeat(4, 1fr)" : "repeat(3, 1fr)" }}
       >
         {[
           { label: t.distanceLabel, value: score.distancePoints },
@@ -163,8 +167,8 @@ export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
           </div>
         ))}
 
-        {/* Speed tile — only when a bonus was earned */}
-        {hasBonus && (
+        {/* Speed tile — shown for bonus earned or timed-out penalty */}
+        {showSpeedTile && (
           <div
             className="rounded-xl px-3 py-2.5"
             style={{
@@ -181,7 +185,7 @@ export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
             </span>
             <span
               className="font-bold text-lg tabular-nums"
-              style={{ color: "var(--accent)" }}
+              style={{ color: isTimedOut ? "var(--accent-2)" : "var(--accent)" }}
             >
               ×{multStr}
             </span>

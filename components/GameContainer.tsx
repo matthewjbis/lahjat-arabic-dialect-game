@@ -11,14 +11,21 @@ import { useSound } from "@/contexts/SoundContext";
 import { scoreGuess, MAX_SCORE } from "@/lib/scoring";
 import type { Clip, Cluster, DialectData, ScoreResult } from "@/lib/scoring";
 
-// --- Tunable speed-bonus constants ---
-const TIMER_MAX_MULTIPLIER = 1.5; // Tunable: multiplier awarded for an instant submission
-const TIMER_FLOOR = 1.0;          // Tunable: multiplier never drops below this (pure upside)
-const TIMER_WINDOW_SEC = 15;      // Tunable: seconds from first play until the floor is reached
+// --- Tunable speed-bonus / penalty constants ---
+const TIMER_MAX_MULTIPLIER = 1.5; // Tunable: multiplier at instant submission
+const TIMER_WINDOW_SEC = 15;      // Tunable: seconds to decay from 1.5× down to 1.0×
+const TIMER_PENALTY_SEC = 20;     // Tunable: additional seconds from 1.0× down to 0× (auto-fail)
 
+// Phase 1 (0 → TIMER_WINDOW_SEC):      1.5× → 1.0× (speed bonus)
+// Phase 2 (TIMER_WINDOW_SEC → total):  1.0× → 0×   (penalty; hits 0 → auto-fail)
 function computeMultiplier(startMs: number): number {
-  const t = Math.min(1, (Date.now() - startMs) / 1000 / TIMER_WINDOW_SEC);
-  return TIMER_FLOOR + (TIMER_MAX_MULTIPLIER - TIMER_FLOOR) * (1 - t);
+  const elapsed = (Date.now() - startMs) / 1000;
+  if (elapsed <= TIMER_WINDOW_SEC) {
+    const t = elapsed / TIMER_WINDOW_SEC;
+    return TIMER_MAX_MULTIPLIER - (TIMER_MAX_MULTIPLIER - 1) * t;
+  }
+  const t = Math.min(1, (elapsed - TIMER_WINDOW_SEC) / TIMER_PENALTY_SEC);
+  return 1 - t;
 }
 
 export interface RoundResult {
@@ -81,11 +88,18 @@ function NavPill({ href, children }: { href: string; children: React.ReactNode }
   );
 }
 
-function multiplierBarColor(mult: number): string {
-  const ratio = (mult - TIMER_FLOOR) / (TIMER_MAX_MULTIPLIER - TIMER_FLOOR);
+function multiplierColor(mult: number): string {
+  if (mult < 1.0) return "var(--accent-2)"; // penalty zone: red
+  const ratio = (mult - 1.0) / (TIMER_MAX_MULTIPLIER - 1.0);
   if (ratio > 0.55) return "var(--accent)";
   if (ratio > 0.2) return "var(--score-mid)";
   return "var(--text-faint)";
+}
+
+// Bar fills 100% → 50% during bonus phase, then 50% → 0% during penalty phase
+function barFill(mult: number): number {
+  if (mult >= 1.0) return 50 + ((mult - 1.0) / (TIMER_MAX_MULTIPLIER - 1.0)) * 50;
+  return Math.max(0, mult * 50);
 }
 
 export function GameContainer({ dialectData, clips }: GameContainerProps) {
@@ -112,12 +126,28 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
       return;
     }
     const tick = () => {
-      setLiveMultiplier(computeMultiplier(playStartedAt));
+      setLiveMultiplier(Math.max(0, computeMultiplier(playStartedAt)));
     };
     tick();
     const id = window.setInterval(tick, 100);
     return () => window.clearInterval(id);
   }, [playStartedAt, locked]);
+
+  // Auto-fail when the penalty timer hits 0
+  useEffect(() => {
+    if (liveMultiplier === null || liveMultiplier > 0 || locked) return;
+    const zeroScore: ScoreResult = {
+      total: 0, distanceKm: 0, distancePoints: 0, dialectPoints: 0,
+      relationship: "none", guessedCluster: null, guessedCity: null, exactCityBonus: 0,
+    };
+    const roundResult: RoundResult = { score: zeroScore, multiplier: 0, finalScore: 0 };
+    playSound("fail");
+    setResult(roundResult);
+    setResults((prev) => [...prev, roundResult]);
+    setLocked(true);
+    setFlash(true);
+    window.setTimeout(() => setFlash(false), 650);
+  }, [liveMultiplier, locked, playSound]);
 
   const clusterMap: Record<string, Cluster> = Object.fromEntries(
     dialectData.clusters.map((c) => [c.id, c])
@@ -145,7 +175,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     const scored = scoreGuess(guess.lat, guess.lon, currentClip, dialectData);
 
     const multiplier =
-      playStartedAt !== null ? computeMultiplier(playStartedAt) : TIMER_FLOOR;
+      playStartedAt !== null ? Math.max(0, computeMultiplier(playStartedAt)) : 1.0;
     const finalScore = Math.round(scored.total * multiplier);
 
     // Play the result sound on the submit click — satisfies browser autoplay policy
@@ -196,10 +226,8 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     );
   }
 
-  const barFill =
-    liveMultiplier !== null
-      ? ((liveMultiplier - TIMER_FLOOR) / (TIMER_MAX_MULTIPLIER - TIMER_FLOOR)) * 100
-      : 0;
+  const currentBarFill = liveMultiplier !== null ? barFill(liveMultiplier) : 0;
+  const currentColor = liveMultiplier !== null ? multiplierColor(liveMultiplier) : "var(--text-faint)";
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-5 pt-14 sm:pt-7 pb-16">
@@ -270,11 +298,11 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
           </span>
           <span
             className="text-sm font-bold tabular-nums ml-auto"
-            style={{ color: multiplierBarColor(liveMultiplier) }}
+            style={{ color: currentColor }}
           >
             ×{liveMultiplier.toFixed(1)}
           </span>
-          {/* Depleting bar */}
+          {/* Depleting bar — gold in bonus phase, red in penalty phase */}
           <div
             className="w-24 h-1.5 rounded-full overflow-hidden shrink-0"
             style={{ background: "rgba(236,226,205,0.12)" }}
@@ -282,8 +310,8 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
             <div
               className="h-full rounded-full transition-none"
               style={{
-                width: `${barFill}%`,
-                background: multiplierBarColor(liveMultiplier),
+                width: `${currentBarFill}%`,
+                background: currentColor,
               }}
             />
           </div>

@@ -87,6 +87,9 @@ const en = {
   networkError: "Network error, please try again",
   somethingWrong: "Something went wrong",
 
+  // Timer
+  timesUp: "Time's up — 0 points",
+
   // Sound toggle
   muteSound: "Mute sounds",
   unmuteSound: "Unmute sounds",
@@ -194,6 +197,9 @@ const ar: typeof en = {
   micDenied: "تم رفض الوصول إلى الميكروفون — يرجى السماح بالوصول والمحاولة مجدداً.",
   networkError: "خطأ في الشبكة، يرجى المحاولة مرة أخرى",
   somethingWrong: "حدث خطأ ما",
+
+  // Timer
+  timesUp: "انتهى الوقت — صفر نقاط",
 
   // Sound toggle
   muteSound: "كتم الأصوات",
