@@ -26,6 +26,7 @@ export function VideoPlayer({
   const [playing, setPlaying] = useState(false);
   // Guard so onPlayStart fires only on the very first playback event per mount
   const playStartFired = useRef(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const firePlayStart = () => {
     if (!playStartFired.current) {
       playStartFired.current = true;
@@ -79,13 +80,42 @@ export function VideoPlayer({
       <div className="rounded-2xl overflow-hidden" style={cardStyle}>
         <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
           <video
+            ref={videoRef}
             className="absolute inset-0 w-full h-full"
             controls
-            preload="metadata"
+            preload="none"
             src={audioUrl}
             style={{ background: "#000" }}
             onPlay={firePlayStart}
           />
+          {!playing && (
+            <button
+              type="button"
+              onClick={() => {
+                setPlaying(true);
+                videoRef.current?.play();
+                firePlayStart();
+              }}
+              className="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-3 group"
+              style={{ background: "var(--surface)" }}
+            >
+              <span
+                className="inline-flex items-center justify-center w-16 h-16 rounded-full transition-transform duration-150 group-hover:scale-105"
+                style={{
+                  background: "var(--accent)",
+                  color: "var(--gold-ink)",
+                  boxShadow: "var(--shadow-lift)",
+                }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </span>
+              <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
+                Click to watch
+              </span>
+            </button>
+          )}
         </div>
       </div>
     );
