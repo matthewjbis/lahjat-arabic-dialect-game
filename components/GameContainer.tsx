@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { GameMap } from "@/components/GameMap";
@@ -149,8 +149,9 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     window.setTimeout(() => setFlash(false), 650);
   }, [liveMultiplier, locked, playSound]);
 
-  const clusterMap: Record<string, Cluster> = Object.fromEntries(
-    dialectData.clusters.map((c) => [c.id, c])
+  const clusterMap: Record<string, Cluster> = useMemo(
+    () => Object.fromEntries(dialectData.clusters.map((c) => [c.id, c])),
+    [dialectData.clusters]
   );
 
   const currentClip = shuffledClips[clipIndex];

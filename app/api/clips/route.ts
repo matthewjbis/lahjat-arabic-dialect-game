@@ -6,7 +6,10 @@ import type { Clip } from "@/lib/scoring";
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
-  const debug = req.nextUrl.searchParams.get("debug") === "1";
+  // Debug view is dev-only — never expose internal file paths in production
+  const debug =
+    req.nextUrl.searchParams.get("debug") === "1" &&
+    process.env.NODE_ENV !== "production";
 
   const { data: submissions, error } = await supabaseAdmin
     .from("submissions")
@@ -35,7 +38,6 @@ export async function GET(req: NextRequest) {
     const location = resolveLocation(s.city ?? null, s.country);
     if (!location) {
       const msg = `no city match (city="${s.city ?? ""}" country="${s.country}")`;
-      console.warn(`[lahjat] drop id=${s.id}: ${msg}`);
       dropped.push({ id: s.id, country: s.country, city: s.city ?? null, file_path: s.file_path, reason: msg });
       return [];
     }
@@ -43,7 +45,6 @@ export async function GET(req: NextRequest) {
     const audioUrl = signedUrlMap[s.file_path];
     if (!audioUrl) {
       const msg = `no signed URL (path="${s.file_path}" — file may be missing from storage)`;
-      console.warn(`[lahjat] drop id=${s.id}: ${msg}`);
       dropped.push({ id: s.id, country: s.country, city: s.city ?? null, file_path: s.file_path, reason: msg });
       return [];
     }
@@ -73,8 +74,6 @@ export async function GET(req: NextRequest) {
       },
     ];
   });
-
-  console.log(`[lahjat] serving ${clips.length}/${(submissions ?? []).length} approved clips`);
 
   if (debug) {
     return NextResponse.json({
