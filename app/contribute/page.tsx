@@ -6,7 +6,7 @@ import { useT, useLang } from "@/contexts/LanguageContext";
 
 const COUNTRY_CODES = [
   "DZ","BH","KM","DJ","EG","IQ","JO","KW","LB","LY",
-  "MR","MA","OM","PS","QA","SA","SO","SD","SY","TN","AE","YE",
+  "MR","MA","OM","PS","QA","SA","SO","SD","SS","SY","TN","AE","YE",
 ];
 
 type Source = "record" | "upload";
