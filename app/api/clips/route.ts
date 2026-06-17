@@ -1,11 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { resolveLocation } from "@/lib/resolveLocation";
 import type { Clip } from "@/lib/scoring";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const debug = req.nextUrl.searchParams.get("debug") === "1";
+
   const { data: submissions, error } = await supabaseAdmin
     .from("submissions")
     .select("id, file_path, file_type, country, city")
@@ -27,12 +29,24 @@ export async function GET() {
     (signedEntries ?? []).map((e) => [e.path, e.signedUrl])
   );
 
+  type DropInfo = { id: string; country: string; city: string | null; file_path: string; reason: string };
+  const dropped: DropInfo[] = [];
   const clips: Clip[] = (submissions ?? []).flatMap((s) => {
     const location = resolveLocation(s.city ?? null, s.country);
-    if (!location) return [];
+    if (!location) {
+      const msg = `no city match (city="${s.city ?? ""}" country="${s.country}")`;
+      console.warn(`[lahjat] drop id=${s.id}: ${msg}`);
+      dropped.push({ id: s.id, country: s.country, city: s.city ?? null, file_path: s.file_path, reason: msg });
+      return [];
+    }
 
     const audioUrl = signedUrlMap[s.file_path];
-    if (!audioUrl) return [];
+    if (!audioUrl) {
+      const msg = `no signed URL (path="${s.file_path}" — file may be missing from storage)`;
+      console.warn(`[lahjat] drop id=${s.id}: ${msg}`);
+      dropped.push({ id: s.id, country: s.country, city: s.city ?? null, file_path: s.file_path, reason: msg });
+      return [];
+    }
 
     return [
       {
@@ -59,6 +73,17 @@ export async function GET() {
       },
     ];
   });
+
+  console.log(`[lahjat] serving ${clips.length}/${(submissions ?? []).length} approved clips`);
+
+  if (debug) {
+    return NextResponse.json({
+      total: (submissions ?? []).length,
+      serving: clips.length,
+      dropped,
+      clips,
+    });
+  }
 
   return NextResponse.json(clips);
 }
