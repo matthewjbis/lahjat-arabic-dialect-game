@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-06-17 (continued — UI fixes)
+
+### Fixed
+- **Game header centred in all languages** — replaced `justify-between` with `justify-center` on the header flex row so the "Lahjat لهجات" title and Dialect Map / Contribute nav pills stay centred regardless of LTR/RTL direction instead of flipping sides on language switch
+- **Back link no longer covered by fixed toggles in Arabic** — `رجوع` on the Dialect Map and Contribute pages now uses `text-left` (a physical CSS property) to pin it to the physical left edge even in RTL mode, keeping it clear of the sound and language toggle buttons
+- **Audio player icon and label centred** — added `justify-center` to the "Listen to the clip" header row inside the audio card so the icon reads as the natural thing to click
+- **Double arrow removed from Next Clip button** — arrow was present in both the translation string and the JSX; removed from both translation strings (`nextClip` en + ar)
+- **Fail sound mapped to correct filename** — code expected `fail.mp3` but uploaded file was named `failure.mp3`; path updated in `SoundContext`
+- **Subtitle / clip counter no longer run together** — added `gap-4` to the flex row so "Classic Mode — …" and "Clip X of Y" always have space between them
+- **Speed bonus window halved** — `TIMER_WINDOW_SEC` reduced from 30 s → 15 s for more meaningful time pressure
+
+---
+
 ## 2026-06-17 (continued — sound)
 
 ### Added
