@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 2026-06-18 (session 5 — continued: instant timer & duration robustness)
+
+### Changed
+- **Timer countdown now starts the instant the player hits play** — removed the grace period that held the multiplier at full 1.5× before counting down. With the bonus/penalty windows already scaling with clip length, longer clips get proportionally more time, so the separate grace hold was redundant. The multiplier now decays 1.5×→1.0× over `~L`, then 1.0×→0× over `~1.5L`.
+
+### Fixed
+- **More robust clip-duration capture on upload** — `measureDuration` now handles the `MediaRecorder` case where a webm reports `duration: Infinity` on `loadedmetadata` (seeks to the end to force a real value), with a 5s safety net so it never blocks submission. Recorded clips also fall back to the exact elapsed-seconds counter if the media element can't report a duration. Verified in a real browser that uploaded wav/mp3/mp4 and a recorded audio/webm all yield correct durations.
+
 ## 2026-06-18 (session 5 — continued: duration capture & backfill)
 
 ### Fixed

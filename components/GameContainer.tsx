@@ -15,23 +15,19 @@ const CLIPS_PER_ROUND = 10;
 
 // --- Length-aware speed-bonus / penalty constants ---
 // The timer scales with each clip's length L (seconds): shorter clips run a
-// faster timer, longer clips a slower one. Three phases off the moment of play:
-//   Grace   = max(GRACE_MIN_SEC, L) : multiplier held at max so the player can
-//             hear the whole clip once before any countdown begins.
-//   Bonus   = L * BONUS_RATIO       : 1.5× → 1.0× (reward for a quick decision).
-//   Penalty = L * PENALTY_RATIO     : 1.0× → 0×   (hits 0 → auto-fail).
+// faster timer, longer clips a slower one. The countdown starts the instant the
+// player hits play — no grace period, since the windows already scale with L:
+//   Bonus   = L * BONUS_RATIO   : 1.5× → 1.0× (reward for a quick decision).
+//   Penalty = L * PENALTY_RATIO : 1.0× → 0×   (hits 0 → auto-fail).
 const TIMER_MAX_MULTIPLIER = 1.5; // Tunable: multiplier at instant submission
-const GRACE_MIN_SEC = 3;          // Tunable: floor on the grace period for very short clips
 const BONUS_RATIO = 1;            // Tunable: bonus window length, as a multiple of L
 const PENALTY_RATIO = 1.5;        // Tunable: penalty window length, as a multiple of L
 const DEFAULT_CLIP_SEC = 8;       // Fallback length when neither DB nor media reports one
 
 function computeMultiplier(startMs: number, lengthSec: number): number {
-  const grace = Math.max(GRACE_MIN_SEC, lengthSec);
   const bonus = Math.max(1, lengthSec * BONUS_RATIO);
   const penalty = Math.max(1, lengthSec * PENALTY_RATIO);
-  const elapsed = (Date.now() - startMs) / 1000 - grace;
-  if (elapsed <= 0) return TIMER_MAX_MULTIPLIER; // grace: full bonus held
+  const elapsed = (Date.now() - startMs) / 1000;
   if (elapsed <= bonus) {
     const t = elapsed / bonus;
     return TIMER_MAX_MULTIPLIER - (TIMER_MAX_MULTIPLIER - 1) * t;

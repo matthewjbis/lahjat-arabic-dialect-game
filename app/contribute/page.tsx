@@ -20,22 +20,35 @@ function formatTime(s: number) {
 
 // Read a media file's duration (seconds) in the browser via a throwaway media
 // element. Resolves null if the metadata can't be read so submission proceeds.
+// Some MediaRecorder webm blobs report `duration: Infinity` on loadedmetadata;
+// seeking to the end forces the browser to compute the real duration.
 function measureDuration(file: File): Promise<number | null> {
   return new Promise((resolve) => {
     const url = URL.createObjectURL(file);
     const el = document.createElement(
       file.type.startsWith("video/") ? "video" : "audio"
     );
+    let settled = false;
     const done = (value: number | null) => {
+      if (settled) return;
+      settled = true;
       URL.revokeObjectURL(url);
       resolve(value);
     };
+    const finite = (d: number) => Number.isFinite(d) && d > 0;
     el.preload = "metadata";
     el.onloadedmetadata = () => {
-      const d = el.duration;
-      done(Number.isFinite(d) && d > 0 ? Math.round(d) : null);
+      if (finite(el.duration)) return done(Math.round(el.duration));
+      // Infinity/NaN: force the browser to seek to the end, then read duration.
+      el.ontimeupdate = () => {
+        el.ontimeupdate = null;
+        done(finite(el.duration) ? Math.round(el.duration) : null);
+      };
+      el.currentTime = 1e101;
     };
     el.onerror = () => done(null);
+    // Safety net so a stuck element never blocks submission.
+    setTimeout(() => done(finite(el.duration) ? Math.round(el.duration) : null), 5000);
     el.src = url;
   });
 }
@@ -147,7 +160,12 @@ export default function ContributePage() {
     try {
       // Step 1: send metadata to our API — get back a pre-signed Supabase upload URL.
       // The binary file never passes through Vercel, so there are no request-size limits.
-      const durationSeconds = await measureDuration(file);
+      // Prefer the measured file duration; for recordings, fall back to the
+      // exact elapsed-seconds counter if the media element can't report one.
+      let durationSeconds = await measureDuration(file);
+      if (durationSeconds === null && source === "record" && seconds > 0) {
+        durationSeconds = seconds;
+      }
 
       const metaForm = new FormData();
       metaForm.append("filetype", file.type);
