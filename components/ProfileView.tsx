@@ -29,6 +29,7 @@ export function ProfileView() {
 
   const [sessions, setSessions] = useState<GameSession[] | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [contributions, setContributions] = useState<number | null>(null);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -46,6 +47,18 @@ export function ProfileView() {
           setSessions(data ?? []);
         }
       });
+
+    // Contribution count is served by an API route (admin client), so it works
+    // regardless of the submissions table's RLS configuration.
+    fetch("/api/my-contributions")
+      .then((r) => (r.ok ? r.json() : { count: 0 }))
+      .then((json: { count?: number }) => {
+        if (!cancelled) setContributions(json.count ?? 0);
+      })
+      .catch(() => {
+        if (!cancelled) setContributions(0);
+      });
+
     return () => {
       cancelled = true;
     };
@@ -126,11 +139,12 @@ export function ProfileView() {
       </p>
 
       {/* Stat tiles */}
-      <div className="grid grid-cols-3 gap-2.5 mb-7">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-7">
         {[
           { label: t.profileStatGames, value: gamesPlayed.toLocaleString() },
           { label: t.profileStatBest, value: bestScore.toLocaleString() },
           { label: t.profileStatAvg, value: `${Math.round(avgAccuracy * 100)}%` },
+          { label: t.profileStatClips, value: contributions === null ? "—" : contributions.toLocaleString() },
         ].map((stat) => (
           <div
             key={stat.label}

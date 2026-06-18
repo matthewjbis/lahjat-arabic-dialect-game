@@ -5,6 +5,7 @@
 ### Added
 - **Completed games saved to `game_sessions`** — when a logged-in player reaches the summary screen, the game (mode, total score, max score, clip count) is persisted via a direct client insert, guarded by RLS (own-insert only) and a one-shot ref so each completed game records exactly once. The summary shows a subtle "Saved to your history" confirmation for members and a "Sign in to save your scores" link for guests (translated en + ar). Foundation for the upcoming profile and leaderboard features.
 - **Profile / score-history page (`/profile`)** — logged-in players see stat tiles (games played, best score, average accuracy) and a reverse-chronological list of their games (mode, date, clip count, score, accuracy %), read from `game_sessions` via an RLS-scoped client query. Guests get a sign-in gate; empty state links to a first game. Added a "Profile" link to the account dropdown. Fully translated en + ar.
+- **Clips-contributed stat on profile** — a fourth stat tile shows how many clips the player has submitted, counted server-side via a new `/api/my-contributions` route (admin client + server auth, so it's independent of the submissions table's RLS). Stat grid is now 2×2 on mobile, 1×4 on desktop.
 
 ---
 
