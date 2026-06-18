@@ -124,7 +124,7 @@ body::before {
 .ar-display {
   font-family: var(--font-display-ar);
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 /* ---- Custom full-width audio bar (replaces the browser default) ---- */
