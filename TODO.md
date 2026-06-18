@@ -7,7 +7,7 @@ Tracked tasks and known issues. Checked items are done; move completed ones to
 
 From the auth groundwork — build these before the forum-era features below.
 
-- [ ] Save completed games to `game_sessions` (wire to SummaryScreen for logged-in players)
+- [x] Save completed games to `game_sessions` (wire to SummaryScreen for logged-in players)
 - [ ] Profile / score-history page (`/profile`)
 - [ ] Leaderboard (query `game_sessions` ranked by score, filterable by mode)
 - [ ] Regional game modes (see `lahjat-product-writeup.md` → Regional modes)

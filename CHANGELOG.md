@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- **Completed games saved to `game_sessions`** — when a logged-in player reaches the summary screen, the game (mode, total score, max score, clip count) is persisted via a direct client insert, guarded by RLS (own-insert only) and a one-shot ref so each completed game records exactly once. The summary shows a subtle "Saved to your history" confirmation for members and a "Sign in to save your scores" link for guests (translated en + ar). Foundation for the upcoming profile and leaderboard features.
+
 ---
 
 ## 2026-06-17 (continued — audit fixes)

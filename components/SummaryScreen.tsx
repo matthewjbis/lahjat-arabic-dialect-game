@@ -6,6 +6,8 @@ import type { Clip, Cluster } from "@/lib/scoring";
 import { MAX_SCORE } from "@/lib/scoring";
 import type { RoundResult } from "@/components/GameContainer";
 import { useT } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 interface SummaryScreenProps {
   results: RoundResult[];
@@ -13,6 +15,7 @@ interface SummaryScreenProps {
   clusterMap: Record<string, Cluster>;
   maxPossible: number;
   onPlayAgain: () => void;
+  mode?: string;
 }
 
 const REL_COLORS: Record<string, string> = {
@@ -61,14 +64,45 @@ export function SummaryScreen({
   clusterMap,
   maxPossible,
   onPlayAgain,
+  mode = "classic",
 }: SummaryScreenProps) {
   const t = useT();
+  const { user, loading: authLoading } = useAuth();
 
   const grandTotal = results.reduce((sum, r) => sum + r.finalScore, 0);
   const ratio = maxPossible > 0 ? grandTotal / maxPossible : 0;
   const color = tierColor(ratio);
   const animatedTotal = useCountUp(grandTotal);
   const pct = Math.round(ratio * 100);
+
+  // Persist the completed game for logged-in players. RLS restricts inserts to
+  // the player's own user_id, so a direct client insert is safe here.
+  // The ref guards against double-insert (StrictMode, re-renders) — one
+  // SummaryScreen mount equals one completed game.
+  const [saved, setSaved] = useState(false);
+  const savedRef = useRef(false);
+  useEffect(() => {
+    if (authLoading || !user || savedRef.current) return;
+    savedRef.current = true;
+    supabase
+      .from("game_sessions")
+      .insert({
+        user_id: user.id,
+        mode,
+        total_score: grandTotal,
+        max_score: Math.round(maxPossible),
+        clip_count: results.length,
+      })
+      .then(({ error }: { error: { message: string } | null }) => {
+        if (error) {
+          // Allow a retry on a later render if the insert failed
+          savedRef.current = false;
+          console.error("Failed to save game session:", error.message);
+        } else {
+          setSaved(true);
+        }
+      });
+  }, [authLoading, user, mode, grandTotal, maxPossible, results.length]);
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-5 pt-14 sm:pt-12 pb-16">
@@ -122,6 +156,30 @@ export function SummaryScreen({
           />
         </div>
       </div>
+
+      {/* Score persistence status — saved for members, gentle nudge for guests */}
+      {!authLoading && (
+        <div className="text-center -mt-3 mb-6">
+          {user ? (
+            saved && (
+              <p className="text-xs flex items-center justify-center gap-1.5" style={{ color: "var(--text-faint)" }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                {t.scoreSaved}
+              </p>
+            )
+          ) : (
+            <Link
+              href="/auth?redirectTo=/play"
+              className="text-xs underline underline-offset-2 hover:opacity-80"
+              style={{ color: "var(--accent)" }}
+            >
+              {t.signInToSave}
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* Per-clip breakdown — clean list */}
       <div

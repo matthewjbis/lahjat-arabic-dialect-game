@@ -137,6 +137,8 @@ const en = {
     return "Just Starting";
   },
   clipLabel: (n: number) => `Clip ${n}`,
+  scoreSaved: "Saved to your history",
+  signInToSave: "Sign in to save your scores",
 
   // Home page
   homeSubtitle:
@@ -275,6 +277,8 @@ const ar: typeof en = {
     return "بداية الطريق";
   },
   clipLabel: (n: number) => `مقطع ${n}`,
+  scoreSaved: "تم الحفظ في سجلّك",
+  signInToSave: "سجّل الدخول لحفظ نتائجك",
 
   homeSubtitle:
     "استمع إلى مقطع قصير من الكلام العربي وضع دبوساً على الخريطة حيث تعتقد أن المتحدث من هناك. يكافئ التسجيل معرفة اللهجة، وليس الجغرافيا وحدها.",
