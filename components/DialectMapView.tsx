@@ -227,7 +227,7 @@ export function DialectMapView({ cities, clusters }: Props) {
     <div className="max-w-3xl mx-auto px-5 py-7 pb-12">
       {/* text-left is a physical property — keeps the back link on the left even in RTL */}
       <div className="text-left mb-5">
-        <Link href="/" className="text-sm" style={{ color: "var(--on-bg-muted)" }}>
+        <Link href="/play" className="text-sm" style={{ color: "var(--on-bg-muted)" }}>
           {t.backLink}
         </Link>
       </div>

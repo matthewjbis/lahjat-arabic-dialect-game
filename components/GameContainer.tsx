@@ -58,9 +58,8 @@ function shuffle<T>(arr: T[]): T[] {
 /* ---- Reusable header (title + nav). Wraps gracefully on narrow screens. ---- */
 function Brand({ size = "sm" }: { size?: "sm" | "lg" }) {
   return (
-    <Link
-      href="/"
-      className={`font-semibold tracking-tight flex items-baseline gap-2 transition-opacity hover:opacity-75 ${
+    <h1
+      className={`font-semibold tracking-tight flex items-baseline gap-2 ${
         size === "lg" ? "text-3xl" : "text-xl"
       }`}
     >
@@ -71,7 +70,7 @@ function Brand({ size = "sm" }: { size?: "sm" | "lg" }) {
       >
         لهجات
       </span>
-    </Link>
+    </h1>
   );
 }
 
@@ -239,6 +238,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
       <header className="flex items-center justify-start flex-wrap gap-x-4 gap-y-2 mb-3">
         <Brand />
         <nav className="flex items-center justify-center gap-2 flex-wrap">
+          <NavPill href="/">{t.homeMenu}</NavPill>
           <NavPill href="/dialects">{t.dialectMap}</NavPill>
           <NavPill href="/contribute">{t.contribute}</NavPill>
         </nav>
