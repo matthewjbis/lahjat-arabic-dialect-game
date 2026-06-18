@@ -67,7 +67,7 @@ export function SummaryScreen({
   mode = "classic",
 }: SummaryScreenProps) {
   const t = useT();
-  const lang = useLang();
+  const { lang } = useLang();
   const { user, loading: authLoading } = useAuth();
 
   const grandTotal = results.reduce((sum, r) => sum + r.finalScore, 0);
