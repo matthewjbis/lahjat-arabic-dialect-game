@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 2026-06-18 (session 5 — length-aware timer & YouTube removal)
+
+### Changed
+- **Round timer now scales with clip length** — instead of a fixed 15s bonus / 20s penalty window, each clip's timer is derived from its length `L` (Balanced curve): a grace period of `max(3s, L)` holds the multiplier at full 1.5× so the player can hear the whole clip before any countdown, then a bonus window of `~L` decays 1.5×→1.0×, then a penalty window of `~1.5L` decays 1.0×→0× (auto-fail). Short clips run a faster timer, long clips a slower one. Length comes from the `submissions.duration_second` column, falling back to the media element's measured duration, then an 8s default. The speed-bonus bar sits full during the grace period, then drops. Constants (`GRACE_MIN_SEC`, `BONUS_RATIO`, `PENALTY_RATIO`) are tunable at the top of `GameContainer`.
+
+### Removed
+- **YouTube clip support (legacy)** — all content is now self-hosted in Supabase Storage, so the YouTube code path is gone: removed the YouTube iframe branch and `youtubeId`/`startSeconds` props from `VideoPlayer`, the `source`/`youtube_id`/`start_seconds` fields from the `Clip` type and the clips API, the unused `clips.json` seed libraries (root + `lib/data`), and the `lahjat-player.html` prototype. Updated the README and product writeup to describe the self-hosted audio/video architecture.
+
 ## 2026-06-18 (session 4 — per-page SEO & social previews)
 
 ### Added

@@ -42,11 +42,10 @@ export interface ClipAnswer {
 
 export interface Clip {
   id: string;
-  source: string;
-  youtube_id: string;
   audio_url?: string;
   media_type?: string;
-  start_seconds: number;
+  /** Clip length in seconds, used to scale the round timer. May be null if unknown. */
+  duration_seconds?: number | null;
   label_provided: string;
   answer: ClipAnswer;
   alternate_acceptable_clusters: string[];

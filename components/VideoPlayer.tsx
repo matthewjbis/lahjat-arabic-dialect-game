@@ -3,25 +3,23 @@
 import { useRef, useState } from "react";
 
 interface VideoPlayerProps {
-  youtubeId?: string | null;
-  startSeconds?: number | null;
   audioUrl?: string | null;
-  mediaType: "youtube" | "audio" | string;
+  mediaType: "audio" | "video" | string;
   onPlayStart?: () => void;
+  /** Reports the clip's real length (seconds) once the media metadata loads. */
+  onDurationKnown?: (seconds: number) => void;
 }
 
 /*
   Media player wrapped in a parchment "tile panel" surface.
   - audio/*  -> full-width audio bar (see .lahjat-audio in globals.css)
   - video/*  -> inline <video> player
-  - youtube  -> click-to-reveal embed behind a gold play medallion
 */
 export function VideoPlayer({
-  youtubeId,
-  startSeconds,
   audioUrl,
   mediaType,
   onPlayStart,
+  onDurationKnown,
 }: VideoPlayerProps) {
   const [playing, setPlaying] = useState(false);
   // Guard so onPlayStart fires only on the very first playback event per mount
@@ -33,6 +31,12 @@ export function VideoPlayer({
       onPlayStart?.();
     }
   };
+  const reportDuration = (
+    e: React.SyntheticEvent<HTMLMediaElement>
+  ) => {
+    const d = e.currentTarget.duration;
+    if (Number.isFinite(d) && d > 0) onDurationKnown?.(d);
+  };
 
   const cardStyle: React.CSSProperties = {
     background: "var(--surface)",
@@ -41,7 +45,7 @@ export function VideoPlayer({
   };
 
   const isAudio = mediaType === "audio" || mediaType.startsWith("audio/");
-  const isVideo = mediaType.startsWith("video/");
+  const isVideo = mediaType === "video" || mediaType.startsWith("video/");
 
   /* ---- Audio clip (audio/webm, audio/mp4, audio/mpeg, etc.) ---- */
   if (isAudio && audioUrl) {
@@ -69,6 +73,7 @@ export function VideoPlayer({
           preload="metadata"
           src={audioUrl}
           onPlay={firePlayStart}
+          onLoadedMetadata={reportDuration}
         />
       </div>
     );
@@ -85,10 +90,11 @@ export function VideoPlayer({
             controls
             playsInline
             disablePictureInPicture
-            preload="none"
+            preload="metadata"
             src={audioUrl}
             style={{ background: "#000" }}
             onPlay={firePlayStart}
+            onLoadedMetadata={reportDuration}
           />
           {!playing && (
             <button
@@ -115,55 +121,6 @@ export function VideoPlayer({
               </span>
               <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
                 Click to watch
-              </span>
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  /* ---- YouTube clip ---- */
-  if (youtubeId) {
-    const src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&start=${
-      startSeconds ?? 0
-    }&rel=0`;
-
-    return (
-      <div className="rounded-2xl overflow-hidden" style={cardStyle}>
-        <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
-          {playing ? (
-            <iframe
-              className="absolute inset-0 w-full h-full"
-              src={src}
-              title="Dialect clip"
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => { setPlaying(true); firePlayStart(); }}
-              className="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-3 group"
-              style={{ background: "var(--surface)" }}
-            >
-              <span
-                className="inline-flex items-center justify-center w-16 h-16 rounded-full transition-transform duration-150 group-hover:scale-105"
-                style={{
-                  background: "var(--accent)",
-                  color: "var(--gold-ink)",
-                  boxShadow: "var(--shadow-lift)",
-                }}
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </span>
-              <span
-                className="text-sm font-medium"
-                style={{ color: "var(--text-muted)" }}
-              >
-                Click to listen
               </span>
             </button>
           )}

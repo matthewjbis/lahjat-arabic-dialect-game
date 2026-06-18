@@ -13,20 +13,30 @@ import type { Clip, Cluster, DialectData, ScoreResult } from "@/lib/scoring";
 
 const CLIPS_PER_ROUND = 10;
 
-// --- Tunable speed-bonus / penalty constants ---
+// --- Length-aware speed-bonus / penalty constants ---
+// The timer scales with each clip's length L (seconds): shorter clips run a
+// faster timer, longer clips a slower one. Three phases off the moment of play:
+//   Grace   = max(GRACE_MIN_SEC, L) : multiplier held at max so the player can
+//             hear the whole clip once before any countdown begins.
+//   Bonus   = L * BONUS_RATIO       : 1.5× → 1.0× (reward for a quick decision).
+//   Penalty = L * PENALTY_RATIO     : 1.0× → 0×   (hits 0 → auto-fail).
 const TIMER_MAX_MULTIPLIER = 1.5; // Tunable: multiplier at instant submission
-const TIMER_WINDOW_SEC = 15;      // Tunable: seconds to decay from 1.5× down to 1.0×
-const TIMER_PENALTY_SEC = 20;     // Tunable: additional seconds from 1.0× down to 0× (auto-fail)
+const GRACE_MIN_SEC = 3;          // Tunable: floor on the grace period for very short clips
+const BONUS_RATIO = 1;            // Tunable: bonus window length, as a multiple of L
+const PENALTY_RATIO = 1.5;        // Tunable: penalty window length, as a multiple of L
+const DEFAULT_CLIP_SEC = 8;       // Fallback length when neither DB nor media reports one
 
-// Phase 1 (0 → TIMER_WINDOW_SEC):      1.5× → 1.0× (speed bonus)
-// Phase 2 (TIMER_WINDOW_SEC → total):  1.0× → 0×   (penalty; hits 0 → auto-fail)
-function computeMultiplier(startMs: number): number {
-  const elapsed = (Date.now() - startMs) / 1000;
-  if (elapsed <= TIMER_WINDOW_SEC) {
-    const t = elapsed / TIMER_WINDOW_SEC;
+function computeMultiplier(startMs: number, lengthSec: number): number {
+  const grace = Math.max(GRACE_MIN_SEC, lengthSec);
+  const bonus = Math.max(1, lengthSec * BONUS_RATIO);
+  const penalty = Math.max(1, lengthSec * PENALTY_RATIO);
+  const elapsed = (Date.now() - startMs) / 1000 - grace;
+  if (elapsed <= 0) return TIMER_MAX_MULTIPLIER; // grace: full bonus held
+  if (elapsed <= bonus) {
+    const t = elapsed / bonus;
     return TIMER_MAX_MULTIPLIER - (TIMER_MAX_MULTIPLIER - 1) * t;
   }
-  const t = Math.min(1, (elapsed - TIMER_WINDOW_SEC) / TIMER_PENALTY_SEC);
+  const t = Math.min(1, (elapsed - bonus) / penalty);
   return 1 - t;
 }
 
@@ -120,6 +130,19 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
   // Timer state — set to Date.now() the first time the player starts the clip
   const [playStartedAt, setPlayStartedAt] = useState<number | null>(null);
   const [liveMultiplier, setLiveMultiplier] = useState<number | null>(null);
+  // Real clip length measured from the media element, as a fallback when the DB
+  // duration column is empty. Reset per clip.
+  const [measuredDuration, setMeasuredDuration] = useState<number | null>(null);
+
+  const currentClip = shuffledClips[clipIndex];
+
+  // Clip length driving the timer: DB value first, then measured, then default.
+  const clipLengthSec =
+    currentClip?.duration_seconds && currentClip.duration_seconds > 0
+      ? currentClip.duration_seconds
+      : measuredDuration && measuredDuration > 0
+      ? measuredDuration
+      : DEFAULT_CLIP_SEC;
 
   // Tick the live multiplier display while the player is deciding
   useEffect(() => {
@@ -128,12 +151,12 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
       return;
     }
     const tick = () => {
-      setLiveMultiplier(Math.max(0, computeMultiplier(playStartedAt)));
+      setLiveMultiplier(Math.max(0, computeMultiplier(playStartedAt, clipLengthSec)));
     };
     tick();
     const id = window.setInterval(tick, 100);
     return () => window.clearInterval(id);
-  }, [playStartedAt, locked]);
+  }, [playStartedAt, locked, clipLengthSec]);
 
   // Auto-fail when the penalty timer hits 0
   useEffect(() => {
@@ -156,7 +179,6 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     [dialectData.clusters]
   );
 
-  const currentClip = shuffledClips[clipIndex];
   const isLastClip = clipIndex === shuffledClips.length - 1;
   const total = shuffledClips.length;
 
@@ -173,12 +195,18 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     setPlayStartedAt((prev) => (prev === null ? Date.now() : prev));
   }, []);
 
+  const handleDurationKnown = useCallback((seconds: number) => {
+    setMeasuredDuration(seconds);
+  }, []);
+
   function handleSubmit() {
     if (!guess || locked) return;
     const scored = scoreGuess(guess.lat, guess.lon, currentClip, dialectData);
 
     const multiplier =
-      playStartedAt !== null ? Math.max(0, computeMultiplier(playStartedAt)) : 1.0;
+      playStartedAt !== null
+        ? Math.max(0, computeMultiplier(playStartedAt, clipLengthSec))
+        : 1.0;
     const finalScore = Math.round(scored.total * multiplier);
 
     // Play the result sound on the submit click — satisfies browser autoplay policy
@@ -204,6 +232,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     setLocked(false);
     setResult(null);
     setPlayStartedAt(null);
+    setMeasuredDuration(null);
   }
 
   function handlePlayAgain() {
@@ -215,6 +244,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
     setResults([]);
     setShowSummary(false);
     setPlayStartedAt(null);
+    setMeasuredDuration(null);
   }
 
   if (showSummary) {
@@ -280,11 +310,10 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
       <div className="mb-3">
         <VideoPlayer
           key={currentClip.id}
-          youtubeId={currentClip.youtube_id}
-          startSeconds={currentClip.start_seconds}
           audioUrl={currentClip.audio_url}
-          mediaType={currentClip.media_type ?? "youtube"}
+          mediaType={currentClip.media_type ?? "audio"}
           onPlayStart={handlePlayStart}
+          onDurationKnown={handleDurationKnown}
         />
       </div>
 

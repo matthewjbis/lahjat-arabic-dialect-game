@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   const { data: submissions, error } = await supabaseAdmin
     .from("submissions")
-    .select("id, file_path, file_type, country, city")
+    .select("id, file_path, file_type, country, city, duration_second")
     .eq("status", "approved");
 
   if (error) {
@@ -52,11 +52,9 @@ export async function GET(req: NextRequest) {
     return [
       {
         id: `sub-${s.id}`,
-        source: "upload",
-        youtube_id: "",
         audio_url: audioUrl,
         media_type: s.file_type,
-        start_seconds: 0,
+        duration_seconds: s.duration_second ?? null,
         label_provided: location.cluster,
         answer: {
           city: location.name,

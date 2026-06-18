@@ -109,25 +109,20 @@ Each region constrains the clip pool and the map to a specific part of the Arab 
 - This mode is intentionally the smallest and hardest — designed for players who have mastered the other regions
 ## Content sourcing
  
-- Hand-curated MVP library (200-500 clips covering major dialect groups)
-- YouTube via official iframe embedding for scale (no hosting, no licensing issues)
+- Hand-curated library (200-500 clips covering major dialect groups)
+- Self-hosted audio/video clips in Supabase Storage — no third-party embed, no spoiler vectors
 - User-uploaded clips with consent for long-tail content and social mechanics
 - Eventually: commissioned recordings from native speakers for gold-standard tagged data
 ## Technical stack
  
 - Next.js on Vercel
-- Supabase for database, auth, and realtime
+- Supabase for database, auth, realtime, and clip storage
 - Mapbox for the guessing interface
-- YouTube iframe API for embedded content (MVP — see note below)
 - Whisper for transcription of curated clips
 - Claude for drafting reveal explanations (human-edited)
-### A note on clip delivery: YouTube iframe → self-hosted audio
+### Clip delivery: self-hosted audio/video
 
-**MVP approach:** YouTube iframe API with an opaque cover that hides the thumbnail and title until the player clicks "Listen". This is fast to ship, costs nothing, and is explicitly permitted under YouTube's Terms of Service for embedded playback. Short clips (under ~15 seconds) used for commentary, criticism, or educational purposes are also defensible under fair use doctrine, though this has not been tested in court for a product like Lahjat.
-
-**Long-term target:** Extract audio from curated clips using `yt-dlp`, store as `.mp3` files in Supabase Storage, and serve via a native `<audio>` element with a custom player UI. This eliminates all remaining spoiler vectors (video ID in network requests, channel name in player), removes the YouTube dependency entirely, and enables a cleaner audio-only game experience. It also opens the door to commissioned recordings from native speakers as the content library matures.
-
-**Migration path:** The `clips.json` schema already captures `youtube_id` and `start_seconds`. When moving to self-hosted audio, add a `audio_url` field to each clip entry and update the player component to prefer `audio_url` over the YouTube embed when present. This allows a gradual clip-by-clip migration with no breaking changes to the data model.
+Clips live in the `submissions` table and are stored in the Supabase `clip-submissions` bucket. The clips API resolves each approved submission to a short-lived signed URL and serves it to a native `<audio>`/`<video>` player — no third-party embed, so there are no spoiler vectors (no video ID in network requests, no channel name in the player) and no external dependency. Each submission carries a `duration_second` column used to scale the round timer to the clip's length.
 
 ## The annotation engine
  

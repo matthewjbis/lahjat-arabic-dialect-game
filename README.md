@@ -35,7 +35,7 @@ This shapes the data model:
 - **Next.js** on **Vercel**
 - **Supabase** — database, auth, realtime
 - **Mapbox** — guessing interface
-- **YouTube iframe API** — embedded clip sourcing
+- **Supabase Storage** — self-hosted audio/video clips, served via signed URLs to a native `<audio>`/`<video>` player
 - **Whisper** — transcription of curated clips
 - **Claude** — drafting dialect-feature reveal explanations (human-edited)
 

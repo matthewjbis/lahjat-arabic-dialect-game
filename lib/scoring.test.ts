@@ -21,9 +21,6 @@ const dialectData: DialectData = {
 
 const aleppoClip: Clip = {
   id: "test-aleppo",
-  source: "test",
-  youtube_id: "",
-  start_seconds: 0,
   label_provided: "Aleppo",
   answer: {
     city: "Aleppo",
@@ -42,9 +39,6 @@ const aleppoClip: Clip = {
 
 const saudiCountryClip: Clip = {
   id: "test-saudi-country",
-  source: "test",
-  youtube_id: "",
-  start_seconds: 0,
   label_provided: "Saudi Arabia",
   answer: {
     city: "",
