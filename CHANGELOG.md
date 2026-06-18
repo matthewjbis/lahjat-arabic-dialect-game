@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## 2026-06-18 (session 4 — per-page SEO & social previews)
+
+### Added
+- **Per-page metadata** — `/dialects`, `/contribute`, `/play`, and `/profile` now each export their own meta `description` and full `openGraph` block (title + description), so links unfurl differently from the root `lahjat.app` when pasted in Instagram/iMessage or surfaced on Google. Previously all pages inherited the root layout's description. `/contribute` is a client component, so its metadata lives in a new `app/contribute/layout.tsx`.
+- **Distinct Open Graph / Twitter images per page** — added `opengraph-image.png` + `twitter-image.png` (1200×630) via the Next.js file convention. The root uses the Lahjat wordmark; `/dialects`, `/contribute`, and `/play` each get a branded card with a page-specific icon (map pin / microphone / play), English + Arabic title, and tagline. Images were rendered from the site's own brand tokens (gold gradient, khatam star texture, Outfit + Aref Ruqaa) via headless Chrome at 3× DPI and downscaled for crispness.
+- **`metadataBase`** set to `https://lahjat.app` on the root layout, so all canonical and OG image URLs resolve to absolute production URLs.
+
 ## 2026-06-17 (session 3 — features, nav, mobile fixes)
 
 ### Added

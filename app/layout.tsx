@@ -10,14 +10,17 @@ import { NavBar } from "@/components/NavBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://lahjat.app"),
   title: "Lahjat — Guess the Arabic Dialect",
   description:
     "A GeoGuessr-style game for Arabic speech. Listen to a clip and drop a pin where you think the speaker is from.",
   openGraph: {
+    type: "website",
+    url: "https://lahjat.app",
+    siteName: "Lahjat",
     title: "Lahjat — Guess the Arabic Dialect",
     description:
       "Listen to Arabic speech clips and guess where the speaker is from. Scoring rewards dialect-family proximity, not just geography.",
-    siteName: "Lahjat",
   },
 };
 
