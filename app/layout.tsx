@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LangToggle } from "@/components/LangToggle";
 import { SoundToggle } from "@/components/SoundToggle";
 import { AuthButton } from "@/components/AuthButton";
+import { NavBar } from "@/components/NavBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,13 +30,11 @@ export default function RootLayout({
         <AuthProvider>
           <LanguageProvider>
             <SoundProvider>
-              {/* Mobile: full-width bar with bg so content scrolls cleanly under it.
-                  Desktop (sm+): floating corner trio, no background. */}
-              <div className="fixed top-0 left-0 right-0 sm:top-4 sm:left-auto sm:right-4 z-50 flex h-14 sm:h-auto items-center justify-end gap-2 px-4 sm:px-0 bg-[var(--bg)] sm:bg-transparent border-b border-[var(--border-on-bg)] sm:border-0">
+              <NavBar>
                 <AuthButton />
                 <SoundToggle />
                 <LangToggle />
-              </div>
+              </NavBar>
               {children}
               <Analytics />
             </SoundProvider>

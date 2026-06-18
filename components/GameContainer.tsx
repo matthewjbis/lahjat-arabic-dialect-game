@@ -233,7 +233,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
   const currentColor = liveMultiplier !== null ? multiplierColor(liveMultiplier) : "var(--text-faint)";
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-5 pt-14 sm:pt-7 pb-16">
+    <div className="max-w-3xl mx-auto px-4 sm:px-5 pt-7 pb-16">
       {/* Header — centred regardless of text direction */}
       <header className="flex items-center justify-start flex-wrap gap-x-4 gap-y-2 mb-3">
         <Brand />

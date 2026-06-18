@@ -7,7 +7,7 @@ export default function Home() {
   const t = useT();
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen px-5 text-center pt-14 sm:pt-0">
+    <main className="flex flex-col items-center justify-center min-h-screen px-5 text-center">
       <h1 className="font-semibold tracking-tight flex items-baseline gap-3 mb-1">
         <span className="text-4xl" style={{ color: "var(--heading)" }}>Lahjat</span>
         <span className="ar-display" style={{ color: "var(--heading)", fontSize: "3rem" }}>
