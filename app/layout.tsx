@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SoundProvider } from "@/contexts/SoundContext";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -36,6 +37,7 @@ export default function RootLayout({
                 <LangToggle />
               </div>
               {children}
+              <Analytics />
             </SoundProvider>
           </LanguageProvider>
         </AuthProvider>
