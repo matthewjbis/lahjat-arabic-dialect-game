@@ -11,6 +11,8 @@ import { useSound } from "@/contexts/SoundContext";
 import { scoreGuess, MAX_SCORE } from "@/lib/scoring";
 import type { Clip, Cluster, DialectData, ScoreResult } from "@/lib/scoring";
 
+const CLIPS_PER_ROUND = 10;
+
 // --- Tunable speed-bonus / penalty constants ---
 const TIMER_MAX_MULTIPLIER = 1.5; // Tunable: multiplier at instant submission
 const TIMER_WINDOW_SEC = 15;      // Tunable: seconds to decay from 1.5× down to 1.0×
@@ -106,7 +108,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
   const t = useT();
   const playSound = useSound();
 
-  const [shuffledClips, setShuffledClips] = useState(() => shuffle(clips));
+  const [shuffledClips, setShuffledClips] = useState(() => shuffle(clips).slice(0, CLIPS_PER_ROUND));
   const [clipIndex, setClipIndex] = useState(0);
   const [guess, setGuess] = useState<GuessState | null>(null);
   const [locked, setLocked] = useState(false);
@@ -205,7 +207,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
   }
 
   function handlePlayAgain() {
-    setShuffledClips(shuffle(clips));
+    setShuffledClips(shuffle(clips).slice(0, CLIPS_PER_ROUND));
     setClipIndex(0);
     setGuess(null);
     setLocked(false);
