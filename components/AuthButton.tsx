@@ -78,6 +78,14 @@ export function AuthButton() {
                 {user.email}
               </p>
             </div>
+            <Link
+              href="/profile"
+              onClick={() => setMenuOpen(false)}
+              className="block px-3 py-2 transition-colors hover:bg-white/5"
+              style={{ color: "var(--text-muted)" }}
+            >
+              {t.profileLink}
+            </Link>
             <button
               type="button"
               onClick={async () => { setMenuOpen(false); await signOut(); }}

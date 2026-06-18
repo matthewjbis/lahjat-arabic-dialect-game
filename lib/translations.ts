@@ -121,6 +121,24 @@ const en = {
   authPasswordsNoMatch: "Passwords don't match.",
   authUpdatePassword: "Update password",
 
+  // Profile
+  profileLink: "Profile",
+  profileTitle: "Your profile",
+  profileSignInTitle: "Sign in to view your profile",
+  profileSignInBody: "Create an account or sign in to track your scores and game history.",
+  profileStatGames: "Games played",
+  profileStatBest: "Best score",
+  profileStatAvg: "Avg. accuracy",
+  profileRecentGames: "Recent games",
+  profileNoGames: "No games yet — play a round and your scores will show up here.",
+  profilePlayCta: "Play your first game",
+  profileLoadError: "Couldn't load your history — please refresh.",
+  profileModeLabel: (mode: string): string =>
+    ({ classic: "Classic" }[mode] ?? mode),
+  profileGameScore: (score: number, max: number) =>
+    `${score.toLocaleString()} / ${max.toLocaleString()}`,
+  profileClipCount: (n: number) => `${n} clips`,
+
   // Speed-bonus timer
   speedBonus: "Speed bonus",
   multiplierBreakdown: (base: number, mult: string, final: number) =>
@@ -260,6 +278,24 @@ const ar: typeof en = {
   authConfirmPassword: "تأكيد كلمة المرور",
   authPasswordsNoMatch: "كلمتا المرور غير متطابقتين.",
   authUpdatePassword: "تحديث كلمة المرور",
+
+  // Profile
+  profileLink: "الملف الشخصي",
+  profileTitle: "ملفك الشخصي",
+  profileSignInTitle: "سجّل الدخول لعرض ملفك الشخصي",
+  profileSignInBody: "أنشئ حساباً أو سجّل الدخول لتتبع نتائجك وسجل ألعابك.",
+  profileStatGames: "الألعاب الملعوبة",
+  profileStatBest: "أفضل نتيجة",
+  profileStatAvg: "متوسط الدقة",
+  profileRecentGames: "الألعاب الأخيرة",
+  profileNoGames: "لا توجد ألعاب بعد — العب جولة وستظهر نتائجك هنا.",
+  profilePlayCta: "العب أول لعبة لك",
+  profileLoadError: "تعذّر تحميل سجلك — يرجى التحديث.",
+  profileModeLabel: (mode: string): string =>
+    ({ classic: "كلاسيكي" }[mode] ?? mode),
+  profileGameScore: (score: number, max: number) =>
+    `${score.toLocaleString()} / ${max.toLocaleString()}`,
+  profileClipCount: (n: number) => `${n} مقاطع`,
 
   // Speed-bonus timer
   speedBonus: "مكافأة السرعة",
