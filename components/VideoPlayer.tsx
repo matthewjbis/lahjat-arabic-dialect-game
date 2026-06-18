@@ -83,6 +83,8 @@ export function VideoPlayer({
             ref={videoRef}
             className="absolute inset-0 w-full h-full"
             controls
+            playsInline
+            disablePictureInPicture
             preload="none"
             src={audioUrl}
             style={{ background: "#000" }}
