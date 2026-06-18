@@ -11,7 +11,7 @@ export function NavBar({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
-      if (y < 10) {
+      if (y <= 5) {
         setVisible(true);
       } else if (y > lastY.current) {
         setVisible(false);

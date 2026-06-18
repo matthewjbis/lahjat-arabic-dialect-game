@@ -212,7 +212,7 @@ export default function ContributePage() {
   // Submitting requires an account — gate the form behind sign-in
   if (!authLoading && !user) {
     return (
-      <main className="max-w-lg mx-auto px-5 py-10">
+      <main className="max-w-lg mx-auto px-5 pt-14 pb-10">
         <div className="text-left mb-6">
           <Link href="/play" className="text-sm" style={{ color: "var(--on-bg-muted)" }}>
             {t.backLink}
@@ -244,7 +244,7 @@ export default function ContributePage() {
   }
 
   return (
-    <main className="max-w-lg mx-auto px-5 py-10">
+    <main className="max-w-lg mx-auto px-5 pt-14 pb-10">
       {/* text-left is a physical property — keeps the back link on the left even in RTL */}
       <div className="text-left mb-6">
         <Link href="/play" className="text-sm" style={{ color: "var(--on-bg-muted)" }}>

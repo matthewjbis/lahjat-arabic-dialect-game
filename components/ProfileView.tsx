@@ -79,7 +79,7 @@ export function ProfileView() {
   // ── Sign-in gate ──────────────────────────────────────────────────────────────
   if (!user) {
     return (
-      <main className="max-w-lg mx-auto px-5 py-10">
+      <main className="max-w-lg mx-auto px-5 pt-14 pb-10">
         <div className="text-left mb-6">
           <Link href="/" className="text-sm" style={{ color: "var(--on-bg-muted)" }}>
             {t.backLink}
@@ -124,7 +124,7 @@ export function ProfileView() {
   const dateFmt = new Intl.DateTimeFormat(lang, { month: "short", day: "numeric", year: "numeric" });
 
   return (
-    <main className="max-w-2xl mx-auto px-4 sm:px-5 pt-12 pb-16">
+    <main className="max-w-2xl mx-auto px-4 sm:px-5 pt-14 pb-16">
       <div className="text-left mb-6">
         <Link href="/" className="text-sm" style={{ color: "var(--on-bg-muted)" }}>
           {t.backLink}

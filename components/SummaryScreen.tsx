@@ -105,7 +105,7 @@ export function SummaryScreen({
   }, [authLoading, user, mode, grandTotal, maxPossible, results.length]);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-5 pt-12 pb-16">
+    <div className="max-w-2xl mx-auto px-4 sm:px-5 pt-14 pb-16">
       <p
         className="text-xs uppercase tracking-[0.18em] mb-3"
         style={{ color: "var(--on-bg-muted)" }}
