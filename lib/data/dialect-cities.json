@@ -80,7 +80,6 @@
     { "name": "Luxor",          "name_ar": "الأقصر",           "country": "EG", "lat": 25.6872,  "lon": 32.6396,  "cluster": "saidi" },
     { "name": "Aswan",          "name_ar": "أسوان",            "country": "EG", "lat": 24.0889,  "lon": 32.8998,  "cluster": "saidi", "note": "Nubian substrate" },
     { "name": "Khartoum",       "name_ar": "الخرطوم",          "country": "SD", "lat": 15.5974,  "lon": 32.5356,  "cluster": "sudanese" },
-    { "name": "Omdurman",       "name_ar": "أم درمان",         "country": "SD", "lat": 15.6404,  "lon": 32.4830,  "cluster": "sudanese" },
     { "name": "Port Sudan",     "name_ar": "بورتسودان",        "country": "SD", "lat": 19.6020,  "lon": 37.2076,  "cluster": "sudanese" },
     { "name": "Kassala",        "name_ar": "كسلا",             "country": "SD", "lat": 15.4567,  "lon": 36.4044,  "cluster": "sudanese" },
     { "name": "El Obeid",       "name_ar": "الأبيض",           "country": "SD", "lat": 13.1789,  "lon": 30.2201,  "cluster": "sudanese" },
