@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useT, useLang } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 const COUNTRY_CODES = [
   "DZ","BH","KM","DJ","EG","IQ","JO","KW","LB","LY",
@@ -121,22 +122,37 @@ export default function ContributePage() {
     setStatus("uploading");
     setErrorMsg("");
 
-    const form = new FormData();
-    form.append("file", file);
-    form.append("country", country);
-    form.append("city", city.trim());
-    form.append("source_type", source);
-    if (name.trim()) form.append("name", name.trim());
-
     try {
-      const res = await fetch("/api/submit-clip", { method: "POST", body: form });
+      // Step 1: send metadata to our API — get back a pre-signed Supabase upload URL.
+      // The binary file never passes through Vercel, so there are no request-size limits.
+      const metaForm = new FormData();
+      metaForm.append("filetype", file.type);
+      metaForm.append("filename", file.name);
+      metaForm.append("country", country);
+      metaForm.append("city", city.trim());
+      metaForm.append("source_type", source);
+      if (name.trim()) metaForm.append("name", name.trim());
+
+      const res = await fetch("/api/submit-clip", { method: "POST", body: metaForm });
       const json = await res.json();
       if (!res.ok) {
         setErrorMsg(json.error ?? t.somethingWrong);
         setStatus("error");
-      } else {
-        setStatus("success");
+        return;
       }
+
+      // Step 2: upload the file directly from the browser to Supabase storage.
+      const { error: uploadError } = await supabase.storage
+        .from("clip-submissions")
+        .uploadToSignedUrl(json.path, json.token, file, { contentType: file.type });
+
+      if (uploadError) {
+        setErrorMsg(t.somethingWrong);
+        setStatus("error");
+        return;
+      }
+
+      setStatus("success");
     } catch {
       setErrorMsg(t.networkError);
       setStatus("error");

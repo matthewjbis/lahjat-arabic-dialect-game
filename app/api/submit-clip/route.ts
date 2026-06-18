@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin, createServerSupabase } from "@/lib/supabase-server";
 
-const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 const ALLOWED_TYPES = new Set([
   "audio/mpeg",
   "audio/mp4",
@@ -13,38 +12,33 @@ const ALLOWED_TYPES = new Set([
   "video/quicktime",
 ]);
 
+// Accepts metadata only — no binary payload.
+// Returns a Supabase pre-signed upload URL so the client can upload
+// the file directly to storage, bypassing Vercel's request size limits.
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
 
-  const file = formData.get("file") as File | null;
+  const filetype = (formData.get("filetype") as string | null)?.trim();
+  const filename = (formData.get("filename") as string | null)?.trim() ?? "upload";
   const city = (formData.get("city") as string | null)?.trim() || null;
   const country = (formData.get("country") as string | null)?.trim();
   const name = (formData.get("name") as string | null)?.trim() || null;
   const sourceType = (formData.get("source_type") as string | null) ?? "upload";
 
-  if (!file || !country) {
+  if (!filetype || !country) {
     return NextResponse.json(
-      { error: "file and country are required" },
+      { error: "filetype and country are required" },
       { status: 400 }
     );
   }
 
-  if (!ALLOWED_TYPES.has(file.type)) {
+  if (!ALLOWED_TYPES.has(filetype)) {
     return NextResponse.json(
       { error: "Only audio and video files are accepted" },
       { status: 400 }
     );
   }
 
-  if (file.size > MAX_BYTES) {
-    return NextResponse.json(
-      { error: "File must be under 50 MB" },
-      { status: 400 }
-    );
-  }
-
-  // Uploads require a signed-in account — prevents anonymous abuse of the
-  // open upload endpoint and ties every clip to a real user.
   const authClient = await createServerSupabase();
   const { data: { user } } = await authClient.auth.getUser();
   if (!user) {
@@ -54,15 +48,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const ext = file.name.split(".").pop() ?? "bin";
+  const ext = filename.split(".").pop() ?? "bin";
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-  const { error: uploadError } = await supabaseAdmin.storage
+  const { data: signedData, error: signedError } = await supabaseAdmin.storage
     .from("clip-submissions")
-    .upload(path, file, { contentType: file.type, upsert: false });
+    .createSignedUploadUrl(path);
 
-  if (uploadError) {
-    console.error("Storage upload failed:", uploadError);
+  if (signedError || !signedData) {
+    console.error("Failed to create signed upload URL:", signedError);
     return NextResponse.json(
       { error: "Upload failed, please try again" },
       { status: 500 }
@@ -74,7 +68,7 @@ export async function POST(req: NextRequest) {
     country,
     name,
     file_path: path,
-    file_type: file.type,
+    file_type: filetype,
     source_type: sourceType,
     status: "pending",
     user_id: user.id,
@@ -88,5 +82,5 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ signedUrl: signedData.signedUrl, token: signedData.token, path });
 }
