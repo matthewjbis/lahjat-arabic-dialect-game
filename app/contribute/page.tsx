@@ -18,6 +18,28 @@ function formatTime(s: number) {
   return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
 }
 
+// Read a media file's duration (seconds) in the browser via a throwaway media
+// element. Resolves null if the metadata can't be read so submission proceeds.
+function measureDuration(file: File): Promise<number | null> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const el = document.createElement(
+      file.type.startsWith("video/") ? "video" : "audio"
+    );
+    const done = (value: number | null) => {
+      URL.revokeObjectURL(url);
+      resolve(value);
+    };
+    el.preload = "metadata";
+    el.onloadedmetadata = () => {
+      const d = el.duration;
+      done(Number.isFinite(d) && d > 0 ? Math.round(d) : null);
+    };
+    el.onerror = () => done(null);
+    el.src = url;
+  });
+}
+
 export default function ContributePage() {
   const t = useT();
   const { lang } = useLang();
@@ -125,6 +147,8 @@ export default function ContributePage() {
     try {
       // Step 1: send metadata to our API — get back a pre-signed Supabase upload URL.
       // The binary file never passes through Vercel, so there are no request-size limits.
+      const durationSeconds = await measureDuration(file);
+
       const metaForm = new FormData();
       metaForm.append("filetype", file.type);
       metaForm.append("filename", file.name);
@@ -132,6 +156,8 @@ export default function ContributePage() {
       metaForm.append("city", city.trim());
       metaForm.append("source_type", source);
       if (name.trim()) metaForm.append("name", name.trim());
+      if (durationSeconds !== null)
+        metaForm.append("duration_seconds", String(durationSeconds));
 
       const res = await fetch("/api/submit-clip", { method: "POST", body: metaForm });
       const json = await res.json();

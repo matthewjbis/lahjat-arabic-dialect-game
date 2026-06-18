@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 2026-06-18 (session 5 — continued: duration capture & backfill)
+
+### Fixed
+- **Corrected the timer's duration column name** to `submissions.duration_seconds` (was `duration_second`); the clips API now selects and serves the real column.
+
+### Added
+- **Clip duration captured on upload** — the contribute page measures the file's length in the browser (throwaway `<audio>`/`<video>` element) and sends `duration_seconds` with the submission; `/api/submit-clip` stores it. New clips now arrive with a duration instead of null, so the length-aware timer works immediately.
+- **Backfill script** (`scripts/backfill-durations.mjs`, `npm run backfill:durations`) — for existing rows with a null `duration_seconds`, signs each file's storage URL, reads its duration from the container metadata via `music-metadata` (no ffmpeg dependency), and writes it back. Supports `--dry`. Requires `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in the environment.
+
 ## 2026-06-18 (session 5 — length-aware timer & YouTube removal)
 
 ### Changed

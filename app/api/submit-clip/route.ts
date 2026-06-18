@@ -24,6 +24,11 @@ export async function POST(req: NextRequest) {
   const country = (formData.get("country") as string | null)?.trim();
   const name = (formData.get("name") as string | null)?.trim() || null;
   const sourceType = (formData.get("source_type") as string | null) ?? "upload";
+  const durationRaw = (formData.get("duration_seconds") as string | null)?.trim();
+  const durationSeconds =
+    durationRaw && Number.isFinite(Number(durationRaw)) && Number(durationRaw) > 0
+      ? Math.round(Number(durationRaw))
+      : null;
 
   if (!filetype || !country) {
     return NextResponse.json(
@@ -70,6 +75,7 @@ export async function POST(req: NextRequest) {
     file_path: path,
     file_type: filetype,
     source_type: sourceType,
+    duration_seconds: durationSeconds,
     status: "pending",
     user_id: user.id,
   });
