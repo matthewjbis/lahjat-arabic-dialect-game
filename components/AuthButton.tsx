@@ -15,10 +15,10 @@ export function AuthButton() {
   if (loading) return null;
 
   if (!user) {
-    const redirectTo = pathname !== "/auth" ? `?redirectTo=${encodeURIComponent(pathname)}` : "";
+    if (pathname === "/auth") return null;
     return (
       <Link
-        href={`/auth${redirectTo}`}
+        href={`/auth?redirectTo=${encodeURIComponent(pathname)}`}
         className="text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
         style={{
           background: "var(--surface)",

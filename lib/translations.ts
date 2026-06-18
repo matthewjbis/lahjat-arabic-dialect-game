@@ -158,6 +158,7 @@ const en = {
     return "Just Starting";
   },
   clipLabel: (n: number) => `Clip ${n}`,
+  clipsLabel: "clips",
   scoreSaved: "Saved to your history",
   signInToSave: "Sign in to save your scores",
   saveScoresCta: "Save your scores",
@@ -323,6 +324,7 @@ const ar: typeof en = {
     return "بداية الطريق";
   },
   clipLabel: (n: number) => `مقطع ${n}`,
+  clipsLabel: "مقاطع",
   scoreSaved: "تم الحفظ في سجلّك",
   signInToSave: "سجّل الدخول لحفظ نتائجك",
   saveScoresCta: "احفظ نتائجك",

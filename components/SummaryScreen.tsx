@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { Clip, Cluster } from "@/lib/scoring";
 import { MAX_SCORE } from "@/lib/scoring";
 import type { RoundResult } from "@/components/GameContainer";
-import { useT } from "@/contexts/LanguageContext";
+import { useT, useLang } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
@@ -67,6 +67,7 @@ export function SummaryScreen({
   mode = "classic",
 }: SummaryScreenProps) {
   const t = useT();
+  const lang = useLang();
   const { user, loading: authLoading } = useAuth();
 
   const grandTotal = results.reduce((sum, r) => sum + r.finalScore, 0);
@@ -143,7 +144,7 @@ export function SummaryScreen({
           </span>
         </div>
         <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>
-          {`${pct}% — ${results.length} clips`}
+          {`${pct}% — ${results.length} ${t.clipsLabel}`}
         </p>
         {/* progress meter */}
         <div
@@ -242,7 +243,7 @@ export function SummaryScreen({
                   className="text-sm font-medium truncate"
                   style={{ color: "var(--text)" }}
                 >
-                  {clip?.answer.city}, {clip?.answer.country}
+                  {lang === "ar" ? (clip?.answer.city_ar ?? clip?.answer.city) : clip?.answer.city}, {clip?.answer.country}
                 </div>
                 <div
                   className="text-xs truncate flex items-center gap-1.5"
@@ -255,7 +256,7 @@ export function SummaryScreen({
                         REL_COLORS[r.score.relationship] ?? "var(--surface-2)",
                     }}
                   />
-                  {cluster?.name ?? clip?.answer.cluster}
+                  {lang === "ar" ? (cluster?.name_ar ?? cluster?.name ?? clip?.answer.cluster) : (cluster?.name ?? clip?.answer.cluster)}
                 </div>
               </div>
               <div className="flex items-baseline gap-1.5 shrink-0">

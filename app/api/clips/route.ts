@@ -60,6 +60,7 @@ export async function GET(req: NextRequest) {
         label_provided: location.cluster,
         answer: {
           city: location.name,
+          city_ar: location.name_ar,
           country: location.country,
           cluster: location.cluster,
           macro_group: location.macro_group,

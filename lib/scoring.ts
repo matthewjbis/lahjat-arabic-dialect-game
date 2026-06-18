@@ -31,6 +31,7 @@ export interface DialectData {
 
 export interface ClipAnswer {
   city: string;
+  city_ar?: string;
   country: string;
   cluster: string;
   macro_group: string;
