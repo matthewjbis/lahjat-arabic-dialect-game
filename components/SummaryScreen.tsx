@@ -71,9 +71,9 @@ export function SummaryScreen({
   const pct = Math.round(ratio * 100);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-5 py-8 sm:py-12 pb-16">
+    <div className="max-w-2xl mx-auto px-4 sm:px-5 pt-14 sm:pt-12 pb-16">
       <p
-        className="text-xs uppercase tracking-[0.18em] mb-3 text-center"
+        className="text-xs uppercase tracking-[0.18em] mb-3"
         style={{ color: "var(--on-bg-muted)" }}
       >
         {t.summaryTitle}

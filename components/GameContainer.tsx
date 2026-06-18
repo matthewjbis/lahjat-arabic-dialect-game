@@ -233,7 +233,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-5 pt-14 sm:pt-7 pb-16">
       {/* Header — centred regardless of text direction */}
-      <header className="flex items-center justify-center flex-wrap gap-x-4 gap-y-2 mb-3">
+      <header className="flex items-center justify-start flex-wrap gap-x-4 gap-y-2 mb-3">
         <Brand />
         <nav className="flex items-center justify-center gap-2 flex-wrap">
           <NavPill href="/dialects">{t.dialectMap}</NavPill>
