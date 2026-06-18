@@ -120,6 +120,7 @@ const en = {
   authConfirmPassword: "Confirm password",
   authPasswordsNoMatch: "Passwords don't match.",
   authUpdatePassword: "Update password",
+  authContinueWithGoogle: "Continue with Google",
 
   // Profile
   profileLink: "Profile",
@@ -279,6 +280,7 @@ const ar: typeof en = {
   authConfirmPassword: "تأكيد كلمة المرور",
   authPasswordsNoMatch: "كلمتا المرور غير متطابقتين.",
   authUpdatePassword: "تحديث كلمة المرور",
+  authContinueWithGoogle: "تابع باستخدام جوجل",
 
   // Profile
   profileLink: "الملف الشخصي",

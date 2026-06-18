@@ -11,7 +11,7 @@ From the auth groundwork — build these before the forum-era features below.
 - [x] Profile / score-history page (`/profile`)
 - [ ] Leaderboard (query `game_sessions` ranked by score, filterable by mode)
 - [ ] Regional game modes (see `lahjat-product-writeup.md` → Regional modes)
-- [ ] Google / OAuth sign-in (dashboard toggle + `signInWithOAuth` button)
+- [x] Google / OAuth sign-in (dashboard toggle + `signInWithOAuth` button)
 
 ## Forum-era features (lower priority)
 
