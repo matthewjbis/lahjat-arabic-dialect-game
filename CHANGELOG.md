@@ -2,11 +2,25 @@
 
 ## [Unreleased]
 
+## 2026-06-17 (session 3 — features, nav, mobile fixes)
+
 ### Added
 - **Completed games saved to `game_sessions`** — when a logged-in player reaches the summary screen, the game (mode, total score, max score, clip count) is persisted via a direct client insert, guarded by RLS (own-insert only) and a one-shot ref so each completed game records exactly once. The summary shows a subtle "Saved to your history" confirmation for members and a "Sign in to save your scores" link for guests (translated en + ar). Foundation for the upcoming profile and leaderboard features.
 - **Profile / score-history page (`/profile`)** — logged-in players see stat tiles (games played, best score, average accuracy) and a reverse-chronological list of their games (mode, date, clip count, score, accuracy %), read from `game_sessions` via an RLS-scoped client query. Guests get a sign-in gate; empty state links to a first game. Added a "Profile" link to the account dropdown. Fully translated en + ar.
 - **Clips-contributed stat on profile** — a fourth stat tile shows how many clips the player has submitted, counted server-side via a new `/api/my-contributions` route (admin client + server auth, so it's independent of the submissions table's RLS). Stat grid is now 2×2 on mobile, 1×4 on desktop.
-- **Google sign-in** — "Continue with Google" button on the `/auth` page (above an "or" divider over the email form), wired to `signInWithOAuth`. Reuses the existing `/auth/callback` route, which already exchanges the OAuth code for a session and forwards to the original `redirectTo`. Translated en + ar. _Requires enabling the Google provider in the Supabase dashboard._
+- **Google sign-in** — "Continue with Google" button on the `/auth` page (above an "or" divider over the email form), wired to `signInWithOAuth`. Reuses the existing `/auth/callback` route. Translated en + ar. _Requires enabling the Google provider in the Supabase dashboard._
+- **Vercel Analytics** — installed `@vercel/analytics` and added `<Analytics />` to the root layout; tracks page views across all routes automatically.
+- **Home page redesigned as main menu** — Play (gold primary button), Dialect Map, and Contribute (secondary) presented as a three-button menu. Play has hover-lift to reinforce it as the primary action.
+- **Scroll-aware floating nav** — replaced the solid full-width mobile nav bar with a position-based hide/show: nav fades out once the user scrolls past 60px, reappears only when back above 20px. Purely position-based (no direction tracking) so it is immune to iOS momentum scroll oscillations. All pages updated to `pt-14` top padding to clear the floating buttons at load.
+
+### Changed
+- **Video uploads bypass Vercel via Supabase pre-signed URLs** — `/api/submit-clip` now accepts metadata only and returns a signed upload URL; the browser uploads the file directly to Supabase storage, removing all Vercel request-size constraints. Fixes network errors on video files (tested at 13.4 MB).
+- **Rounds capped at 10 clips** — `CLIPS_PER_ROUND = 10` constant in `GameContainer`; a fresh random 10 are drawn from the full pool each game.
+- **Omdurman removed** — too geographically close to Khartoum on the map; Khartoum retained for the sudanese cluster.
+- **Al-Ahsa and Jazan added** — Al-Ahsa (الاحساء, gulf cluster, SA) and Jazan (جازان, asiri cluster, SA) added to both dialect-cities JSON files.
+- **Game nav restructured** — Brand reverted to plain heading (not a link); "Menu" NavPill added linking to `/`; Dialect Map and Contribute back links changed from `/` to `/play` so they return to the game.
+- **Arabic lam clipping fixed** — `.ar-display` `line-height` raised from `1` to `1.2`; the calligraphic font's tall lam stroke was being clipped to the em box.
+- **iOS video fullscreen prevented** — `playsInline` and `disablePictureInPicture` added to the `<video>` element; stops iOS Safari from hijacking playback into fullscreen.
 
 ---
 
