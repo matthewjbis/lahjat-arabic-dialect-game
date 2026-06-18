@@ -157,28 +157,56 @@ export function SummaryScreen({
         </div>
       </div>
 
-      {/* Score persistence status — saved for members, gentle nudge for guests */}
+      {/* Score persistence — saved tick for members, CTA card for guests */}
       {!authLoading && (
-        <div className="text-center -mt-3 mb-6">
+        <>
           {user ? (
             saved && (
-              <p className="text-xs flex items-center justify-center gap-1.5" style={{ color: "var(--text-faint)" }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                {t.scoreSaved}
-              </p>
+              <div className="text-center -mt-3 mb-6">
+                <p className="text-xs flex items-center justify-center gap-1.5" style={{ color: "var(--text-faint)" }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  {t.scoreSaved}
+                </p>
+              </div>
             )
           ) : (
-            <Link
-              href="/auth?redirectTo=/play"
-              className="text-xs underline underline-offset-2 hover:opacity-80"
-              style={{ color: "var(--accent)" }}
+            <div
+              className="rounded-2xl px-5 py-4 mb-6 flex flex-col sm:flex-row sm:items-center gap-3"
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border-gold)",
+                boxShadow: "var(--shadow-card)",
+              }}
             >
-              {t.signInToSave}
-            </Link>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--heading)" }}>
+                  {t.saveScoresCta}
+                </p>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  {t.saveScoresBody}
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 shrink-0">
+                <Link
+                  href="/auth?redirectTo=/play"
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-center transition-opacity hover:opacity-85"
+                  style={{ background: "var(--accent)", color: "var(--gold-ink)" }}
+                >
+                  {t.createAccount}
+                </Link>
+                <Link
+                  href="/auth?redirectTo=/play"
+                  className="text-xs text-center transition-opacity hover:opacity-70"
+                  style={{ color: "var(--text-faint)" }}
+                >
+                  {t.alreadyHaveAccount}
+                </Link>
+              </div>
+            </div>
           )}
-        </div>
+        </>
       )}
 
       {/* Per-clip breakdown — clean list */}

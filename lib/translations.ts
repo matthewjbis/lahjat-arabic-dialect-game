@@ -160,6 +160,10 @@ const en = {
   clipLabel: (n: number) => `Clip ${n}`,
   scoreSaved: "Saved to your history",
   signInToSave: "Sign in to save your scores",
+  saveScoresCta: "Save your scores",
+  saveScoresBody: "Create a free account to track your history and earn your spot on the leaderboard.",
+  createAccount: "Create account",
+  alreadyHaveAccount: "Already have an account? Sign in",
 
   // Home page
   homeSubtitle:
@@ -321,6 +325,10 @@ const ar: typeof en = {
   clipLabel: (n: number) => `مقطع ${n}`,
   scoreSaved: "تم الحفظ في سجلّك",
   signInToSave: "سجّل الدخول لحفظ نتائجك",
+  saveScoresCta: "احفظ نتائجك",
+  saveScoresBody: "أنشئ حساباً مجانياً لتتبع سجلك وتحجز مكانك في قائمة المتصدرين.",
+  createAccount: "إنشاء حساب",
+  alreadyHaveAccount: "لديك حساب بالفعل؟ سجّل الدخول",
 
   homeSubtitle:
     "استمع إلى مقطع قصير من الكلام العربي وضع دبوساً على الخريطة حيث تعتقد أن المتحدث من هناك. يكافئ التسجيل معرفة اللهجة، وليس الجغرافيا وحدها.",
