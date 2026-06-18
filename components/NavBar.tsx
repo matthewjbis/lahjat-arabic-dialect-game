@@ -11,14 +11,17 @@ export function NavBar({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
+      const delta = y - lastY.current;
       if (y <= 5) {
         setVisible(true);
-      } else if (y > lastY.current) {
+      } else if (delta > 8) {
         setVisible(false);
-      } else {
+        lastY.current = y;
+      } else if (delta < -8) {
         setVisible(true);
+        lastY.current = y;
       }
-      lastY.current = y;
+      // Ignore sub-8px oscillations (iOS momentum scroll noise)
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
