@@ -58,8 +58,9 @@ function shuffle<T>(arr: T[]): T[] {
 /* ---- Reusable header (title + nav). Wraps gracefully on narrow screens. ---- */
 function Brand({ size = "sm" }: { size?: "sm" | "lg" }) {
   return (
-    <h1
-      className={`font-semibold tracking-tight flex items-baseline gap-2 ${
+    <Link
+      href="/"
+      className={`font-semibold tracking-tight flex items-baseline gap-2 transition-opacity hover:opacity-75 ${
         size === "lg" ? "text-3xl" : "text-xl"
       }`}
     >
@@ -70,7 +71,7 @@ function Brand({ size = "sm" }: { size?: "sm" | "lg" }) {
       >
         لهجات
       </span>
-    </h1>
+    </Link>
   );
 }
 
