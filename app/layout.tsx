@@ -28,18 +28,9 @@ export default function RootLayout({
         <AuthProvider>
           <LanguageProvider>
             <SoundProvider>
-              {/* Inline style bypasses Tailwind's RTL class processing — right: 1rem is always physical */}
-              <div
-                style={{
-                  position: "fixed",
-                  top: "1rem",
-                  right: "1rem",
-                  zIndex: 50,
-                  display: "flex",
-                  gap: "0.5rem",
-                  alignItems: "center",
-                }}
-              >
+              {/* Mobile: full-width bar with bg so content scrolls cleanly under it.
+                  Desktop (sm+): floating corner trio, no background. */}
+              <div className="fixed top-0 left-0 right-0 sm:top-4 sm:left-auto sm:right-4 z-50 flex h-14 sm:h-auto items-center justify-end gap-2 px-4 sm:px-0 bg-[var(--bg)] sm:bg-transparent border-b border-[var(--border-on-bg)] sm:border-0">
                 <AuthButton />
                 <SoundToggle />
                 <LangToggle />

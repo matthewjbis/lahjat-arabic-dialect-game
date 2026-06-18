@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin, createServerSupabase } from "@/lib/supabase-server";
 
-export const runtime = "nodejs";
-
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 const ALLOWED_TYPES = new Set([
   "audio/mpeg",
