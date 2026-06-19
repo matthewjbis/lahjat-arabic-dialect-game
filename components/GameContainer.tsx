@@ -7,7 +7,7 @@ import { GameMap } from "@/components/GameMap";
 import { ScorePanel } from "@/components/ScorePanel";
 import { SummaryScreen } from "@/components/SummaryScreen";
 import { useT } from "@/contexts/LanguageContext";
-import { useSound } from "@/contexts/SoundContext";
+import { useSound, useTicking } from "@/contexts/SoundContext";
 import { scoreGuess, MAX_SCORE } from "@/lib/scoring";
 import type { Clip, Cluster, DialectData, ScoreResult } from "@/lib/scoring";
 
@@ -114,6 +114,7 @@ function barFill(mult: number): number {
 export function GameContainer({ dialectData, clips, mode = "standard" }: GameContainerProps) {
   const t = useT();
   const playSound = useSound();
+  const { start: startTicking, stop: stopTicking } = useTicking();
 
   const clipsPerRound = mode === "blitz" ? 5 : CLIPS_PER_ROUND;
   const [shuffledClips, setShuffledClips] = useState(() => shuffle(clips).slice(0, clipsPerRound));
@@ -177,6 +178,16 @@ export function GameContainer({ dialectData, clips, mode = "standard" }: GameCon
     window.setTimeout(() => setFlash(false), 650);
   }, [liveMultiplier, locked, playSound]);
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Play the clock ticking while the multiplier is in the penalty zone (below
+  // 1x), stop it the moment the round locks or the timer runs out. start/stop
+  // are idempotent, so re-running on each 100ms tick won't restart the loop.
+  useEffect(() => {
+    const inPenalty =
+      liveMultiplier !== null && liveMultiplier > 0 && liveMultiplier < 1 && !locked;
+    if (inPenalty) startTicking();
+    else stopTicking();
+  }, [liveMultiplier, locked, startTicking, stopTicking]);
 
   const clusterMap: Record<string, Cluster> = useMemo(
     () => Object.fromEntries(dialectData.clusters.map((c) => [c.id, c])),
