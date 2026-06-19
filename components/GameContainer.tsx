@@ -45,6 +45,7 @@ export interface RoundResult {
 interface GameContainerProps {
   dialectData: DialectData;
   clips: Clip[];
+  mode?: string;
 }
 
 interface GuessState {
@@ -110,11 +111,12 @@ function barFill(mult: number): number {
   return Math.max(0, mult * 50);
 }
 
-export function GameContainer({ dialectData, clips }: GameContainerProps) {
+export function GameContainer({ dialectData, clips, mode = "standard" }: GameContainerProps) {
   const t = useT();
   const playSound = useSound();
 
-  const [shuffledClips, setShuffledClips] = useState(() => shuffle(clips).slice(0, CLIPS_PER_ROUND));
+  const clipsPerRound = mode === "blitz" ? 5 : CLIPS_PER_ROUND;
+  const [shuffledClips, setShuffledClips] = useState(() => shuffle(clips).slice(0, clipsPerRound));
   const [clipIndex, setClipIndex] = useState(0);
   const [guess, setGuess] = useState<GuessState | null>(null);
   const [locked, setLocked] = useState(false);
@@ -232,7 +234,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
   }
 
   function handlePlayAgain() {
-    setShuffledClips(shuffle(clips).slice(0, CLIPS_PER_ROUND));
+    setShuffledClips(shuffle(clips).slice(0, clipsPerRound));
     setClipIndex(0);
     setGuess(null);
     setLocked(false);
@@ -251,6 +253,7 @@ export function GameContainer({ dialectData, clips }: GameContainerProps) {
         clusterMap={clusterMap}
         maxPossible={shuffledClips.length * MAX_SCORE * TIMER_MAX_MULTIPLIER}
         onPlayAgain={handlePlayAgain}
+        mode={mode}
       />
     );
   }

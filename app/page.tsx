@@ -21,22 +21,40 @@ export default function Home() {
         {t.homeSubtitle}
       </p>
 
-      {/* Primary action */}
-      <Link
-        href="/play"
-        className="inline-block px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-150 mb-4"
-        style={{
-          background: "var(--accent)",
-          color: "var(--gold-ink)",
-          border: "1px solid var(--accent-strong)",
-          boxShadow: "var(--shadow-lift)",
-          minWidth: "12rem",
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
-        onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
-      >
-        {t.playClassic}
-      </Link>
+      {/* Mode selection */}
+      <div className="flex gap-3 mb-4">
+        <Link
+          href="/play?mode=standard"
+          className="flex flex-col items-center px-6 py-3.5 rounded-xl text-sm font-semibold transition-all duration-150"
+          style={{
+            background: "var(--accent)",
+            color: "var(--gold-ink)",
+            border: "1px solid var(--accent-strong)",
+            boxShadow: "var(--shadow-lift)",
+            minWidth: "9rem",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+        >
+          <span>{t.modeStandard}</span>
+          <span className="text-xs font-normal mt-0.5 opacity-80">{t.modeStandardDesc}</span>
+        </Link>
+        <Link
+          href="/play?mode=blitz"
+          className="flex flex-col items-center px-6 py-3.5 rounded-xl text-sm font-semibold transition-all duration-150"
+          style={{
+            background: "rgba(236,226,205,0.06)",
+            color: "var(--on-bg)",
+            border: "1px solid var(--border-on-bg)",
+            minWidth: "9rem",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+        >
+          <span>⚡ {t.modeBlitz}</span>
+          <span className="text-xs font-normal mt-0.5 opacity-70">{t.modeBlitzDesc}</span>
+        </Link>
+      </div>
 
       {/* Secondary actions */}
       <div className="flex gap-3">

@@ -166,6 +166,12 @@ const en = {
   createAccount: "Create account",
   alreadyHaveAccount: "Already have an account? Sign in",
 
+  // Game modes
+  modeBlitz: "Blitz",
+  modeStandard: "Standard",
+  modeBlitzDesc: "5 rounds · Quick game",
+  modeStandardDesc: "10 rounds · Full game",
+
   // Per-clip report
   reportClip: "Report a problem",
   reportReasonWrongDialect: "Wrong dialect",
@@ -349,6 +355,12 @@ const ar: typeof en = {
   saveScoresBody: "أنشئ حساباً مجانياً لتتبع سجلك وتحجز مكانك في قائمة المتصدرين.",
   createAccount: "إنشاء حساب",
   alreadyHaveAccount: "لديك حساب بالفعل؟ سجّل الدخول",
+
+  // Game modes
+  modeBlitz: "بليتز",
+  modeStandard: "عادي",
+  modeBlitzDesc: "٥ جولات · لعبة سريعة",
+  modeStandardDesc: "١٠ جولات · لعبة كاملة",
 
   // Per-clip report
   reportClip: "الإبلاغ عن مشكلة",

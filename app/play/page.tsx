@@ -16,7 +16,13 @@ export const metadata = {
   },
 };
 
-export default function PlayPage() {
+export default async function PlayPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mode?: string }>;
+}) {
+  const { mode } = await searchParams;
   const dialectData = dialectCitiesJson as unknown as DialectData;
-  return <GameLoader dialectData={dialectData} />;
+  const resolvedMode = mode === "blitz" ? "blitz" : "standard";
+  return <GameLoader dialectData={dialectData} mode={resolvedMode} />;
 }

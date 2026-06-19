@@ -6,9 +6,10 @@ import type { Clip, DialectData } from "@/lib/scoring";
 
 interface GameLoaderProps {
   dialectData: DialectData;
+  mode?: string;
 }
 
-export function GameLoader({ dialectData }: GameLoaderProps) {
+export function GameLoader({ dialectData, mode = "standard" }: GameLoaderProps) {
   const [clips, setClips] = useState<Clip[] | null>(null);
   const [fetchError, setFetchError] = useState(false);
 
@@ -59,5 +60,5 @@ export function GameLoader({ dialectData }: GameLoaderProps) {
     );
   }
 
-  return <GameContainer dialectData={dialectData} clips={clips} />;
+  return <GameContainer dialectData={dialectData} clips={clips} mode={mode} />;
 }
