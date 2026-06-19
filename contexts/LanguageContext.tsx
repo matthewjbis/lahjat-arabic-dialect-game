@@ -22,7 +22,10 @@ const LanguageContext = createContext<LanguageContextValue>({
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
 
-  // Restore saved preference, or auto-detect on first visit
+  // Restore saved preference, or auto-detect on first visit. This must run after
+  // mount (localStorage/navigator are client-only) and would cause a hydration
+  // mismatch as a lazy initializer, so the setState-on-mount is intentional.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const saved = localStorage.getItem("lahjat-lang") as Lang | null;
     if (saved === "en" || saved === "ar") {
@@ -49,6 +52,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {});
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Sync html lang + dir attributes so the browser and RTL CSS both work
   useEffect(() => {

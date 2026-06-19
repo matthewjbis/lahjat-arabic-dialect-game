@@ -9,10 +9,12 @@ import {
   type ReactNode,
 } from "react";
 
+export type SoundKind = "success" | "medium" | "fail" | "endscreen";
+
 interface SoundContextValue {
   muted: boolean;
   toggleMute: () => void;
-  playSound: (kind: "success" | "medium" | "fail" | "endscreen") => void;
+  playSound: (kind: SoundKind) => void;
 }
 
 const SoundContext = createContext<SoundContextValue>({
@@ -21,7 +23,7 @@ const SoundContext = createContext<SoundContextValue>({
   playSound: () => {},
 });
 
-const SOUND_PATHS: Record<"success" | "medium" | "fail" | "endscreen", string> = {
+const SOUND_PATHS: Record<SoundKind, string> = {
   success:   "/sounds/success.mp3",
   medium:    "/sounds/medium.mp3",
   fail:      "/sounds/failure.mp3",
@@ -31,13 +33,16 @@ const SOUND_PATHS: Record<"success" | "medium" | "fail" | "endscreen", string> =
 export function SoundProvider({ children }: { children: ReactNode }) {
   const [muted, setMuted] = useState(false);
 
-  // Restore saved preference on mount
+  // Restore saved preference on mount. localStorage is client-only, so reading
+  // it as a lazy initializer would cause a hydration mismatch; the setState here
+  // is the intentional SSR-safe hydration pattern.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMuted(localStorage.getItem("lahjat-muted") === "true");
   }, []);
 
   // Preload one HTMLAudioElement per sound — created once on mount
-  const audioRef = useRef<Record<"success" | "medium" | "fail" | "endscreen", HTMLAudioElement | null>>({
+  const audioRef = useRef<Record<SoundKind, HTMLAudioElement | null>>({
     success: null,
     medium: null,
     fail: null,
@@ -45,7 +50,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    (["success", "medium", "fail", "endscreen"] as const).forEach((kind) => {
+    (Object.keys(SOUND_PATHS) as SoundKind[]).forEach((kind) => {
       const el = new Audio(SOUND_PATHS[kind]);
       el.preload = "auto";
       // Silence 404s — the player will drop the files in; until then nothing throws
@@ -62,7 +67,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     });
   }
 
-  function playSound(kind: "success" | "medium" | "fail" | "endscreen") {
+  function playSound(kind: SoundKind) {
     if (muted) return;
     const el = audioRef.current[kind];
     if (!el) return;

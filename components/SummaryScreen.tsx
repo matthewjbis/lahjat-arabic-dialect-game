@@ -8,6 +8,7 @@ import type { RoundResult } from "@/components/GameContainer";
 import { useT, useLang } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { useCountUp } from "@/lib/useCountUp";
 
 interface SummaryScreenProps {
   results: RoundResult[];
@@ -31,32 +32,6 @@ function tierColor(ratio: number): string {
   return "var(--score-low)";
 }
 
-/* Big total counts up — the summary is the reward. */
-function useCountUp(target: number, duration = 1400): number {
-  const [value, setValue] = useState(0);
-  const raf = useRef<number | null>(null);
-  useEffect(() => {
-    const reduce =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      setValue(target);
-      return;
-    }
-    const start = performance.now();
-    const tick = (now: number) => {
-      const p = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - p, 3);
-      setValue(Math.round(eased * target));
-      if (p < 1) raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => {
-      if (raf.current) cancelAnimationFrame(raf.current);
-    };
-  }, [target, duration]);
-  return value;
-}
 
 export function SummaryScreen({
   results,
@@ -73,7 +48,7 @@ export function SummaryScreen({
   const grandTotal = results.reduce((sum, r) => sum + r.finalScore, 0);
   const ratio = maxPossible > 0 ? grandTotal / maxPossible : 0;
   const color = tierColor(ratio);
-  const animatedTotal = useCountUp(grandTotal);
+  const animatedTotal = useCountUp(grandTotal, 1400);
   const pct = Math.round(ratio * 100);
 
   // Persist the completed game for logged-in players. RLS restricts inserts to

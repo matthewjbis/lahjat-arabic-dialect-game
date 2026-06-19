@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Outfit, Aref_Ruqaa } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SoundProvider } from "@/contexts/SoundContext";
@@ -8,6 +9,21 @@ import { SoundToggle } from "@/components/SoundToggle";
 import { AuthButton } from "@/components/AuthButton";
 import { NavBar } from "@/components/NavBar";
 import "./globals.css";
+
+// Self-hosted via next/font — no render-blocking request, no layout shift.
+const outfit = Outfit({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-outfit",
+  display: "swap",
+});
+
+const arefRuqaa = Aref_Ruqaa({
+  subsets: ["arabic", "latin"],
+  weight: ["400", "700"],
+  variable: "--font-aref",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://lahjat.app"),
@@ -28,7 +44,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={`h-full ${outfit.variable} ${arefRuqaa.variable}`}>
       <body className="min-h-full flex flex-col">
         <AuthProvider>
           <LanguageProvider>

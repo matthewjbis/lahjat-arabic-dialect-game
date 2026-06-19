@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { Clip, Cluster } from "@/lib/scoring";
 import { MAX_SCORE } from "@/lib/scoring";
 import type { RoundResult } from "@/components/GameContainer";
 import { useT } from "@/contexts/LanguageContext";
+import { useCountUp } from "@/lib/useCountUp";
 
 type ReportReason = "wrong_dialect" | "wrong_city" | "poor_quality" | "other";
 type ReportState = "idle" | "open" | "submitting" | "done" | "error";
@@ -28,36 +29,6 @@ function scoreColor(ratio: number): string {
   if (ratio >= 0.66) return "var(--score-high)";
   if (ratio >= 0.33) return "var(--score-mid)";
   return "var(--score-low)";
-}
-
-/* Count a number up from 0 — the reveal should feel earned. */
-function useCountUp(target: number, duration = 900): number {
-  const [value, setValue] = useState(0);
-  const raf = useRef<number | null>(null);
-
-  useEffect(() => {
-    const reduce =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      setValue(target);
-      return;
-    }
-    const start = performance.now();
-    const tick = (now: number) => {
-      const p = Math.min(1, (now - start) / duration);
-      // easeOutCubic
-      const eased = 1 - Math.pow(1 - p, 3);
-      setValue(Math.round(eased * target));
-      if (p < 1) raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => {
-      if (raf.current) cancelAnimationFrame(raf.current);
-    };
-  }, [target, duration]);
-
-  return value;
 }
 
 interface ScorePanelProps {

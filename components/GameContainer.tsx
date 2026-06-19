@@ -142,9 +142,12 @@ export function GameContainer({ dialectData, clips, mode = "standard" }: GameCon
       ? measuredDuration
       : DEFAULT_CLIP_SEC;
 
-  // Tick the live multiplier display while the player is deciding
+  // Tick the live multiplier display while the player is deciding.
+  // This effect synchronizes React with a wall-clock interval, so the setState
+  // calls (clearing on stop, ticking on the interval) are intentional.
   useEffect(() => {
     if (playStartedAt === null || locked) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLiveMultiplier(null);
       return;
     }
@@ -156,7 +159,9 @@ export function GameContainer({ dialectData, clips, mode = "standard" }: GameCon
     return () => window.clearInterval(id);
   }, [playStartedAt, locked, clipLengthSec]);
 
-  // Auto-fail when the penalty timer hits 0
+  // Auto-fail when the penalty timer hits 0. This reacts to the wall-clock
+  // multiplier crossing zero, so committing the failed round here is intentional.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (liveMultiplier === null || liveMultiplier > 0 || locked) return;
     const zeroScore: ScoreResult = {
@@ -171,6 +176,7 @@ export function GameContainer({ dialectData, clips, mode = "standard" }: GameCon
     setFlash(true);
     window.setTimeout(() => setFlash(false), 650);
   }, [liveMultiplier, locked, playSound]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const clusterMap: Record<string, Cluster> = useMemo(
     () => Object.fromEntries(dialectData.clusters.map((c) => [c.id, c])),

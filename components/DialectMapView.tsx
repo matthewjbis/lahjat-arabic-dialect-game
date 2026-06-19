@@ -209,6 +209,9 @@ export function DialectMapView({ cities, clusters }: Props) {
 
         cityDotsRef.current = cityDots as d3.Selection<SVGCircleElement, City, SVGGElement, unknown>;
       });
+    // Run once: D3 imperatively builds the map from static server props;
+    // re-running on data identity changes would duplicate the SVG nodes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function resetZoom() {
