@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 2026-06-19 (session 6 — feedback, Arabic UX, volume & auth polish)
+
+### Added
+- **Per-clip report button** — "Report a problem" pill button appears at the bottom of the `ScorePanel` reveal after each round. Clicking it expands an inline form with reason pills (Wrong dialect, Wrong city, Poor quality, Other) and an optional note field. Reports are saved to a new `clip_reports` Supabase table via `/api/report-clip`; no account required. Fully translated en + ar.
+- **General feedback form on summary screen** — a textarea at the bottom of the end-of-game screen lets players leave longer suggestions or bug reports. Submitted to a new `general_feedback` Supabase table via `/api/submit-feedback`; no account required. Both forms show inline success/error state. Fully translated en + ar.
+- **Auto language detection** — on first visit (no saved preference), the app checks `navigator.languages` for any Arabic variant (`ar-*`) instantly without a network call. If the browser language is not Arabic, a fast edge request to `/api/detect-lang` reads Vercel's `x-vercel-ip-country` header and sets Arabic for users in any of 24 Arabic-speaking countries. Explicit user toggle always overrides and is saved to `localStorage` as before.
+
+### Changed
+- **Arabic city and dialect names on summary screen** — the per-clip breakdown now shows city and cluster names in Arabic when the app is in Arabic mode, using `name_ar` from `dialect-cities.json`. `ClipAnswer` gained a `city_ar?: string` field; the clips API passes it through from `resolveLocation`. "X clips" count in the score header is now translated via `t.clipsLabel`.
+- **Volume persists across clips** — `VideoPlayer` saves the user's volume level to `localStorage` (`lahjat-volume`) on every `volumechange` event, and restores it when a new clip's media element mounts. Works for both audio and video players.
+- **Sign-in button hidden on auth page** — `AuthButton` returns `null` when the current path is `/auth`, removing the redundant "Sign in" pill from the floating nav while the user is already on the sign-in screen.
+- **Google OAuth removed from auth page** — the "Continue with Google" button and `handleGoogle` handler have been removed pending Supabase Google provider configuration. Email/password auth remains fully functional.
+
 ## 2026-06-18 (session 5 — continued: instant timer & duration robustness)
 
 ### Changed
