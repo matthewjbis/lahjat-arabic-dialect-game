@@ -13,6 +13,8 @@ import {
 
 export type SoundKind = "success" | "medium" | "fail" | "endscreen";
 
+const DEFAULT_VOLUME = 0.5;
+
 interface SoundContextValue {
   muted: boolean;
   toggleMute: () => void;
@@ -29,7 +31,7 @@ interface SoundContextValue {
 const SoundContext = createContext<SoundContextValue>({
   muted: false,
   toggleMute: () => {},
-  volume: 1,
+  volume: DEFAULT_VOLUME,
   setVolume: () => {},
   playSound: () => {},
   startTicking: () => {},
@@ -46,24 +48,24 @@ const SOUND_PATHS: Record<SoundKind, string> = {
 const TICKING_PATH = "/sounds/clockticking.mp3";
 
 function clampVolume(v: number): number {
-  if (!Number.isFinite(v)) return 1;
+  if (!Number.isFinite(v)) return DEFAULT_VOLUME;
   return Math.max(0, Math.min(1, v));
 }
 
 export function SoundProvider({ children }: { children: ReactNode }) {
   const [muted, setMuted] = useState(false);
-  const [volume, setVolumeState] = useState(1);
+  const [volume, setVolumeState] = useState(DEFAULT_VOLUME);
   // Mirror muted/volume into refs so the audio callbacks can read the latest
   // values without being recreated (keeps the context value stable).
   const mutedRef = useRef(false);
-  const volumeRef = useRef(1);
+  const volumeRef = useRef(DEFAULT_VOLUME);
 
   // Restore saved preferences on mount. localStorage is client-only, so reading
   // it as a lazy initializer would cause a hydration mismatch; the setState here
   // is the intentional SSR-safe hydration pattern.
   useEffect(() => {
     const savedMuted = localStorage.getItem("lahjat-muted") === "true";
-    const savedVolume = clampVolume(parseFloat(localStorage.getItem("lahjat-sound-volume") ?? "1"));
+    const savedVolume = clampVolume(parseFloat(localStorage.getItem("lahjat-sound-volume") ?? String(DEFAULT_VOLUME)));
     mutedRef.current = savedMuted;
     volumeRef.current = savedVolume;
     /* eslint-disable react-hooks/set-state-in-effect */
