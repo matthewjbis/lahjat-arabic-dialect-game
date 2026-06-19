@@ -1,6 +1,19 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+const VOLUME_KEY = "lahjat-volume";
+function getSavedVolume(): number {
+  try {
+    const v = parseFloat(localStorage.getItem(VOLUME_KEY) ?? "");
+    return isNaN(v) ? 1 : Math.max(0, Math.min(1, v));
+  } catch {
+    return 1;
+  }
+}
+function saveVolume(v: number) {
+  try { localStorage.setItem(VOLUME_KEY, String(v)); } catch {}
+}
 
 interface VideoPlayerProps {
   audioUrl?: string | null;
@@ -25,15 +38,21 @@ export function VideoPlayer({
   // Guard so onPlayStart fires only on the very first playback event per mount
   const playStartFired = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    const vol = getSavedVolume();
+    if (videoRef.current) videoRef.current.volume = vol;
+    if (audioRef.current) audioRef.current.volume = vol;
+  }, []);
+
   const firePlayStart = () => {
     if (!playStartFired.current) {
       playStartFired.current = true;
       onPlayStart?.();
     }
   };
-  const reportDuration = (
-    e: React.SyntheticEvent<HTMLMediaElement>
-  ) => {
+  const reportDuration = (e: React.SyntheticEvent<HTMLMediaElement>) => {
     const d = e.currentTarget.duration;
     if (Number.isFinite(d) && d > 0) onDurationKnown?.(d);
   };
@@ -68,12 +87,14 @@ export function VideoPlayer({
           </span>
         </div>
         <audio
+          ref={audioRef}
           className="lahjat-audio"
           controls
           preload="metadata"
           src={audioUrl}
           onPlay={firePlayStart}
           onLoadedMetadata={reportDuration}
+          onVolumeChange={(e) => saveVolume((e.currentTarget as HTMLAudioElement).volume)}
         />
       </div>
     );
@@ -95,6 +116,7 @@ export function VideoPlayer({
             style={{ background: "#000" }}
             onPlay={firePlayStart}
             onLoadedMetadata={reportDuration}
+            onVolumeChange={(e) => saveVolume((e.currentTarget as HTMLVideoElement).volume)}
           />
           {!playing && (
             <button
