@@ -6,6 +6,9 @@ import { MAX_SCORE } from "@/lib/scoring";
 import type { RoundResult } from "@/components/GameContainer";
 import { useT } from "@/contexts/LanguageContext";
 
+type ReportReason = "wrong_dialect" | "wrong_city" | "poor_quality" | "other";
+type ReportState = "idle" | "open" | "submitting" | "done" | "error";
+
 const REL_COLORS: Record<string, string> = {
   exact: "#1D9E75",
   adjacent: "#97C459",
@@ -66,6 +69,24 @@ interface ScorePanelProps {
 export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
   const t = useT();
   const { score, multiplier, finalScore } = result;
+
+  const [reportState, setReportState] = useState<ReportState>("idle");
+  const [reason, setReason] = useState<ReportReason>("wrong_dialect");
+  const [note, setNote] = useState("");
+
+  async function submitReport() {
+    setReportState("submitting");
+    try {
+      const res = await fetch("/api/report-clip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clip_id: clip.id, reason, note: note.trim() || null }),
+      });
+      setReportState(res.ok ? "done" : "error");
+    } catch {
+      setReportState("error");
+    }
+  }
 
   const ratio = MAX_SCORE > 0 ? finalScore / MAX_SCORE : 0;
   const color = scoreColor(ratio);
@@ -221,6 +242,83 @@ export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
         <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>
           {clip.reveal_draft ?? t.revealFallback}
         </p>
+
+        {/* Per-clip report */}
+        <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--border)" }}>
+          {reportState === "done" ? (
+            <p className="text-xs" style={{ color: "var(--text-faint)" }}>{t.reportSuccess}</p>
+          ) : reportState === "open" || reportState === "submitting" || reportState === "error" ? (
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>{t.reportClip}</p>
+              <div className="flex flex-wrap gap-2">
+                {(["wrong_dialect", "wrong_city", "poor_quality", "other"] as ReportReason[]).map((r) => {
+                  const labels: Record<ReportReason, string> = {
+                    wrong_dialect: t.reportReasonWrongDialect,
+                    wrong_city: t.reportReasonWrongCity,
+                    poor_quality: t.reportReasonQuality,
+                    other: t.reportReasonOther,
+                  };
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setReason(r)}
+                      className="text-xs px-2.5 py-1 rounded-lg transition-all"
+                      style={{
+                        background: reason === r ? "var(--accent)" : "var(--surface-inset)",
+                        color: reason === r ? "var(--gold-ink)" : "var(--text-muted)",
+                        border: "1px solid " + (reason === r ? "var(--accent)" : "var(--border-strong)"),
+                      }}
+                    >
+                      {labels[r]}
+                    </button>
+                  );
+                })}
+              </div>
+              <textarea
+                rows={2}
+                maxLength={500}
+                placeholder={t.reportNote}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="w-full rounded-xl px-3 py-2 text-xs resize-none"
+                style={{
+                  background: "var(--surface-inset)",
+                  border: "1px solid var(--border-strong)",
+                  color: "var(--text)",
+                  outline: "none",
+                }}
+              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={submitReport}
+                  disabled={reportState === "submitting"}
+                  className="text-xs px-3 py-1.5 rounded-lg font-semibold transition-opacity"
+                  style={{
+                    background: "var(--accent)",
+                    color: "var(--gold-ink)",
+                    opacity: reportState === "submitting" ? 0.6 : 1,
+                  }}
+                >
+                  {reportState === "submitting" ? "…" : t.reportSubmit}
+                </button>
+                {reportState === "error" && (
+                  <p className="text-xs" style={{ color: "var(--accent-2)" }}>{t.reportError}</p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setReportState("open")}
+              className="text-xs transition-opacity hover:opacity-70"
+              style={{ color: "var(--text-faint)" }}
+            >
+              {t.reportClip}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

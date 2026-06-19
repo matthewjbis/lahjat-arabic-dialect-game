@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import type { Clip, Cluster } from "@/lib/scoring";
 import { MAX_SCORE } from "@/lib/scoring";
@@ -82,6 +82,23 @@ export function SummaryScreen({
   // SummaryScreen mount equals one completed game.
   const [saved, setSaved] = useState(false);
   const savedRef = useRef(false);
+
+  const [fbText, setFbText] = useState("");
+  const [fbState, setFbState] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const submitFeedback = useCallback(async () => {
+    if (!fbText.trim()) return;
+    setFbState("submitting");
+    try {
+      const res = await fetch("/api/submit-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: fbText.trim() }),
+      });
+      setFbState(res.ok ? "done" : "error");
+    } catch {
+      setFbState("error");
+    }
+  }, [fbText]);
   useEffect(() => {
     if (authLoading || !user || savedRef.current) return;
     savedRef.current = true;
@@ -278,6 +295,58 @@ export function SummaryScreen({
             </div>
           );
         })}
+      </div>
+
+      {/* General feedback */}
+      <div
+        className="rounded-2xl px-5 py-4 mb-6"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border-strong)",
+          boxShadow: "var(--shadow-card)",
+        }}
+      >
+        <p className="text-xs font-semibold mb-2" style={{ color: "var(--text-muted)" }}>
+          {t.feedbackTitle}
+        </p>
+        {fbState === "done" ? (
+          <p className="text-xs" style={{ color: "var(--text-faint)" }}>{t.feedbackSuccess}</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <textarea
+              rows={3}
+              maxLength={5000}
+              placeholder={t.feedbackPlaceholder}
+              value={fbText}
+              onChange={(e) => setFbText(e.target.value)}
+              className="w-full rounded-xl px-3 py-2 text-sm resize-none"
+              style={{
+                background: "var(--surface-inset)",
+                border: "1px solid var(--border-strong)",
+                color: "var(--text)",
+                outline: "none",
+              }}
+            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={submitFeedback}
+                disabled={fbState === "submitting" || !fbText.trim()}
+                className="text-xs px-3 py-1.5 rounded-lg font-semibold transition-opacity"
+                style={{
+                  background: "var(--accent)",
+                  color: "var(--gold-ink)",
+                  opacity: fbState === "submitting" || !fbText.trim() ? 0.5 : 1,
+                }}
+              >
+                {fbState === "submitting" ? "…" : t.feedbackSubmit}
+              </button>
+              {fbState === "error" && (
+                <p className="text-xs" style={{ color: "var(--accent-2)" }}>{t.feedbackError}</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2.5">

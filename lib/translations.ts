@@ -166,6 +166,24 @@ const en = {
   createAccount: "Create account",
   alreadyHaveAccount: "Already have an account? Sign in",
 
+  // Per-clip report
+  reportClip: "Report a problem",
+  reportReasonWrongDialect: "Wrong dialect",
+  reportReasonWrongCity: "Wrong city",
+  reportReasonQuality: "Poor audio/video quality",
+  reportReasonOther: "Other",
+  reportNote: "Additional notes (optional)",
+  reportSubmit: "Submit report",
+  reportSuccess: "Thanks — we'll look into it.",
+  reportError: "Failed to submit. Try again.",
+
+  // General feedback
+  feedbackTitle: "Got feedback?",
+  feedbackPlaceholder: "Suggestions, ideas, or anything else…",
+  feedbackSubmit: "Send",
+  feedbackSuccess: "Thanks for the feedback!",
+  feedbackError: "Failed to submit. Try again.",
+
   // Home page
   homeSubtitle:
     "Listen to a short clip of Arabic speech and drop a pin where you think the speaker is from. Scoring rewards dialect knowledge, not just geography.",
@@ -331,6 +349,24 @@ const ar: typeof en = {
   saveScoresBody: "أنشئ حساباً مجانياً لتتبع سجلك وتحجز مكانك في قائمة المتصدرين.",
   createAccount: "إنشاء حساب",
   alreadyHaveAccount: "لديك حساب بالفعل؟ سجّل الدخول",
+
+  // Per-clip report
+  reportClip: "الإبلاغ عن مشكلة",
+  reportReasonWrongDialect: "لهجة خاطئة",
+  reportReasonWrongCity: "مدينة خاطئة",
+  reportReasonQuality: "جودة صوت/فيديو رديئة",
+  reportReasonOther: "أخرى",
+  reportNote: "ملاحظات إضافية (اختياري)",
+  reportSubmit: "إرسال البلاغ",
+  reportSuccess: "شكراً — سننظر في الأمر.",
+  reportError: "فشل الإرسال. حاول مجدداً.",
+
+  // General feedback
+  feedbackTitle: "لديك اقتراح؟",
+  feedbackPlaceholder: "اقتراحات، أفكار، أو أي شيء آخر…",
+  feedbackSubmit: "إرسال",
+  feedbackSuccess: "شكراً على ملاحظاتك!",
+  feedbackError: "فشل الإرسال. حاول مجدداً.",
 
   homeSubtitle:
     "استمع إلى مقطع قصير من الكلام العربي وضع دبوساً على الخريطة حيث تعتقد أن المتحدث من هناك. يكافئ التسجيل معرفة اللهجة، وليس الجغرافيا وحدها.",
