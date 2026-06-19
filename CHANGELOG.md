@@ -13,7 +13,7 @@
 - **Arabic city and dialect names on summary screen** — the per-clip breakdown now shows city and cluster names in Arabic when the app is in Arabic mode, using `name_ar` from `dialect-cities.json`. `ClipAnswer` gained a `city_ar?: string` field; the clips API passes it through from `resolveLocation`. "X clips" count in the score header is now translated via `t.clipsLabel`.
 - **Volume persists across clips** — `VideoPlayer` saves the user's volume level to `localStorage` (`lahjat-volume`) on every `volumechange` event, and restores it when a new clip's media element mounts. Works for both audio and video players.
 - **Sign-in button hidden on auth page** — `AuthButton` returns `null` when the current path is `/auth`, removing the redundant "Sign in" pill from the floating nav while the user is already on the sign-in screen.
-- **Google OAuth removed from auth page** — the "Continue with Google" button and `handleGoogle` handler have been removed pending Supabase Google provider configuration. Email/password auth remains fully functional.
+- **Google OAuth now live** — Google Cloud project configured (External consent screen, OAuth 2.0 client ID + secret), provider enabled in Supabase, and the "Continue with Google" button restored to the auth page. Works for both sign-in and sign-up; redirects back to the originating page via `/auth/callback`.
 
 ## 2026-06-18 (session 5 — continued: instant timer & duration robustness)
 
