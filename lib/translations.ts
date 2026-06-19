@@ -138,7 +138,7 @@ const en = {
   profilePlayCta: "Play your first game",
   profileLoadError: "Couldn't load your history — please refresh.",
   profileModeLabel: (mode: string): string =>
-    ({ classic: "Classic" }[mode] ?? mode),
+    ({ classic: "Classic", standard: "Standard", blitz: "Blitz" }[mode] ?? mode),
   profileGameScore: (score: number, max: number) =>
     `${score.toLocaleString()} / ${max.toLocaleString()}`,
   profileClipCount: (n: number) => `${n} clips`,
@@ -329,7 +329,7 @@ const ar: typeof en = {
   profilePlayCta: "العب أول لعبة لك",
   profileLoadError: "تعذّر تحميل سجلك — يرجى التحديث.",
   profileModeLabel: (mode: string): string =>
-    ({ classic: "كلاسيكي" }[mode] ?? mode),
+    ({ classic: "كلاسيكي", standard: "عادي", blitz: "بليتز" }[mode] ?? mode),
   profileGameScore: (score: number, max: number) =>
     `${score.toLocaleString()} / ${max.toLocaleString()}`,
   profileClipCount: (n: number) => `${n} مقاطع`,

@@ -51,7 +51,7 @@ export default function Home() {
           onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
         >
-          <span>⚡ {t.modeBlitz}</span>
+          <span>{t.modeBlitz}</span>
           <span className="text-xs font-normal mt-0.5 opacity-70">{t.modeBlitzDesc}</span>
         </Link>
       </div>
