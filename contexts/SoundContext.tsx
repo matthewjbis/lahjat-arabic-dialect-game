@@ -16,6 +16,9 @@ export type SoundKind = "success" | "medium" | "fail" | "endscreen";
 interface SoundContextValue {
   muted: boolean;
   toggleMute: () => void;
+  /** Site-sound volume, 0–1. Independent of the in-clip media volume. */
+  volume: number;
+  setVolume: (v: number) => void;
   playSound: (kind: SoundKind) => void;
   /** Start the looping clock-ticking used during the timer's penalty zone. */
   startTicking: () => void;
@@ -26,6 +29,8 @@ interface SoundContextValue {
 const SoundContext = createContext<SoundContextValue>({
   muted: false,
   toggleMute: () => {},
+  volume: 1,
+  setVolume: () => {},
   playSound: () => {},
   startTicking: () => {},
   stopTicking: () => {},
@@ -40,20 +45,31 @@ const SOUND_PATHS: Record<SoundKind, string> = {
 
 const TICKING_PATH = "/sounds/clockticking.mp3";
 
+function clampVolume(v: number): number {
+  if (!Number.isFinite(v)) return 1;
+  return Math.max(0, Math.min(1, v));
+}
+
 export function SoundProvider({ children }: { children: ReactNode }) {
   const [muted, setMuted] = useState(false);
-  // Mirror `muted` into a ref so the audio callbacks can read the latest value
-  // without being recreated on every toggle (keeps the context value stable).
+  const [volume, setVolumeState] = useState(1);
+  // Mirror muted/volume into refs so the audio callbacks can read the latest
+  // values without being recreated (keeps the context value stable).
   const mutedRef = useRef(false);
+  const volumeRef = useRef(1);
 
-  // Restore saved preference on mount. localStorage is client-only, so reading
+  // Restore saved preferences on mount. localStorage is client-only, so reading
   // it as a lazy initializer would cause a hydration mismatch; the setState here
   // is the intentional SSR-safe hydration pattern.
   useEffect(() => {
-    const saved = localStorage.getItem("lahjat-muted") === "true";
-    mutedRef.current = saved;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMuted(saved);
+    const savedMuted = localStorage.getItem("lahjat-muted") === "true";
+    const savedVolume = clampVolume(parseFloat(localStorage.getItem("lahjat-sound-volume") ?? "1"));
+    mutedRef.current = savedMuted;
+    volumeRef.current = savedVolume;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setMuted(savedMuted);
+    setVolumeState(savedVolume);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   // Preload one HTMLAudioElement per one-shot sound, plus the looping ticking.
@@ -95,7 +111,9 @@ export function SoundProvider({ children }: { children: ReactNode }) {
   const startTicking = useCallback(() => {
     if (mutedRef.current) return;
     const el = tickingRef.current;
-    if (el && el.paused) el.play().catch(() => {});
+    if (!el) return;
+    el.volume = volumeRef.current;
+    if (el.paused) el.play().catch(() => {});
   }, []);
 
   const toggleMute = useCallback(() => {
@@ -109,18 +127,28 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const setVolume = useCallback((v: number) => {
+    const clamped = clampVolume(v);
+    volumeRef.current = clamped;
+    localStorage.setItem("lahjat-sound-volume", String(clamped));
+    // Reflect a change to a currently-playing ticking loop in real time.
+    if (tickingRef.current) tickingRef.current.volume = clamped;
+    setVolumeState(clamped);
+  }, []);
+
   const playSound = useCallback((kind: SoundKind) => {
     if (mutedRef.current) return;
     const el = audioRef.current[kind];
     if (!el) return;
+    el.volume = volumeRef.current;
     // Rewind so rapid re-plays always start from the beginning
     el.currentTime = 0;
     el.play().catch(() => {});
   }, []);
 
   const value = useMemo(
-    () => ({ muted, toggleMute, playSound, startTicking, stopTicking }),
-    [muted, toggleMute, playSound, startTicking, stopTicking]
+    () => ({ muted, toggleMute, volume, setVolume, playSound, startTicking, stopTicking }),
+    [muted, toggleMute, volume, setVolume, playSound, startTicking, stopTicking]
   );
 
   return <SoundContext.Provider value={value}>{children}</SoundContext.Provider>;
@@ -132,6 +160,14 @@ export function useMuted() {
 
 export function useToggleMute() {
   return useContext(SoundContext).toggleMute;
+}
+
+export function useVolume() {
+  return useContext(SoundContext).volume;
+}
+
+export function useSetVolume() {
+  return useContext(SoundContext).setVolume;
 }
 
 export function useSound() {

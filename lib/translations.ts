@@ -97,6 +97,7 @@ const en = {
   // Sound toggle
   muteSound: "Mute sounds",
   unmuteSound: "Unmute sounds",
+  soundVolume: "Sound volume",
 
   // Auth
   authSignIn: "Sign in",
@@ -287,6 +288,7 @@ const ar: typeof en = {
   // Sound toggle
   muteSound: "كتم الأصوات",
   unmuteSound: "تفعيل الأصوات",
+  soundVolume: "مستوى الصوت",
 
   // Auth
   authSignIn: "تسجيل الدخول",
