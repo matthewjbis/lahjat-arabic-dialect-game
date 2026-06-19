@@ -312,9 +312,16 @@ export function ScorePanel({ result, clip, clusterMap }: ScorePanelProps) {
             <button
               type="button"
               onClick={() => setReportState("open")}
-              className="text-xs transition-opacity hover:opacity-70"
-              style={{ color: "var(--text-faint)" }}
+              className="text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80 flex items-center gap-1.5"
+              style={{
+                background: "var(--surface-inset)",
+                color: "var(--text-muted)",
+                border: "1px solid var(--border-strong)",
+              }}
             >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
+              </svg>
               {t.reportClip}
             </button>
           )}
