@@ -9,6 +9,7 @@ import { useT, useLang } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useCountUp } from "@/lib/useCountUp";
+import { computeCurrentStreak } from "@/lib/streak";
 
 interface SummaryScreenProps {
   results: RoundResult[];
@@ -56,7 +57,15 @@ export function SummaryScreen({
   // The ref guards against double-insert (StrictMode, re-renders) — one
   // SummaryScreen mount equals one completed game.
   const [saved, setSaved] = useState(false);
+  const [streak, setStreak] = useState<number | null>(null);
   const savedRef = useRef(false);
+
+  // Guests get an active sign-up prompt once auth resolves and they're anonymous.
+  const [showSignup, setShowSignup] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!authLoading && !user) setShowSignup(true);
+  }, [authLoading, user]);
 
   const [fbText, setFbText] = useState("");
   const [fbState, setFbState] = useState<"idle" | "submitting" | "done" | "error">("idle");
@@ -86,13 +95,19 @@ export function SummaryScreen({
         max_score: Math.round(maxPossible),
         clip_count: results.length,
       })
-      .then(({ error }: { error: { message: string } | null }) => {
+      .then(async ({ error }: { error: { message: string } | null }) => {
         if (error) {
           // Allow a retry on a later render if the insert failed
           savedRef.current = false;
           console.error("Failed to save game session:", error.message);
-        } else {
-          setSaved(true);
+          return;
+        }
+        setSaved(true);
+        // Recompute the daily streak now that today's game is recorded. RLS
+        // limits the select to the player's own rows.
+        const { data } = await supabase.from("game_sessions").select("played_at");
+        if (data) {
+          setStreak(computeCurrentStreak(data.map((d: { played_at: string }) => d.played_at)));
         }
       });
   }, [authLoading, user, mode, grandTotal, maxPossible, results.length]);
@@ -155,7 +170,18 @@ export function SummaryScreen({
         <>
           {user ? (
             saved && (
-              <div className="text-center -mt-3 mb-6">
+              <div className="flex flex-col items-center gap-3 -mt-2 mb-6">
+                {streak !== null && streak > 0 && (
+                  <div
+                    className="flex items-center gap-2 px-4 py-2 rounded-full"
+                    style={{ background: "var(--surface)", border: "1px solid var(--border-gold)", boxShadow: "var(--shadow-card)" }}
+                  >
+                    <span style={{ fontSize: "1.1rem", lineHeight: 1 }} aria-hidden>🔥</span>
+                    <span className="text-sm font-semibold" style={{ color: "var(--heading)" }}>
+                      {t.dayStreak(streak)}
+                    </span>
+                  </div>
+                )}
                 <p className="text-xs flex items-center justify-center gap-1.5" style={{ color: "var(--text-faint)" }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
@@ -354,6 +380,51 @@ export function SummaryScreen({
           {t.dialectMap}
         </Link>
       </div>
+
+      {/* Guest sign-up prompt — appears once on finish, framed around streaks */}
+      {!authLoading && !user && showSignup && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ background: "rgba(10,11,16,0.6)" }}
+          onClick={() => setShowSignup(false)}
+        >
+          <div
+            className="relative w-full max-w-sm rounded-2xl px-6 py-7 text-center lahjat-pop"
+            style={{ background: "var(--surface)", border: "1px solid var(--border-gold)", boxShadow: "var(--shadow-lift)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ fontSize: "2.5rem", lineHeight: 1 }} aria-hidden className="mb-3">🔥</div>
+            <h2 className="text-lg font-bold mb-1.5" style={{ color: "var(--heading)" }}>
+              {t.signupPromptTitle}
+            </h2>
+            <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
+              {t.signupPromptBody}
+            </p>
+            <Link
+              href="/auth?redirectTo=/play"
+              className="block w-full px-4 py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-85 mb-2"
+              style={{ background: "var(--accent)", color: "var(--gold-ink)" }}
+            >
+              {t.createAccount}
+            </Link>
+            <Link
+              href="/auth?redirectTo=/play"
+              className="block text-xs mb-3 transition-opacity hover:opacity-70"
+              style={{ color: "var(--text-faint)" }}
+            >
+              {t.alreadyHaveAccount}
+            </Link>
+            <button
+              type="button"
+              onClick={() => setShowSignup(false)}
+              className="text-xs transition-opacity hover:opacity-70"
+              style={{ color: "var(--text-faint)" }}
+            >
+              {t.signupPromptDismiss}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

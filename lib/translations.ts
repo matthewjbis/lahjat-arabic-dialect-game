@@ -167,6 +167,19 @@ const en = {
   createAccount: "Create account",
   alreadyHaveAccount: "Already have an account? Sign in",
 
+  // Streaks
+  dayStreak: (n: number) => `${n}-day streak`,
+  streakStarted: "Streak started!",
+  streakKeepGoing: "Come back tomorrow to keep it going",
+  profileStreakCurrent: "Current streak",
+  profileStreakLongest: (n: number) => `Longest: ${n}`,
+  streakUnitDays: (n: number): string => (n === 1 ? "day" : "days"),
+
+  // Sign-up prompt (shown to guests after a game)
+  signupPromptTitle: "Start your streak",
+  signupPromptBody: "Create a free account to save your scores and build a daily streak.",
+  signupPromptDismiss: "Maybe later",
+
   // Game modes
   modeBlitz: "Blitz",
   modeStandard: "Standard",
@@ -357,6 +370,19 @@ const ar: typeof en = {
   saveScoresBody: "أنشئ حساباً مجانياً لتتبع سجلك وتحجز مكانك في قائمة المتصدرين.",
   createAccount: "إنشاء حساب",
   alreadyHaveAccount: "لديك حساب بالفعل؟ سجّل الدخول",
+
+  // Streaks
+  dayStreak: (n: number) => `${n} يوم متتالٍ`,
+  streakStarted: "بدأت السلسلة!",
+  streakKeepGoing: "عُد غداً للحفاظ عليها",
+  profileStreakCurrent: "السلسلة الحالية",
+  profileStreakLongest: (n: number) => `الأطول: ${n}`,
+  streakUnitDays: () => "يوم",
+
+  // Sign-up prompt (shown to guests after a game)
+  signupPromptTitle: "ابدأ سلسلتك",
+  signupPromptBody: "أنشئ حساباً مجانياً لحفظ نتائجك وبناء سلسلة يومية.",
+  signupPromptDismiss: "ربما لاحقاً",
 
   // Game modes
   modeBlitz: "بليتز",

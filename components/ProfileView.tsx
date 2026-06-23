@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT, useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/lib/supabase";
+import { computeCurrentStreak, computeLongestStreak } from "@/lib/streak";
 
 // Mirrors the public.game_sessions table
 interface GameSession {
@@ -121,6 +122,10 @@ export function ProfileView() {
         gamesPlayed
       : 0;
 
+  const playedDates = sessions?.map((s) => s.played_at) ?? [];
+  const currentStreak = computeCurrentStreak(playedDates);
+  const longestStreak = computeLongestStreak(playedDates);
+
   const dateFmt = new Intl.DateTimeFormat(lang, { month: "short", day: "numeric", year: "numeric" });
 
   return (
@@ -137,6 +142,29 @@ export function ProfileView() {
       <p className="text-sm mb-7 truncate" style={{ color: "var(--on-bg-muted)" }}>
         {displayName}
       </p>
+
+      {/* Streak banner */}
+      {currentStreak > 0 && (
+        <div
+          className="rounded-2xl px-5 py-4 mb-4 flex items-center gap-3.5"
+          style={{ background: "var(--surface)", border: "1px solid var(--border-gold)", boxShadow: "var(--shadow-card)" }}
+        >
+          <span style={{ fontSize: "2rem", lineHeight: 1 }} aria-hidden>🔥</span>
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold tabular-nums" style={{ color: "var(--heading)" }}>
+                {currentStreak}
+              </span>
+              <span className="text-sm" style={{ color: "var(--text-muted)" }}>
+                {t.streakUnitDays(currentStreak)}
+              </span>
+            </div>
+            <div className="text-xs" style={{ color: "var(--text-faint)" }}>
+              {t.profileStreakCurrent} · {t.profileStreakLongest(longestStreak)}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stat tiles */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-7">
