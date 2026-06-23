@@ -15,6 +15,11 @@
 - **Sign-in button hidden on auth page** — `AuthButton` returns `null` when the current path is `/auth`, removing the redundant "Sign in" pill from the floating nav while the user is already on the sign-in screen.
 - **Google OAuth now live** — Google Cloud project configured (External consent screen, OAuth 2.0 client ID + secret), provider enabled in Supabase, and the "Continue with Google" button restored to the auth page. Works for both sign-in and sign-up; redirects back to the originating page via `/auth/callback`.
 
+## 2026-06-18 (session 5 — continued: contribute page for signed-out visitors)
+
+### Changed
+- **Signed-out visitors to `/contribute` now see what the page is for** — previously the page jumped straight to a "Sign in to contribute" card. It now shows the same explanation ("Are you a native Arabic speaker?…") and recording guidelines that signed-in contributors see, above the sign-in prompt. Both are fully bilingual (en + ar) via the existing translations and language toggle. The guidelines were extracted into a reusable `RecordingGuidelines` component shared by both views.
+
 ## 2026-06-18 (session 5 — continued: instant timer & duration robustness)
 
 ### Changed

@@ -53,6 +53,44 @@ function measureDuration(file: File): Promise<number | null> {
   });
 }
 
+// Recording guidelines card — shown both to signed-in contributors and to
+// signed-out visitors (so they understand what the page is for before signing up).
+function RecordingGuidelines() {
+  const t = useT();
+  return (
+    <div
+      className="rounded-xl p-3 mb-2 text-xs"
+      style={{ background: "var(--surface)", border: "0.5px solid var(--border)" }}
+    >
+      <p className="text-xs font-medium mb-1.5" style={{ color: "var(--text)" }}>
+        {t.guidelinesTitle}
+      </p>
+      <ul className="flex flex-col gap-1" style={{ color: "var(--text-muted)" }}>
+        <li className="flex gap-2">
+          <span style={{ color: "var(--accent-2)" }}>✕</span>
+          {t.guidelineNo1}
+        </li>
+        <li className="flex gap-2">
+          <span style={{ color: "var(--accent-2)" }}>✕</span>
+          {t.guidelineNo2}
+        </li>
+        <li className="flex gap-2">
+          <span style={{ color: "var(--accent)" }}>✓</span>
+          {t.guidelineYes1}
+        </li>
+        <li className="flex gap-2">
+          <span style={{ color: "var(--accent)" }}>✓</span>
+          {t.guidelineYes2}
+        </li>
+        <li className="flex gap-2">
+          <span style={{ color: "var(--accent)" }}>✓</span>
+          {t.guidelineYes3}
+        </li>
+      </ul>
+    </div>
+  );
+}
+
 export default function ContributePage() {
   const t = useT();
   const { lang } = useLang();
@@ -265,6 +303,13 @@ export default function ContributePage() {
         <h1 className="text-2xl font-medium tracking-tight mb-1" style={{ color: "var(--heading)" }}>
           {t.contributeTitle}
         </h1>
+        <p className="text-sm mb-7" style={{ color: "var(--on-bg-muted)" }}>
+          {t.contributeSubtitle}
+        </p>
+
+        {/* Same guidelines signed-in contributors see, so visitors understand the page */}
+        <RecordingGuidelines />
+
         <div
           className="rounded-xl p-6 mt-6 text-center"
           style={{ background: "var(--surface)", border: "1px solid var(--border-strong)", boxShadow: "var(--shadow-card)" }}
@@ -305,36 +350,7 @@ export default function ContributePage() {
       </p>
 
       {/* Recording guidelines — sits on parchment surface card */}
-      <div
-        className="rounded-xl p-3 mb-2 text-xs"
-        style={{ background: "var(--surface)", border: "0.5px solid var(--border)" }}
-      >
-        <p className="text-xs font-medium mb-1.5" style={{ color: "var(--text)" }}>
-          {t.guidelinesTitle}
-        </p>
-        <ul className="flex flex-col gap-1" style={{ color: "var(--text-muted)" }}>
-          <li className="flex gap-2">
-            <span style={{ color: "var(--accent-2)" }}>✕</span>
-            {t.guidelineNo1}
-          </li>
-          <li className="flex gap-2">
-            <span style={{ color: "var(--accent-2)" }}>✕</span>
-            {t.guidelineNo2}
-          </li>
-          <li className="flex gap-2">
-            <span style={{ color: "var(--accent)" }}>✓</span>
-            {t.guidelineYes1}
-          </li>
-          <li className="flex gap-2">
-            <span style={{ color: "var(--accent)" }}>✓</span>
-            {t.guidelineYes2}
-          </li>
-          <li className="flex gap-2">
-            <span style={{ color: "var(--accent)" }}>✓</span>
-            {t.guidelineYes3}
-          </li>
-        </ul>
-      </div>
+      <RecordingGuidelines />
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
