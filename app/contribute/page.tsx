@@ -91,6 +91,37 @@ function RecordingGuidelines() {
   );
 }
 
+// Short motivational section — why a clip is worth contributing. Shown to both
+// signed-in contributors and signed-out visitors to encourage participation.
+function WhyContribute() {
+  const t = useT();
+  const points = [t.whyContribute1, t.whyContribute2, t.whyContribute3];
+  return (
+    <div
+      className="rounded-xl p-3.5 mb-2"
+      style={{
+        background: "color-mix(in srgb, var(--accent) 8%, var(--surface))",
+        border: "0.5px solid var(--border-gold)",
+      }}
+    >
+      <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--text)" }}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="var(--accent)" aria-hidden>
+          <path d="M12 21s-7.5-4.6-10-9.3C.4 8.5 1.9 5 5.2 5c2 0 3.3 1.1 4.1 2.3C10.2 6.1 11.5 5 13.5 5c3.3 0 4.8 3.5 3.2 6.7C18.5 16.4 12 21 12 21z" />
+        </svg>
+        {t.whyContributeTitle}
+      </p>
+      <ul className="flex flex-col gap-1.5 text-xs" style={{ color: "var(--text-muted)" }}>
+        {points.map((p, i) => (
+          <li key={i} className="flex gap-2">
+            <span style={{ color: "var(--accent)" }}>★</span>
+            {p}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function ContributePage() {
   const t = useT();
   const { lang } = useLang();
@@ -307,7 +338,8 @@ export default function ContributePage() {
           {t.contributeSubtitle}
         </p>
 
-        {/* Same guidelines signed-in contributors see, so visitors understand the page */}
+        {/* Motivation + the same guidelines signed-in contributors see */}
+        <WhyContribute />
         <RecordingGuidelines />
 
         <div
@@ -349,7 +381,8 @@ export default function ContributePage() {
         {t.contributeSubtitle}
       </p>
 
-      {/* Recording guidelines — sits on parchment surface card */}
+      {/* Why it matters, then the recording guidelines */}
+      <WhyContribute />
       <RecordingGuidelines />
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">

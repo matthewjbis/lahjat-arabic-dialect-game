@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **"Why your clip matters" section on `/contribute`** — a short, gold-accented card above the recording guidelines explaining the value of contributing (share your dialect, help others learn, make the game better), shown to both signed-in contributors and signed-out visitors to encourage participation. Fully translated en + ar.
+
 ## 2026-06-19 (session 6 — feedback, Arabic UX, volume & auth polish)
 
 ### Added
