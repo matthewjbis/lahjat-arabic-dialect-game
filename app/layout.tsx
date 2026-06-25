@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, Aref_Ruqaa } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SoundProvider } from "@/contexts/SoundContext";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -45,6 +46,20 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`h-full ${outfit.variable} ${arefRuqaa.variable}`}>
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-CV1TQFTW1X"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-CV1TQFTW1X');
+          `}
+        </Script>
+      </head>
       <body className="min-h-full flex flex-col">
         <AuthProvider>
           <LanguageProvider>
