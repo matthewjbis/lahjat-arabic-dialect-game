@@ -104,10 +104,7 @@ function WhyContribute() {
         border: "0.5px solid var(--border-gold)",
       }}
     >
-      <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--text)" }}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="var(--accent)" aria-hidden>
-          <path d="M12 21s-7.5-4.6-10-9.3C.4 8.5 1.9 5 5.2 5c2 0 3.3 1.1 4.1 2.3C10.2 6.1 11.5 5 13.5 5c3.3 0 4.8 3.5 3.2 6.7C18.5 16.4 12 21 12 21z" />
-        </svg>
+      <p className="text-xs font-semibold mb-2" style={{ color: "var(--text)" }}>
         {t.whyContributeTitle}
       </p>
       <ul className="flex flex-col gap-1.5 text-xs" style={{ color: "var(--text-muted)" }}>
