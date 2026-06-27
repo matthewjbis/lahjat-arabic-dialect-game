@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT, useLang } from "@/contexts/LanguageContext";
@@ -31,6 +31,56 @@ export function ProfileView() {
   const [sessions, setSessions] = useState<GameSession[] | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [contributions, setContributions] = useState<number | null>(null);
+
+  const [editingLocation, setEditingLocation] = useState(false);
+  const [locationCountry, setLocationCountry] = useState("");
+  const [locationCity, setLocationCity] = useState("");
+  const [locationStatus, setLocationStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  const allCountries = useMemo(() => {
+    const names = new Intl.DisplayNames([lang], { type: "region" });
+    const codes = [
+      "AF","AL","DZ","AD","AO","AG","AR","AM","AU","AT","AZ","BS","BH","BD","BB",
+      "BY","BE","BZ","BJ","BT","BO","BA","BW","BR","BN","BG","BF","BI","CV","KH",
+      "CM","CA","CF","TD","CL","CN","CO","KM","CD","CG","CR","HR","CU","CY","CZ",
+      "DK","DJ","DM","DO","EC","EG","SV","GQ","ER","EE","SZ","ET","FJ","FI","FR",
+      "GA","GM","GE","DE","GH","GR","GD","GT","GN","GW","GY","HT","HN","HU","IS",
+      "IN","ID","IR","IQ","IE","IL","IT","JM","JP","JO","KZ","KE","KI","KP","KR",
+      "KW","KG","LA","LV","LB","LS","LR","LY","LI","LT","LU","MG","MW","MY","MV",
+      "ML","MT","MH","MR","MU","MX","FM","MD","MC","MN","ME","MA","MZ","MM","NA",
+      "NR","NP","NL","NZ","NI","NE","NG","MK","NO","OM","PK","PW","PS","PA","PG",
+      "PY","PE","PH","PL","PT","QA","RO","RU","RW","KN","LC","VC","WS","SM","ST",
+      "SA","SN","RS","SC","SL","SG","SK","SI","SB","SO","ZA","SS","ES","LK","SD",
+      "SR","SE","CH","SY","TW","TJ","TZ","TH","TL","TG","TO","TT","TN","TR","TM",
+      "TV","UG","UA","AE","GB","US","UY","UZ","VU","VE","VN","YE","ZM","ZW",
+    ];
+    return codes
+      .map((code) => ({ code, name: names.of(code) ?? code }))
+      .sort((a, b) => a.name.localeCompare(b.name, lang));
+  }, [lang]);
+
+  useEffect(() => {
+    if (!user) return;
+    setLocationCountry((user.user_metadata?.country as string | undefined) ?? "");
+    setLocationCity((user.user_metadata?.city as string | undefined) ?? "");
+  }, [user]);
+
+  async function saveLocation() {
+    if (!user) return;
+    setLocationStatus("saving");
+    const { error: authError } = await supabase.auth.updateUser({
+      data: { country: locationCountry || null, city: locationCity.trim() || null },
+    });
+    if (authError) { setLocationStatus("error"); return; }
+    const { error: dbError } = await supabase
+      .from("profiles")
+      .update({ country: locationCountry || null, city: locationCity.trim() || null })
+      .eq("id", user.id);
+    if (dbError) { setLocationStatus("error"); return; }
+    setLocationStatus("saved");
+    setEditingLocation(false);
+    setTimeout(() => setLocationStatus("idle"), 2000);
+  }
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -139,9 +189,74 @@ export function ProfileView() {
       <h1 className="text-2xl font-medium tracking-tight mb-1" style={{ color: "var(--heading)" }}>
         {t.profileTitle}
       </h1>
-      <p className="text-sm mb-7 truncate" style={{ color: "var(--on-bg-muted)" }}>
+      <p className="text-sm truncate" style={{ color: "var(--on-bg-muted)" }}>
         {displayName}
       </p>
+
+      {/* Location row */}
+      <div className="flex items-center gap-2 mb-7 mt-1 flex-wrap">
+        {!editingLocation ? (
+          <>
+            <span className="text-sm" style={{ color: "var(--text-faint)" }}>
+              {locationCountry
+                ? [new Intl.DisplayNames([lang], { type: "region" }).of(locationCountry), locationCity.trim()].filter(Boolean).join(", ")
+                : t.profileCountryLabel}
+            </span>
+            <button
+              onClick={() => setEditingLocation(true)}
+              className="text-xs px-2 py-0.5 rounded-md"
+              style={{ background: "var(--surface)", color: "var(--text-muted)", border: "0.5px solid var(--border)" }}
+            >
+              {locationStatus === "saved" ? t.profileLocationSaved : t.profileEditLocation}
+            </button>
+          </>
+        ) : (
+          <div className="flex flex-col gap-2 w-full max-w-xs">
+            <select
+              value={locationCountry}
+              onChange={(e) => setLocationCountry(e.target.value)}
+              className="text-sm rounded-lg px-3 py-2 appearance-none"
+              style={{ background: "var(--surface)", color: locationCountry ? "var(--text)" : "var(--text-faint)", border: "0.5px solid var(--border)" }}
+            >
+              <option value="">{t.authCountryPlaceholder}</option>
+              {allCountries.map((c) => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+            {locationCountry && (
+              <input
+                type="text"
+                maxLength={60}
+                value={locationCity}
+                onChange={(e) => setLocationCity(e.target.value)}
+                placeholder={t.profileCityPlaceholder}
+                className="text-sm rounded-lg px-3 py-2"
+                style={{ background: "var(--surface)", color: "var(--text)", border: "0.5px solid var(--border)" }}
+              />
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={saveLocation}
+                disabled={locationStatus === "saving"}
+                className="text-xs px-3 py-1.5 rounded-md font-medium disabled:opacity-50"
+                style={{ background: "var(--accent)", color: "var(--gold-ink)" }}
+              >
+                {locationStatus === "saving" ? "…" : t.profileSaveLocation}
+              </button>
+              <button
+                onClick={() => { setEditingLocation(false); setLocationStatus("idle"); }}
+                className="text-xs px-3 py-1.5 rounded-md"
+                style={{ background: "var(--surface)", color: "var(--text-muted)", border: "0.5px solid var(--border)" }}
+              >
+                {t.profileCancelEdit}
+              </button>
+            </div>
+            {locationStatus === "error" && (
+              <p className="text-xs" style={{ color: "var(--accent-2)" }}>{t.profileLocationError}</p>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Streak banner */}
       {currentStreak > 0 && (

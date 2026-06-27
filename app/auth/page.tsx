@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { useT } from "@/contexts/LanguageContext";
+import { useT, useLang } from "@/contexts/LanguageContext";
 
 type Tab = "signin" | "signup";
 
@@ -31,6 +31,7 @@ const cardStyle: React.CSSProperties = {
 
 function AuthForm() {
   const t = useT();
+  const { lang } = useLang();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? "/";
@@ -39,8 +40,33 @@ function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [country, setCountry] = useState("");
+  const [city, setCity] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
+
+  const allCountries = useMemo(() => {
+    const names = new Intl.DisplayNames([lang], { type: "region" });
+    // ISO 3166-1 alpha-2 codes for all UN-recognised countries
+    const codes = [
+      "AF","AL","DZ","AD","AO","AG","AR","AM","AU","AT","AZ","BS","BH","BD","BB",
+      "BY","BE","BZ","BJ","BT","BO","BA","BW","BR","BN","BG","BF","BI","CV","KH",
+      "CM","CA","CF","TD","CL","CN","CO","KM","CD","CG","CR","HR","CU","CY","CZ",
+      "DK","DJ","DM","DO","EC","EG","SV","GQ","ER","EE","SZ","ET","FJ","FI","FR",
+      "GA","GM","GE","DE","GH","GR","GD","GT","GN","GW","GY","HT","HN","HU","IS",
+      "IN","ID","IR","IQ","IE","IL","IT","JM","JP","JO","KZ","KE","KI","KP","KR",
+      "KW","KG","LA","LV","LB","LS","LR","LY","LI","LT","LU","MG","MW","MY","MV",
+      "ML","MT","MH","MR","MU","MX","FM","MD","MC","MN","ME","MA","MZ","MM","NA",
+      "NR","NP","NL","NZ","NI","NE","NG","MK","NO","OM","PK","PW","PS","PA","PG",
+      "PY","PE","PH","PL","PT","QA","RO","RU","RW","KN","LC","VC","WS","SM","ST",
+      "SA","SN","RS","SC","SL","SG","SK","SI","SB","SO","ZA","SS","ES","LK","SD",
+      "SR","SE","CH","SY","TW","TJ","TZ","TH","TL","TG","TO","TT","TN","TR","TM",
+      "TV","UG","UA","AE","GB","US","UY","UZ","VU","VE","VN","YE","ZM","ZW",
+    ];
+    return codes
+      .map((code) => ({ code, name: names.of(code) ?? code }))
+      .sort((a, b) => a.name.localeCompare(b.name, lang));
+  }, [lang]);
 
   async function handleGoogle() {
     setError(null);
@@ -74,7 +100,13 @@ function AuthForm() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { display_name: displayName.trim() || null } },
+        options: {
+          data: {
+            display_name: displayName.trim() || null,
+            country: country || null,
+            city: city.trim() || null,
+          },
+        },
       });
       if (error) {
         setError(error.message);
@@ -164,20 +196,52 @@ function AuthForm() {
           </div>
 
           {tab === "signup" && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
-                {t.authDisplayName} <span style={{ color: "var(--text-faint)", textTransform: "none", letterSpacing: 0 }}>{t.nameOptional}</span>
-              </label>
-              <input
-                type="text"
-                autoComplete="nickname"
-                maxLength={40}
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder={t.authDisplayNamePlaceholder}
-                style={{ ...inputStyle, color: displayName ? "var(--text)" : undefined }}
-              />
-            </div>
+            <>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
+                  {t.authDisplayName} <span style={{ color: "var(--text-faint)", textTransform: "none", letterSpacing: 0 }}>{t.nameOptional}</span>
+                </label>
+                <input
+                  type="text"
+                  autoComplete="nickname"
+                  maxLength={40}
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder={t.authDisplayNamePlaceholder}
+                  style={{ ...inputStyle, color: displayName ? "var(--text)" : undefined }}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
+                  {t.authCountry} <span style={{ color: "var(--text-faint)", textTransform: "none", letterSpacing: 0 }}>{t.nameOptional}</span>
+                </label>
+                <select
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  style={{ ...inputStyle, color: country ? "var(--text)" : "var(--text-faint)", appearance: "none" }}
+                >
+                  <option value="">{t.authCountryPlaceholder}</option>
+                  {allCountries.map((c) => (
+                    <option key={c.code} value={c.code}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              {country && (
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
+                    {t.authCity} <span style={{ color: "var(--text-faint)", textTransform: "none", letterSpacing: 0 }}>{t.nameOptional}</span>
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={60}
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder={t.authCityPlaceholder}
+                    style={{ ...inputStyle, color: city ? "var(--text)" : undefined }}
+                  />
+                </div>
+              )}
+            </>
           )}
 
           <div className="flex flex-col gap-1.5">

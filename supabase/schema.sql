@@ -5,6 +5,8 @@
 create table if not exists public.profiles (
   id          uuid primary key references auth.users (id) on delete cascade,
   display_name text,
+  country     text,
+  city        text,
   created_at  timestamptz default now()
 );
 
@@ -51,6 +53,11 @@ create policy "game_sessions: own read"
 create policy "game_sessions: own insert"
   on public.game_sessions for insert with check (auth.uid() = user_id);
 
+
+-- ── Migration: add country/city to existing profiles table ────────────────────
+-- Run this if the profiles table already exists without these columns:
+--   alter table public.profiles add column if not exists country text;
+--   alter table public.profiles add column if not exists city text;
 
 -- ── Link submissions to users (optional user_id) ──────────────────────────────
 alter table public.submissions

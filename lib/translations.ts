@@ -127,6 +127,10 @@ const en = {
   authPasswordsNoMatch: "Passwords don't match.",
   authUpdatePassword: "Update password",
   authContinueWithGoogle: "Continue with Google",
+  authCountry: "Where are you from?",
+  authCountryPlaceholder: "Select your country",
+  authCity: "City",
+  authCityPlaceholder: "e.g. New York",
 
   // Profile
   profileLink: "Profile",
@@ -146,6 +150,15 @@ const en = {
   profileGameScore: (score: number, max: number) =>
     `${score.toLocaleString()} / ${max.toLocaleString()}`,
   profileClipCount: (n: number) => `${n} clips`,
+  profileFromLabel: "From",
+  profileCountryLabel: "Country",
+  profileCityLabel: "City (optional)",
+  profileCityPlaceholder: "e.g. New York",
+  profileEditLocation: "Edit",
+  profileSaveLocation: "Save",
+  profileCancelEdit: "Cancel",
+  profileLocationSaved: "Saved",
+  profileLocationError: "Couldn't save — please try again.",
 
   // Speed-bonus timer
   speedBonus: "Speed bonus",
@@ -335,6 +348,10 @@ const ar: typeof en = {
   authPasswordsNoMatch: "كلمتا المرور غير متطابقتين.",
   authUpdatePassword: "تحديث كلمة المرور",
   authContinueWithGoogle: "تابع باستخدام جوجل",
+  authCountry: "من أين أنت؟",
+  authCountryPlaceholder: "اختر بلدك",
+  authCity: "المدينة",
+  authCityPlaceholder: "مثال: القاهرة",
 
   // Profile
   profileLink: "الملف الشخصي",
@@ -354,6 +371,15 @@ const ar: typeof en = {
   profileGameScore: (score: number, max: number) =>
     `${score.toLocaleString()} / ${max.toLocaleString()}`,
   profileClipCount: (n: number) => `${n} مقاطع`,
+  profileFromLabel: "من",
+  profileCountryLabel: "البلد",
+  profileCityLabel: "المدينة (اختياري)",
+  profileCityPlaceholder: "مثال: القاهرة",
+  profileEditLocation: "تعديل",
+  profileSaveLocation: "حفظ",
+  profileCancelEdit: "إلغاء",
+  profileLocationSaved: "تم الحفظ",
+  profileLocationError: "تعذّر الحفظ — يرجى المحاولة مجدداً.",
 
   // Speed-bonus timer
   speedBonus: "مكافأة السرعة",
