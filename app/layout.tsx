@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   description:
     "A GeoGuessr-style game for Arabic speech. Listen to a clip and drop a pin where you think the speaker is from.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon-32x32.png",
     shortcut: "/favicon-16x16.png",
     apple: "/apple-touch-icon.png",
   },
