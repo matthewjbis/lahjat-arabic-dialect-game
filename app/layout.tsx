@@ -31,6 +31,11 @@ export const metadata: Metadata = {
   title: "Lahjat — Guess the Arabic Dialect",
   description:
     "A GeoGuessr-style game for Arabic speech. Listen to a clip and drop a pin where you think the speaker is from.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     type: "website",
     url: "https://lahjat.app",
